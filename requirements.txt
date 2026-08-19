@@ -1,0 +1,8 @@
+# YYC3 Family-AI Agents 运行时依赖
+# 基线版本：flask>=3.0 / requests>=2.31 / openai>=1.x（对齐 docker-compose 各服务 pip install 清单）
+flask>=3.0,<4
+requests>=2.31,<3
+openai>=1.0,<2
+
+# 按角色启用（对应 compose 中 thinker/prophet 服务的扩展安装）：
+#   pandas numpy scipy
