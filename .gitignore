@@ -16,3 +16,7 @@ data/
 
 # 系统
 .DS_Store
+
+# IDE
+.vscode/
+.idea/
