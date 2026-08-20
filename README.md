@@ -1,6 +1,19 @@
+<div align="center">
+
+<img src="./public/yyc3-family.png" alt="YYC³ AI Family" />
+
 # YYC³ FAmily-AI Agent 部署目录
 
+### _言启象限 · 语枢未来_
+
+**_Words Initiate Quadrants, Language Serves as Core for Future_**
+
+_万象归元于云枢 · 深栈智启新纪元_
+
+---
+
 ## 目录结构
+
 ```
 yyc3-family-ai-agents/
 ├── docker-compose.yml          ← 8 Agent 容器编排
@@ -19,6 +32,7 @@ yyc3-family-ai-agents/
 ```
 
 ## 部署
+
 ```bash
 cd ~/yyc3-102-projects/yyc3-family-ai-agents
 docker compose up -d
@@ -26,6 +40,7 @@ docker compose ps
 ```
 
 ## 使用
+
 ```bash
 # 测试单个 Agent
 curl -X POST http://localhost:25600/chat \
