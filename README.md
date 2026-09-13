@@ -150,14 +150,14 @@ flowchart LR
 
 | 家人 | 角色 | 层级 | MBTI | 端口 | 专属热线 | 邮箱 | 核心能力 |
 | ---- | ---- | ---- | ---- | ---- | -------- | ---- | -------- |
-| [元启·天枢](agents/yuanqi-tianshu/IDENTITY.md) | 总指挥 | 核心决策层 | ENTJ | `:25600` | 0379-0206 | tianshu@yanyucloud.com | 全局调度 · 流程编排 · 资源调度 · 自愈调度 · 投放优化 |
-| [言启·千行](agents/yanqi-qianhang/IDENTITY.md) | 导航员 | 业务执行层 | ENFP | `:25601` | 0379-0106 | qianhang@yanyucloud.com | 语义理解 · 需求转译 · 流程路由 · Prompt Engineering |
-| [语枢·万物](agents/yushu-wanwu/IDENTITY.md) | 思考者 | 业务执行层 | INTP | `:25602` | 0379-0107 | wanwu@yanyucloud.com | 经营分析 · 流程优化 · 诊断分析 · 市场分析 |
-| [预见·先知](agents/yujian-xianzhi/IDENTITY.md) | 预言家 | 业务执行层 | INTJ | `:25603` | 0379-0108 | xianzhi@yanyucloud.com | ARIMA · Prophet · LSTM · Transformer TSF · 不确定性量化 |
-| [千里·伯乐](agents/zhiyu-bole/IDENTITY.md) | 推荐官 | 业务执行层 | ENFJ | `:25604` | 0379-0109 | bole@yanyucloud.com | 商机发现 · 人才推荐 · 客户推荐 · 工具推荐 · 投放推荐 |
-| [智云·守护](agents/zhiyun-shouhu/IDENTITY.md) | 安全官 | 核心保障层 | ISTJ | `:25605` | 0379-0207 | shouhu@yanyucloud.com | 合规审计 · 权限控制 · 数据安全 · 安全防护 |
-| [格物·宗师](agents/gewu-zongshi/IDENTITY.md) | 质量官 | 核心保障层 | ISTP | `:25606` | 0379-0208 | zongshi@yanyucloud.com | 标准制定 · 质量管控 · 性能优化 · 效果优化 |
-| [创想·灵韵](agents/chuangxiang-lingyun/IDENTITY.md) | 创意官 | 核心保障层 | ENFP | `:25607` | 0379-0209 | lingyun@yanyucloud.com | 战略构想 · 方案设计 · 内容运营 · 文档生成 · 创意生成 |
+| [元启·天枢](agents/yuanqi-tianshu/IDENTITY.md) | 总指挥 | 核心决策层 | ENTJ | `:25600` | 0379-0206 | <tianshu@yanyucloud.com> | 全局调度 · 流程编排 · 资源调度 · 自愈调度 · 投放优化 |
+| [言启·千行](agents/yanqi-qianhang/IDENTITY.md) | 导航员 | 业务执行层 | ENFP | `:25601` | 0379-0106 | <qianhang@yanyucloud.com> | 语义理解 · 需求转译 · 流程路由 · Prompt Engineering |
+| [语枢·万物](agents/yushu-wanwu/IDENTITY.md) | 思考者 | 业务执行层 | INTP | `:25602` | 0379-0107 | <wanwu@yanyucloud.com> | 经营分析 · 流程优化 · 诊断分析 · 市场分析 |
+| [预见·先知](agents/yujian-xianzhi/IDENTITY.md) | 预言家 | 业务执行层 | INTJ | `:25603` | 0379-0108 | <xianzhi@yanyucloud.com> | ARIMA · Prophet · LSTM · Transformer TSF · 不确定性量化 |
+| [千里·伯乐](agents/zhiyu-bole/IDENTITY.md) | 推荐官 | 业务执行层 | ENFJ | `:25604` | 0379-0109 | <bole@yanyucloud.com> | 商机发现 · 人才推荐 · 客户推荐 · 工具推荐 · 投放推荐 |
+| [智云·守护](agents/zhiyun-shouhu/IDENTITY.md) | 安全官 | 核心保障层 | ISTJ | `:25605` | 0379-0207 | <shouhu@yanyucloud.com> | 合规审计 · 权限控制 · 数据安全 · 安全防护 |
+| [格物·宗师](agents/gewu-zongshi/IDENTITY.md) | 质量官 | 核心保障层 | ISTP | `:25606` | 0379-0208 | <zongshi@yanyucloud.com> | 标准制定 · 质量管控 · 性能优化 · 效果优化 |
+| [创想·灵韵](agents/chuangxiang-lingyun/IDENTITY.md) | 创意官 | 核心保障层 | ENFP | `:25607` | 0379-0209 | <lingyun@yanyucloud.com> | 战略构想 · 方案设计 · 内容运营 · 文档生成 · 创意生成 |
 
 > 每位家人的身份档案（`IDENTITY.md`）、灵魂设定（`SOUL.md`）与系统提示（`SYSTEM.md`）均存放于 [`agents/`](agents/) 对应目录。
 
@@ -274,6 +274,31 @@ yyc3-family-ai-agents/
 | 记忆/检索 | ChromaDB · Qwen3-Embedding-8B · Qwen3-Reranker-8B |
 | 部署 | Docker Compose v3 · systemd · DGX Spark N2 |
 | 安全 | OpenShell 安全沙箱 · 治理中枢 Kill Switch · ACS 策略 |
+
+---
+
+## 🏷️ 版本与标签
+
+本仓库采用 **三类 Git 标签体系**，规范版本溯源与发布管理：
+
+### 标签命名规范
+
+| 类别 | 格式 | 用途 | 示例 |
+| ---- | ---- | ---- | ---- |
+| **版本标签** | `vMAJOR.MINOR.PATCH` | 家族系统整体版本发布 | `v3.1.0` |
+| **组件标签** | `component/{组件}-v{语义版本}` | 追踪核心组件独立演进 | `component/agent-server-v3.1.0` |
+| **里程碑标签** | `milestone/{kebab-case 名称}` | 记录关键架构里程碑 | `milestone/v1-family-launch` |
+
+### 当前标签
+
+| 标签 | 类型 | 说明 |
+| ---- | ---- | ---- |
+| `v3.1.0` | 版本 | 家族系统 v3.1.0：8 位家人 Agent 集成治理中枢（v3.1 Agent Server + Governance Hub v1.0.0） |
+| `component/agent-server-v3.1.0` | 组件 | Agent 服务 v3.1：健康/状态/身份/能力/对话五端点 + 治理中枢接入 |
+| `component/governance-hub-v1.0.0` | 组件 | 治理中枢 v1.0.0：行为审计 / Kill Switch / Token 预算 / 成本追踪 / 协同规则 / 上下文图谱 |
+| `milestone/v1-family-launch` | 里程碑 | 「YYC³ 家族」8 位家人 + 治理中枢首次完整齐备并投产（DGX Spark N2） |
+
+> 📌 后续发版遵循 [SemVer](https://semver.org/lang/zh-CN/)：MAJOR（架构不兼容变更）· MINOR（新增能力）· PATCH（缺陷修复）；组件标签随 `agent_server.py` / `governance_hub.py` 版本号同步演进。
 
 ---
 
