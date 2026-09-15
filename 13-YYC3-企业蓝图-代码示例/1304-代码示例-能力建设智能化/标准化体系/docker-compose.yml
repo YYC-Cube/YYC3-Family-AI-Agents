@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 标准化体系智能化服务
+  # ==========================================
+  standardization-ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.standardization
+    container_name: yyc3-standardization-ai-v2
+    image: yyc3/standardization-ai:v2.0
+    ports:
+      - "5030:5030"
+    volumes:
+      - ./data/standardization:/app/data
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+    environment:
+      - SERVICE_NAME=标准化体系智能化V2
+      - LOG_LEVEL=INFO
+      - ENABLE_AGENT_COORDINATION=true
+      - COMPLIANCE_FRAMEWORKS=ISO9001,ISO14001,ISO45001
+      - REDIS_URL=redis://redis:6379/2
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: 4G
+          cpus: '2.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5030/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - yyc3-intelligence-network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Redis缓存服务（共享）
+  redis:
+    image: redis:7-alpine
+    container_name: yyc3-redis-standardization
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - yyc3-intelligence-network
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  yyc3-intelligence-network:
+    driver: bridge

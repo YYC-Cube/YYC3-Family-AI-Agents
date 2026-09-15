@@ -1,0 +1,38 @@
+# =============================================================================
+# 言启·千行 (导航员) Docker Compose v3.0
+# 对齐蓝图: 1200-AI Family Agent v2.1.0
+# =============================================================================
+
+version: "3.8"
+
+services:
+  yanqi_qianhang:
+    image: python:3.12-slim
+    container_name: agent-yanqi-qianhang
+    ports:
+      - "25601:6001"
+    volumes:
+      - .:/workspace
+      - ../../06-协议栈:/workspace/protocols
+      - ../../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yanqi_qianhang
+      - AGENT_ROLE=navigator
+      - PORT=6001
+      - LOG_LEVEL=INFO
+      - MCP_ENDPOINT=http://mcp_gateway:8800
+      - A2A_ENDPOINT=http://a2a_gateway:8801
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python yanqi_agent.py --port 6001"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  agent-network:
+    driver: bridge

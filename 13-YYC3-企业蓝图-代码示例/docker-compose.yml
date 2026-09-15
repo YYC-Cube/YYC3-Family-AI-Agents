@@ -1,0 +1,832 @@
+# =============================================================================
+# YYC³ AI Family Agent 全栈 Docker Compose v3.0
+# 对齐蓝图: 1200-AI Family Agent v2.1.0
+# 五高架构: 高可用 | 高性能 | 高安全 | 高扩展 | 高智能
+# 协议栈: MCP + A2A
+# 基座模型: GLM-6 / Qwen-4.0 / DeepSeek-V3
+# =============================================================================
+
+version: "3.8"
+
+# =============================================================================
+# 网络规划
+# =============================================================================
+networks:
+  # AI Family Agent 内部通信网络
+  agent-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16
+  # 业务服务网络
+  business-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+  # 可观测性网络
+  observability-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+  # 安全网关网络
+  security-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16
+
+# =============================================================================
+# 卷定义
+# =============================================================================
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  model_cache:
+    driver: local
+
+# =============================================================================
+# 服务定义
+# =============================================================================
+services:
+  # ========================================================================
+  # 🔴 基础设施层
+  # ========================================================================
+
+  # PostgreSQL - 结构化数据存储
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: yyc3-postgres
+    ports:
+      - "25432:5432"
+    environment:
+      POSTGRES_DB: yyc3_ai_family
+      POSTGRES_USER: yyc3_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-yyc3_secure_2026}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - business-network
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yyc3_admin -d yyc3_ai_family"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - 缓存与会话存储
+  redis:
+    image: redis:7-alpine
+    container_name: yyc3-redis
+    ports:
+      - "26379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-yyc3_redis_2026}
+    volumes:
+      - redis_data:/data
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================================================
+  # 🟡 协议栈基础设施层 (MCP + A2A)
+  # ========================================================================
+
+  # MCP Gateway - 模型上下文协议网关
+  mcp_gateway:
+    image: python:3.12-slim
+    container_name: yyc3-mcp-gateway
+    ports:
+      - "30800:8800"
+    volumes:
+      - ./06-协议栈/MCP:/workspace
+    environment:
+      - MCP_TRANSPORT=http
+      - MCP_PORT=8800
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python mcp_client.py"
+    networks:
+      - agent-network
+      - security-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8800/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # A2A Gateway - Agent间通信协议网关
+  a2a_gateway:
+    image: python:3.12-slim
+    container_name: yyc3-a2a-gateway
+    ports:
+      - "30801:8801"
+    volumes:
+      - ./06-协议栈/A2A:/workspace
+    environment:
+      - A2A_PORT=8801
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python a2a_client.py"
+    networks:
+      - agent-network
+      - security-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8801/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================================================
+  # 🟢 安全基础设施层
+  # ========================================================================
+
+  # 内容安全过滤器
+  content_filter:
+    image: python:3.12-slim
+    container_name: yyc3-content-filter
+    ports:
+      - "30802:8802"
+    volumes:
+      - ./07-安全合规:/workspace
+    environment:
+      - FILTER_LEVEL=standard
+      - PORT=8802
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask && python content_filter.py"
+    networks:
+      - security-network
+    restart: unless-stopped
+
+  # 零信任安全网关
+  zero_trust_gateway:
+    image: python:3.12-slim
+    container_name: yyc3-zero-trust
+    ports:
+      - "30803:8803"
+    volumes:
+      - ./07-安全合规:/workspace
+    environment:
+      - AUTH_MODE=strict
+      - PORT=8803
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask && python zero_trust_gateway.py"
+    networks:
+      - security-network
+      - agent-network
+    restart: unless-stopped
+
+  # ========================================================================
+  # 🔵 可观测性基础设施层
+  # ========================================================================
+
+  # Prometheus - 指标采集
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: yyc3-prometheus
+    ports:
+      - "45909:9090"
+    volumes:
+      - ./08-可观测性/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    networks:
+      - observability-network
+      - agent-network
+    restart: unless-stopped
+
+  # Grafana - 可视化面板
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: yyc3-grafana
+    ports:
+      - "45300:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-yyc3_grafana_2026}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./08-可观测性/grafana-dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - observability-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Telemetry SDK 服务
+  telemetry:
+    image: python:3.12-slim
+    container_name: yyc3-telemetry
+    ports:
+      - "30804:8804"
+    volumes:
+      - ./08-可观测性:/workspace
+    environment:
+      - TELEMETRY_PORT=8804
+      - PROMETHEUS_URL=http://prometheus:9090
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask prometheus-client && python telemetry.py"
+    networks:
+      - observability-network
+      - agent-network
+    restart: unless-stopped
+
+  # ========================================================================
+  # 🟣 AI Family Agent 层 (8个Agent)
+  # ========================================================================
+
+  # 元启·天枢 (总指挥) - 全局编排与战略决策
+  yuanqi_tianshu:
+    image: python:3.12-slim
+    container_name: agent-yuanqi-tianshu
+    ports:
+      - "25600:6000"
+    volumes:
+      - ./04-AI-Family-Agent/元启-天枢总指挥:/workspace
+      - ./06-协议栈:/workspace/protocols
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yuanqi_tianshu
+      - AGENT_ROLE=coordinator
+      - PORT=6000
+      - LOG_LEVEL=INFO
+      - MCP_ENDPOINT=http://mcp_gateway:8800
+      - A2A_ENDPOINT=http://a2a_gateway:8801
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python ytianshu_agent.py --port 6000"
+    networks:
+      - agent-network
+      - security-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - mcp_gateway
+      - a2a_gateway
+      - telemetry
+
+  # 言启·千行 (导航员) - 意图识别与任务路由
+  yanqi_qianhang:
+    image: python:3.12-slim
+    container_name: agent-yanqi-qianhang
+    ports:
+      - "25601:6001"
+    volumes:
+      - ./04-AI-Family-Agent/言启-千行导航员:/workspace
+      - ./06-协议栈:/workspace/protocols
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yanqi_qianhang
+      - AGENT_ROLE=navigator
+      - PORT=6001
+      - LOG_LEVEL=INFO
+      - MCP_ENDPOINT=http://mcp_gateway:8800
+      - A2A_ENDPOINT=http://a2a_gateway:8801
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python yanqi_agent.py --port 6001"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - a2a_gateway
+      - telemetry
+
+  # 语枢·万物 (思考者) - 数据分析与统计建模
+  yushu_wanwu:
+    image: python:3.12-slim
+    container_name: agent-yushu-wanwu
+    ports:
+      - "25602:6002"
+    volumes:
+      - ./04-AI-Family-Agent/语枢-万物思考者:/workspace
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yushu_wanwu
+      - AGENT_ROLE=thinker
+      - PORT=6002
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python yushu_agent.py --port 6002"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - telemetry
+
+  # 预见·先知 (预言家) - 趋势预测与风险预警
+  yujian_xianzhi:
+    image: python:3.12-slim
+    container_name: agent-yujian-xianzhi
+    ports:
+      - "25603:6003"
+    volumes:
+      - ./04-AI-Family-Agent/预见-先知预言家:/workspace
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yujian_xianzhi
+      - AGENT_ROLE=prophet
+      - PORT=6003
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python yujian_agent.py --port 6003"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - telemetry
+
+  # 千里·伯乐 (推荐官) - 个性化推荐与用户画像
+  qianli_bole:
+    image: python:3.12-slim
+    container_name: agent-qianli-bole
+    ports:
+      - "25604:6004"
+    volumes:
+      - ./04-AI-Family-Agent/千里-伯乐推荐官:/workspace
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=qianli_bole
+      - AGENT_ROLE=recommender
+      - PORT=6004
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python zhiyu_agent.py --port 6004"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - telemetry
+
+  # 智云·守护 (安全官) - 安全审计与行为监控
+  zhiyun_shouhu:
+    image: python:3.12-slim
+    container_name: agent-zhiyun-shouhu
+    ports:
+      - "25605:6005"
+    volumes:
+      - ./04-AI-Family-Agent/智云-守护安全官:/workspace
+      - ./07-安全合规:/workspace/security
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=zhiyun_shouhu
+      - AGENT_ROLE=security_officer
+      - PORT=6005
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python zhiyun_agent.py --port 6005"
+    networks:
+      - agent-network
+      - security-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - content_filter
+      - zero_trust_gateway
+      - telemetry
+
+  # 格物·宗师 (质量官) - 代码审查与质量保障
+  gewu_zongshi:
+    image: python:3.12-slim
+    container_name: agent-gewu-zongshi
+    ports:
+      - "25606:6006"
+    volumes:
+      - ./04-AI-Family-Agent/格物-宗师质量官:/workspace
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=gewu_zongshi
+      - AGENT_ROLE=quality_officer
+      - PORT=6006
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python gewu_agent.py --port 6006"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - telemetry
+
+  # 创想·灵韵 (创意官) - 内容创作与创新孵化
+  chuangxiang_lingyun:
+    image: python:3.12-slim
+    container_name: agent-chuangxiang-lingyun
+    ports:
+      - "25607:6007"
+    volumes:
+      - ./04-AI-Family-Agent/创想-灵韵创意官:/workspace
+      - ./08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=chuangxiang_lingyun
+      - AGENT_ROLE=creative_director
+      - PORT=6007
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python chuangxiang_agent.py --port 6007"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - telemetry
+
+  # ========================================================================
+  # 🟠 业务服务层 (五维价值矩阵)
+  # ========================================================================
+
+  # 经营决策服务
+  business_decision:
+    image: python:3.12-slim
+    container_name: yyc3-business-decision
+    ports:
+      - "25510:5010"
+    volumes:
+      - ./02-经管运维营/经营决策:/workspace
+    environment:
+      - SERVICE_TYPE=business_decision
+      - PORT=5010
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python business_decision_api_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 人力资源服务
+  hr_service:
+    image: python:3.12-slim
+    container_name: yyc3-hr
+    ports:
+      - "25500:5000"
+    volumes:
+      - ./03-人资进销存/人力资源:/workspace
+    environment:
+      - SERVICE_TYPE=hr
+      - PORT=5000
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python hr_api_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 资产管理服务
+  asset_service:
+    image: python:3.12-slim
+    container_name: yyc3-asset
+    ports:
+      - "25501:5001"
+    volumes:
+      - ./03-人资进销存/资产管理:/workspace
+    environment:
+      - SERVICE_TYPE=asset
+      - PORT=5001
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python asset_api_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 采购管理服务
+  purchase_service:
+    image: python:3.12-slim
+    container_name: yyc3-purchase
+    ports:
+      - "25502:5002"
+    volumes:
+      - ./03-人资进销存/采购管理:/workspace
+    environment:
+      - SERVICE_TYPE=purchase
+      - PORT=5002
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python purchase_api_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 销售管理服务
+  sales_service:
+    image: python:3.12-slim
+    container_name: yyc3-sales
+    ports:
+      - "25503:5003"
+    volumes:
+      - ./03-人资进销存/销售管理:/workspace
+    environment:
+      - SERVICE_TYPE=sales
+      - PORT=5003
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python sales_api_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 库存管理服务
+  inventory_service:
+    image: python:3.12-slim
+    container_name: yyc3-inventory
+    ports:
+      - "25504:5004"
+    volumes:
+      - ./03-人资进销存/库存管理:/workspace
+    environment:
+      - SERVICE_TYPE=inventory
+      - PORT=5004
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python inventory_api.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 标准化体系服务
+  standardization_service:
+    image: python:3.12-slim
+    container_name: yyc3-standardization
+    ports:
+      - "25520:5020"
+    volumes:
+      - ./04-能力建设智能化/标准化体系:/workspace
+    environment:
+      - SERVICE_TYPE=standardization
+      - PORT=5020
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python standardization_api_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 协同化办公服务
+  collaboration_service:
+    image: python:3.12-slim
+    container_name: yyc3-collaboration
+    ports:
+      - "25521:5021"
+    volumes:
+      - ./04-能力建设智能化/协同化办公:/workspace
+    environment:
+      - SERVICE_TYPE=collaboration
+      - PORT=5021
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python collaboration_inference_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 市场洞察服务
+  market_intelligence:
+    image: python:3.12-slim
+    container_name: yyc3-market-intelligence
+    ports:
+      - "25530:5030"
+    volumes:
+      - ./05-价值创造智能化/市场洞察:/workspace
+    environment:
+      - SERVICE_TYPE=market_intelligence
+      - PORT=5030
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python market_intelligence_inference_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 创新孵化服务
+  innovation_incubator:
+    image: python:3.12-slim
+    container_name: yyc3-innovation
+    ports:
+      - "25531:5031"
+    volumes:
+      - ./05-价值创造智能化/创新孵化:/workspace
+    environment:
+      - SERVICE_TYPE=innovation
+      - PORT=5031
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python innovation_incubator_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 高效运营服务
+  operations_service:
+    image: python:3.12-slim
+    container_name: yyc3-operations
+    ports:
+      - "25532:5032"
+    volumes:
+      - ./05-价值创造智能化/高效运营:/workspace
+    environment:
+      - SERVICE_TYPE=operations
+      - PORT=5032
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python operations_intelligence_v2.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 管理流程服务
+  process_management:
+    image: python:3.12-slim
+    container_name: yyc3-process-management
+    ports:
+      - "25540:5040"
+    volumes:
+      - ./02-经管运维营/管理流程:/workspace
+    environment:
+      - SERVICE_TYPE=process_management
+      - PORT=5040
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python process_management_api.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 维护保障服务
+  maintenance:
+    image: python:3.12-slim
+    container_name: yyc3-maintenance
+    ports:
+      - "25541:5041"
+    volumes:
+      - ./02-经管运维营/维护保障:/workspace
+    environment:
+      - SERVICE_TYPE=maintenance
+      - PORT=5041
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python maintenance_api.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 营销增长服务
+  marketing:
+    image: python:3.12-slim
+    container_name: yyc3-marketing
+    ports:
+      - "25542:5042"
+    volumes:
+      - ./02-经管运维营/营销增长:/workspace
+    environment:
+      - SERVICE_TYPE=marketing
+      - PORT=5042
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python marketing_api.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # 运营优化服务
+  operations_optimization:
+    image: python:3.12-slim
+    container_name: yyc3-operations-optimization
+    ports:
+      - "25543:5043"
+    volumes:
+      - ./02-经管运维营/运营优化:/workspace
+    environment:
+      - SERVICE_TYPE=operations_optimization
+      - PORT=5043
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python operations_api.py"
+    networks:
+      - business-network
+    restart: unless-stopped
+
+  # ========================================================================
+  # ⚪ 提示词引擎服务
+  # ========================================================================
+
+  # 提示词引擎
+  prompt_engine:
+    image: python:3.12-slim
+    container_name: yyc3-prompt-engine
+    ports:
+      - "25410:5410"
+    volumes:
+      - ./00-核心基础设施/prompt-engine:/workspace
+    environment:
+      - SERVICE_TYPE=prompt_engine
+      - PORT=5410
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python prompt_engine.py"
+    networks:
+      - agent-network
+    restart: unless-stopped
+
+  # 提示词模板库
+  prompt_templates:
+    image: python:3.12-slim
+    container_name: yyc3-prompt-templates
+    ports:
+      - "25411:5411"
+    volumes:
+      - ./00-核心基础设施/prompt-engine:/workspace
+    environment:
+      - SERVICE_TYPE=prompt_templates
+      - PORT=5411
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: >
+      sh -c "pip install flask requests && python ai_family_prompt_templates.py"
+    networks:
+      - agent-network
+    restart: unless-stopped
