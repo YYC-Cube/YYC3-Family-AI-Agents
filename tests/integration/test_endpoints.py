@@ -206,3 +206,34 @@ class TestZeroTrustAuthAgent:
         assert agent_server._gov_headers()["X-API-Key"] == "gov-secret"
         monkeypatch.setattr(agent_server, "GOVERNANCE_API_KEY", "")
         assert "X-API-Key" not in agent_server._gov_headers()
+
+
+class TestCorrelationIdContract:
+    """P1-2 correlation_id 贯穿契约：/chat 自动生成 UUID 返回；调用方可传入自定义 ID；上报函数签名透传"""
+
+    def test_chat_returns_uuid(self, agent_client):
+        import uuid as uuid_mod
+        r = agent_client.post("/chat", json={"message": "你好"})
+        assert r.status_code == 200
+        cid = r.get_json()["correlation_id"]
+        uuid_mod.UUID(cid)  # 合法 UUID 格式（非法则抛 ValueError）
+
+    def test_chat_honors_caller_supplied_id(self, agent_client):
+        r = agent_client.post("/chat", json={"message": "你好", "correlation_id": "biz-123"})
+        assert r.get_json()["correlation_id"] == "biz-123"
+
+    def test_report_function_signature_passthrough(self, monkeypatch):
+        captured = {}
+
+        def fake_post(url, **kwargs):
+            captured.update(kwargs["json"])
+
+            class R:
+                status_code = 200
+                def json(self):
+                    return []
+            return R()
+
+        monkeypatch.setattr(agent_server.requests, "post", fake_post)
+        agent_server._governance_report("chat_request", {"x": 1}, correlation_id="corr-xyz")
+        assert captured["correlation_id"] == "corr-xyz"

@@ -615,7 +615,7 @@ class ACSPolicyMapper:
                       "human_approval_required": []},
         "prophet": {"display_name": "预见·先知", "max_autonomy": "autonomous_predict",
                     "human_approval_required": ["high_impact_forecast"]},
-        "bole": {"display_name": "知遇·伯乐", "max_autonomy": "autonomous_recommend",
+        "bole": {"display_name": "千里·伯乐", "max_autonomy": "autonomous_recommend",
                  "human_approval_required": ["hiring_decision"]},
         "sentinel": {"display_name": "智云·守护", "max_autonomy": "autonomous_monitor",
                      "human_approval_required": ["block_traffic", "revoke_access"]},

@@ -19,6 +19,7 @@ import logging
 import os
 import sys
 import time
+import uuid
 from datetime import datetime, timezone
 
 import requests
@@ -86,16 +87,16 @@ def zero_trust_auth():
     return None
 
 
-def _governance_report(action, details):
+def _governance_report(action, details, correlation_id=""):
     try:
         requests.post(f"{GOVERNANCE_ENDPOINT}/audit/record",
                       headers=_gov_headers(),
                       json={"agent": AGENT_NAME, "action": action,
-                            "details": details, "correlation_id": ""}, timeout=2)
+                            "details": details, "correlation_id": correlation_id}, timeout=2)
     except Exception:
         pass
 
-def _governance_token(prompt_tokens, completion_tokens, latency_ms, model):
+def _governance_token(prompt_tokens, completion_tokens, latency_ms, model, correlation_id=""):
     try:
         requests.post(f"{GOVERNANCE_ENDPOINT}/budget/record",
                       headers=_gov_headers(),
@@ -115,11 +116,12 @@ def _check_frozen():
         pass
     return False, ""
 
-def _inject_context(user_message):
+def _inject_context(user_message, correlation_id=""):
     try:
         r = requests.post(f"{GOVERNANCE_ENDPOINT}/context/inject",
                           headers=_gov_headers(),
-                          json={"agent": AGENT_NAME, "task": user_message}, timeout=3)
+                          json={"agent": AGENT_NAME, "task": user_message,
+                                "correlation_id": correlation_id}, timeout=3)
         data = r.json()
         if data.get("count", 0) > 0:
             entities = data.get("injected_entities", [])
@@ -129,13 +131,14 @@ def _inject_context(user_message):
         pass
     return ""
 
-def _check_collaboration(user_message, confidence=1.0, complexity=0.5, risk="low"):
+def _check_collaboration(user_message, confidence=1.0, complexity=0.5, risk="low", correlation_id=""):
     try:
         r = requests.post(f"{GOVERNANCE_ENDPOINT}/collaboration/check",
                           headers=_gov_headers(),
                           json={"primary_agent": AGENT_NAME, "confidence": confidence,
                                 "complexity": complexity, "risk": risk,
-                                "task_description": user_message}, timeout=3)
+                                "task_description": user_message,
+                                "correlation_id": correlation_id}, timeout=3)
         return r.json()
     except Exception:
         return {"should_collaborate": False}
@@ -192,15 +195,20 @@ def chat():
     if not user_message:
         return jsonify({"error": "message field is required"}), 400
 
+    # P1-2 correlation_id 贯穿：一次对话的全部治理上报（审计/预算/上下文/协同）共享同一 UUID
+    correlation_id = data.get("correlation_id") or str(uuid.uuid4())
+
     frozen, reason = _check_frozen()
     if frozen:
-        _governance_report("frozen_block", {"reason": reason, "message": user_message[:100]})
+        _governance_report("frozen_block", {"reason": reason, "message": user_message[:100]},
+                           correlation_id=correlation_id)
         return jsonify({"error": "Agent is frozen", "reason": reason, "agent": AGENT_NAME}), 403
 
-    _governance_report("chat_request", {"message_len": len(user_message), "risk": risk})
+    _governance_report("chat_request", {"message_len": len(user_message), "risk": risk},
+                       correlation_id=correlation_id)
 
     system_prompt = load_system_prompt()
-    context_injection = _inject_context(user_message)
+    context_injection = _inject_context(user_message, correlation_id=correlation_id)
     if context_injection:
         system_prompt += context_injection
 
@@ -214,17 +222,21 @@ def chat():
 
     prompt_tokens = usage.get("prompt_tokens", 0)
     completion_tokens = usage.get("completion_tokens", 0)
-    _governance_token(prompt_tokens, completion_tokens, latency, VLLM_MODEL)
+    _governance_token(prompt_tokens, completion_tokens, latency, VLLM_MODEL,
+                      correlation_id=correlation_id)
 
     _governance_report("chat_response", {"latency_ms": latency,
-                                         "tokens": prompt_tokens + completion_tokens})
+                                         "tokens": prompt_tokens + completion_tokens},
+                       correlation_id=correlation_id)
 
     confidence = 0.85
-    collab = _check_collaboration(user_message, confidence, complexity, risk)
+    collab = _check_collaboration(user_message, confidence, complexity, risk,
+                                  correlation_id=correlation_id)
 
     return jsonify({
         "agent": AGENT_NAME, "label": AGENT_LABEL, "role": AGENT_ROLE,
         "response": response,
+        "correlation_id": correlation_id,
         "usage": usage, "latency_ms": latency,
         "collaboration": collab,
         "timestamp": datetime.now(timezone.utc).isoformat(),
