@@ -18,11 +18,27 @@ from datetime import datetime, timezone
 logger = logging.getLogger("yyc3.telemetry")
 
 TELEMETRY_LEVEL = os.environ.get("TELEMETRY_LEVEL", "info")  # debug|info|off
+# P3-2 OTLP 导出：设置 YYC3_OTLP_ENDPOINT（如 http://otel-collector:4318）即启用 span 导出
+OTLP_ENDPOINT = os.environ.get("YYC3_OTLP_ENDPOINT", "")
 
 try:  # OTel 可选依赖：生产可 pip install opentelemetry-api opentelemetry-sdk 启用
     from opentelemetry import trace as _otel_trace  # type: ignore[import-not-found]
-    _OTEL_TRACER = _otel_trace.get_tracer("yyc3.family-ai")
-    OTEL_AVAILABLE = True
+    if OTLP_ENDPOINT:
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter  # type: ignore[import-not-found]
+        from opentelemetry.sdk.resources import Resource  # type: ignore[import-not-found]
+        from opentelemetry.sdk.trace import TracerProvider  # type: ignore[import-not-found]
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor  # type: ignore[import-not-found]
+
+        _provider = TracerProvider(resource=Resource.create({"service.name": "yyc3.family-ai"}))
+        _provider.add_span_processor(BatchSpanProcessor(
+            OTLPSpanExporter(endpoint=f"{OTLP_ENDPOINT.rstrip('/')}/v1/traces")))
+        _otel_trace.set_tracer_provider(_provider)
+        _OTEL_TRACER = _otel_trace.get_tracer("yyc3.family-ai")
+        OTEL_AVAILABLE = True
+        logger.info(f"OTel OTLP export enabled → {OTLP_ENDPOINT}")
+    else:
+        _OTEL_TRACER = _otel_trace.get_tracer("yyc3.family-ai")
+        OTEL_AVAILABLE = True
 except Exception:  # ImportError 或任何初始化失败 → 降级
     _OTEL_TRACER = None
     OTEL_AVAILABLE = False

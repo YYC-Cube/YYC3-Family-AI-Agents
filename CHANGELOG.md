@@ -21,6 +21,8 @@
 - **P2-2 模板版本化下发**：hub `/prompts/<agent>`（三件套清单含 sha256/size/mtime）+ `/prompts/<agent>/<file>`（text/json 双格式）——复用 `AGENT_ALIAS_MAP` 归一（全名/短名同源），`PROMPTS_SOURCE_DIR` 环境变量适配容器挂载
 - **P2-3 telemetry 可观测门面**：新增 `telemetry.py`——OTel 可选依赖（安装即真 span，未安装降级结构化 JSON 日志）+ `correlation_id` 全链路贯穿 + 内存指标快照 + hub `/metrics` 只读端点；agent `/chat` 主链路接入 frozen_check/context_injection/llm_inference 三阶段 span
 - **P2-4 LLM 实答 UAT**：`tests/uat/test_llm_persona.py` 8 例身份抽检——环境门控（`YYC3_UAT_LLM=1` + vLLM 可达方执行，默认 skip），断言回答命中名号关键词防人设漂移
+- **P3-1 生产全链路验收脚本**：`deploy/acceptance.sh`——7 组验收（基础健康/模板下发/可观测/零信任认证/correlation_id 端到端/LLM 实答 UAT/Jaeger span 导出），生产服务器一条命令验收，退出码=失败数；本机已用裸进程拉起 hub+agent 完成核心端点冒烟
+- **P3-2 可观测栈接入**：telemetry 支持 `YYC3_OTLP_ENDPOINT` OTLP/HTTP span 导出（服务名 `yyc3.family-ai`）；compose 新增 `observability` profile——`otel-collector`（4317/4318）+ `jaeger` all-in-one（UI 16686），按需启动不增加常驻资源
 
 ### Changed
 

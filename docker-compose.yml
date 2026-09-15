@@ -31,6 +31,8 @@ volumes:
       device: ${NEMOCLAW_PROMPTS_DIR:-/home/yyc3/.nemoclaw/agent-prompts/v3}
   yyc3-shared-data:
     driver: local
+  yyc3-jaeger-data:
+    driver: local
 
 services:
   # ==========================================================================
@@ -56,6 +58,8 @@ services:
       # P0-2 零信任认证：写操作须持 X-API-Key（未设置则开放模式，本地开发用）
       - GOVERNANCE_API_KEY=${GOVERNANCE_API_KEY:?请在 .env 中配置 GOVERNANCE_API_KEY}
       - LOG_LEVEL=INFO
+      # P3-2 可观测：设置后 hub span 经 OTLP 导出到 collector
+      - YYC3_OTLP_ENDPOINT=${YYC3_OTLP_ENDPOINT:-}
       - TZ=Asia/Shanghai
       - LANG=zh_CN.UTF-8
     working_dir: /workspace
@@ -112,6 +116,8 @@ services:
       # P0-2 零信任认证：治理上报 Key + /chat 写保护 Key（生产必须配置，缺失时 compose 启动即报错）
       GOVERNANCE_API_KEY: ${GOVERNANCE_API_KEY:?请在 .env 中配置 GOVERNANCE_API_KEY}
       AGENT_API_KEY: ${AGENT_API_KEY:?请在 .env 中配置 AGENT_API_KEY}
+      # P3-2 可观测：设置后 span 经 OTLP 导出到 collector（需 --profile observability 启动）
+      YYC3_OTLP_ENDPOINT: ${YYC3_OTLP_ENDPOINT:-}
       TZ: Asia/Shanghai
       LANG: zh_CN.UTF-8
     working_dir: /workspace
@@ -187,6 +193,65 @@ services:
         limits:
           cpus: "1"
           memory: 2G
+
+  # ==========================================================================
+  # P3-2 可观测栈 (observability profile，按需启动):
+  #   docker compose --profile observability up -d otel-collector jaeger
+  #   OpenTelemetry Collector: OTLP/gRPC 4317 + OTLP/HTTP 4318
+  #   Jaeger UI: http://<host>:16686 （span 可视化检索，correlation_id 全链路串联）
+  #   启用导出: agent/hub 环境 YYC3_OTLP_ENDPOINT=http://otel-collector:4318
+  #            并 pip install opentelemetry-sdk opentelemetry-exporter-otlp
+  # ==========================================================================
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.111.0
+    container_name: yyc3-otel-collector
+    hostname: otel-collector
+    profiles: ["observability"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - yyc3-agent-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/healthcheck",
+          "--http",
+          "--endpoint",
+          "http://localhost:13133/",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: yyc3-jaeger
+    hostname: jaeger
+    profiles: ["observability"]
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14250:14250"
+    volumes:
+      - yyc3-jaeger-data:/badger
+    networks:
+      - yyc3-agent-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
 
   # ==========================================================================
   # 语枢·万物 (思考者) — 数据分析与统计建模 | 端口 25602
