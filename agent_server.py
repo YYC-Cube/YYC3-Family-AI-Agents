@@ -93,8 +93,8 @@ def _governance_report(action, details, correlation_id=""):
                       headers=_gov_headers(),
                       json={"agent": AGENT_NAME, "action": action,
                             "details": details, "correlation_id": correlation_id}, timeout=2)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"[{correlation_id}] governance report '{action}' failed: {e}")
 
 def _governance_token(prompt_tokens, completion_tokens, latency_ms, model, correlation_id=""):
     try:
@@ -103,8 +103,8 @@ def _governance_token(prompt_tokens, completion_tokens, latency_ms, model, corre
                       json={"agent": AGENT_NAME, "prompt_tokens": prompt_tokens,
                             "completion_tokens": completion_tokens,
                             "latency_ms": latency_ms, "model": model}, timeout=2)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"[{correlation_id}] governance token report failed: {e}")
 
 def _check_frozen():
     try:
@@ -112,8 +112,8 @@ def _check_frozen():
         for a in r.json():
             if a["agent"] == AGENT_NAME and a["state"] == "frozen":
                 return True, a.get("frozen_reason", "Unknown")
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"governance frozen-check failed (treated as active): {e}")
     return False, ""
 
 def _inject_context(user_message, correlation_id=""):
@@ -127,8 +127,8 @@ def _inject_context(user_message, correlation_id=""):
             entities = data.get("injected_entities", [])
             ctx_str = "\n".join(f"  - {e['type']}/{e['id']}" for e in entities[:5])
             return f"\n\n## 动态上下文注入\n以下实体与当前任务相关:\n{ctx_str}"
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"[{correlation_id}] context injection failed (skipped): {e}")
     return ""
 
 def _check_collaboration(user_message, confidence=1.0, complexity=0.5, risk="low", correlation_id=""):
@@ -140,7 +140,8 @@ def _check_collaboration(user_message, confidence=1.0, complexity=0.5, risk="low
                                 "task_description": user_message,
                                 "correlation_id": correlation_id}, timeout=3)
         return r.json()
-    except Exception:
+    except Exception as e:
+        logger.debug(f"[{correlation_id}] collaboration check failed (no collab): {e}")
         return {"should_collaborate": False}
 
 def call_vllm(messages, temperature=0.7, max_tokens=4096):

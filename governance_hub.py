@@ -33,6 +33,18 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelna
 logger = logging.getLogger("yyc3.governance")
 
 DB_PATH = os.environ.get("GOVERNANCE_DB", "/data/governance.db")
+
+
+def connect_db() -> sqlite3.Connection:
+    """P1-3 SQLite 并发加固统一入口：WAL 读写不互斥 + busy_timeout 防锁冲突。
+    连接生命周期遵循「谁创建谁关闭」，不跨请求复用（Flask 多线程下天然隔离）。"""
+    conn = sqlite3.connect(DB_PATH, timeout=10, check_same_thread=False)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=10000")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    return conn
+
+
 AGENTS = ["tianshu", "qianxing", "wanwu", "xianzhi", "bole", "shouhu", "zongshi", "lingyun"]
 
 # P0-1 身份归一：生产容器以全名（AGENT_NAME）上报，hub 内部统一短名存储。
@@ -106,7 +118,7 @@ class CollaborationRule:
 
 def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    conn = connect_db()
     c = conn.cursor()
     c.executescript("""
         CREATE TABLE IF NOT EXISTS behavior_events (
@@ -218,7 +230,7 @@ class BehaviorAuditor:
         event = BehaviorEvent(agent=agent, action=action, details=details,
                               risk=risk.value, correlation_id=correlation_id or ts)
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         conn.execute(
             "INSERT INTO behavior_events (agent, action, details, risk, correlation_id, timestamp) VALUES (?,?,?,?,?,?)",
             (agent, action, json.dumps(details, ensure_ascii=False), risk.value, event.correlation_id, ts)
@@ -272,7 +284,7 @@ class BehaviorAuditor:
 
     def _auto_freeze(self, agent: str, reason: str):
         logger.critical(f"AUTO-FREEZE: {agent} — {reason}")
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         conn.execute(
             "UPDATE agent_state SET state='frozen', frozen_reason=?, frozen_at=?, updated_at=? WHERE agent=?",
             (reason, datetime.now(timezone.utc).isoformat(),
@@ -285,7 +297,7 @@ class BehaviorAuditor:
         """一键冻结 Agent (kill switch)"""
         targets = [agent] if agent != "ALL" else AGENTS
         results = {}
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         for a in targets:
             conn.execute(
                 "UPDATE agent_state SET state='frozen', frozen_reason=?, frozen_at=?, updated_at=? WHERE agent=?",
@@ -299,7 +311,7 @@ class BehaviorAuditor:
         return {"killed": results, "reason": reason}
 
     def unfreeze(self, agent: str) -> Dict:
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         conn.execute(
             "UPDATE agent_state SET state='active', frozen_reason=NULL, frozen_at=NULL, updated_at=? WHERE agent=?",
             (datetime.now(timezone.utc).isoformat(), agent)
@@ -310,7 +322,7 @@ class BehaviorAuditor:
         return {"agent": agent, "state": "active"}
 
     def get_audit_trail(self, agent: Optional[str] = None, limit: int = 100) -> List[Dict]:
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         if agent:
             rows = conn.execute(
                 "SELECT * FROM behavior_events WHERE agent=? ORDER BY id DESC LIMIT ?",
@@ -395,7 +407,7 @@ class TokenBudgetManager:
         cost = (total / 1_000_000) * COST_PER_MILLION_TOKENS
         budget.cost_today += cost
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         conn.execute(
             "INSERT INTO token_usage (agent, prompt_tokens, completion_tokens, total_tokens, latency_ms, model, cost_estimate, timestamp) VALUES (?,?,?,?,?,?,?,?)",
             (agent, prompt_tokens, completion_tokens, total, latency_ms, model, cost,
@@ -475,7 +487,7 @@ class TokenBudgetManager:
 
     def get_usage_history(self, agent: Optional[str] = None, hours: int = 24) -> List[Dict]:
         since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         if agent:
             rows = conn.execute(
                 "SELECT agent, total_tokens, latency_ms, cost_estimate, timestamp FROM token_usage WHERE agent=? AND timestamp>? ORDER BY id DESC",
@@ -560,7 +572,7 @@ class CollaborationEngine:
             "risk": risk,
         }
         if triggered:
-            conn = sqlite3.connect(DB_PATH)
+            conn = connect_db()
             for t in triggered:
                 conn.execute(
                     "INSERT INTO collaboration_log (primary_agent, support_agent, trigger_reason, task_description, confidence, complexity, risk, timestamp) VALUES (?,?,?,?,?,?,?,?)",
@@ -646,7 +658,7 @@ class ContextGraph:
 
     def add_entity(self, entity_type: str, entity_id: str, attributes: Optional[Dict] = None) -> Dict:
         ts = datetime.now(timezone.utc).isoformat()
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         conn.execute(
             "INSERT OR REPLACE INTO context_entities (entity_type, entity_id, attributes, created_at, updated_at) VALUES (?,?,?,?,?)",
             (entity_type, entity_id, json.dumps(attributes or {}, ensure_ascii=False), ts, ts)
@@ -657,7 +669,7 @@ class ContextGraph:
 
     def add_relation(self, src_type: str, src_id: str, tgt_type: str, tgt_id: str,
                      relation: str, weight: float = 1.0, attributes: Optional[Dict] = None) -> Dict:
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         conn.execute(
             "INSERT OR REPLACE INTO context_relations (source_type, source_id, target_type, target_id, relation_type, weight, attributes) VALUES (?,?,?,?,?,?,?)",
             (src_type, src_id, tgt_type, tgt_id, relation, weight,
@@ -668,7 +680,7 @@ class ContextGraph:
         return {"status": "ok", "relation": f"{src_type}/{src_id} --[{relation}]--> {tgt_type}/{tgt_id}"}
 
     def query_neighbors(self, entity_type: str, entity_id: str, depth: int = 1) -> Dict:
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         rows = conn.execute(
             "SELECT target_type, target_id, relation_type, weight FROM context_relations WHERE source_type=? AND source_id=?",
             (entity_type, entity_id)
@@ -681,7 +693,7 @@ class ContextGraph:
         """为 Agent 注入动态上下文 (替代简单RAG)"""
         entities = task.lower().split()
         relevant = []
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         for keyword in entities:
             if len(keyword) < 2:
                 continue
@@ -695,7 +707,7 @@ class ContextGraph:
         return {"agent": agent, "injected_entities": relevant[:10], "count": len(relevant)}
 
     def stats(self) -> Dict:
-        conn = sqlite3.connect(DB_PATH)
+        conn = connect_db()
         entity_count = conn.execute("SELECT COUNT(*) FROM context_entities").fetchone()[0]
         relation_count = conn.execute("SELECT COUNT(*) FROM context_relations").fetchone()[0]
         conn.close()
@@ -780,7 +792,7 @@ def unfreeze():
 
 @app.route("/agent-states", methods=["GET"])
 def agent_states():
-    conn = sqlite3.connect(DB_PATH)
+    conn = connect_db()
     rows = conn.execute("SELECT * FROM agent_state").fetchall()
     conn.close()
     cols = ["agent", "state", "frozen_reason", "frozen_at", "updated_at"]
@@ -1074,7 +1086,7 @@ def agent_profile(agent_id):
 
 @app.route("/dashboard", methods=["GET"])
 def full_dashboard():
-    conn = sqlite3.connect(DB_PATH)
+    conn = connect_db()
     states = {r[0]: {"state": r[1], "frozen_reason": r[2]} for r in conn.execute("SELECT agent, state, frozen_reason FROM agent_state").fetchall()}
     event_count = conn.execute("SELECT COUNT(*) FROM behavior_events").fetchone()[0]
     high_risk_24h = conn.execute(

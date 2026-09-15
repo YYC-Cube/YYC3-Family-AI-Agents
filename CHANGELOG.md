@@ -16,11 +16,12 @@
 - `docker-compose.yml` 注入 `GOVERNANCE_API_KEY` / `AGENT_API_KEY`（`${VAR:?}` 缺失即启动报错，fail-fast）；`.env.example` 同步模板与说明
 - **P0-3 预算窗口惰性重置**：`TokenBudgetManager._ensure_windows()` 基于窗口键（日 `YYYY-MM-DD` / ISO 周 `YYYY-Www` / 月 `YYYY-MM`，UTC 对齐）检测跨窗自动清零计数器——`record_usage` 与 `_check_budget` 双入口挂载，冷启动（空键）不误清；修复原 `last_reset_*` 死字段导致日界永不重置、周/月窗口无任何重置机制的缺陷，零外部定时器依赖
 - **P1-2 correlation_id 贯穿**：`/chat` 生成 UUID（支持调用方传入 `correlation_id` 复用）贯穿一次对话全部治理上报（chat_request/context_inject/budget_record/chat_response/collaboration_check/frozen_block），并随响应体返回调用方
+- **P1-3 SQLite 并发加固**：`connect_db()` 统一连接工厂——WAL 日志模式（读写不互斥）+ `busy_timeout=10000`（防锁冲突）+ `synchronous=NORMAL`（性能/持久平衡），替换全部 16 处裸连接
+- **P2-1 UAT 人设一致性测试**：`tests/uat/test_persona_consistency.py` 82 例静态人设契约——8 位家人 × (三件套存在性/名号跨文件一致/角色/座右铭三源对齐/端口热线注册/五维职能+约束+誓言章节/MBTI/旧称禁入/与 hub 注册表对齐)；LLM 问答抽检属部署后验收范畴
 
 ### Changed
-
-- 测试矩阵 47 → 57：P0-3 新增 7 例预算窗口重置契约（键格式含 ISO 周一换界/惰性日重置/周月重置/冷启动不误清/同日 noop/人工重置盖键/只读入口触发重置）；P1-2 新增 3 例 correlation_id 贯穿契约（UUID 生成返回/调用方自定义 ID/上报签名透传）
-- `/budget/reset-daily` 人工端点清零后同步盖当前日窗口键，与惰性机制状态一致
+- 测试矩阵 47 → 142：P0-3 +7（窗口）、P1-2 +3（贯穿）、P1-3 +3（WAL/并发写/工厂统一）、P2-1 +82（人设契约）
+- Agent 5 个治理上报函数异常处理由静默 `pass` 改为 `logger.debug`（含 correlation_id 上下文），治理中枢故障可观测且不阻塞对话
 
 ### Fixed
 

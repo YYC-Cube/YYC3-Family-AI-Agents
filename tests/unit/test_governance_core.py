@@ -160,6 +160,48 @@ class TestBudgetWindowReset:
         assert status["daily"]["used"] == 0
 
 
+class TestSQLiteHardening:
+    """P1-3 SQLite 并发加固契约：connect_db 统一入口 WAL + busy_timeout，init_db 幂等"""
+
+    def test_connect_db_enables_wal(self, gov_db):
+        conn = gov_db.connect_db()
+        mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
+        busy = conn.execute("PRAGMA busy_timeout").fetchone()[0]
+        conn.close()
+        assert mode == "wal"
+        assert busy == 10000
+
+    def test_concurrent_writes_no_lock_error(self, gov_db):
+        # WAL 模式下并发写不应抛 database is locked
+        import threading
+        errors = []
+
+        def write(i):
+            try:
+                conn = gov_db.connect_db()
+                conn.execute(
+                    "INSERT INTO behavior_events (agent, action, details, risk, correlation_id, timestamp) VALUES (?,?,?,?,?,?)",
+                    ("tianshu", "concurrent_test", "{}", "low", f"c-{i}", "2026-01-01T00:00:00+00:00"))
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                errors.append(e)
+
+        threads = [threading.Thread(target=write, args=(i,)) for i in range(8)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        assert not errors, f"并发写失败: {errors}"
+
+    def test_all_connections_via_factory(self, gov_db):
+        # 生产代码统一走 connect_db 工厂：sqlite3.connect 仅允许出现在工厂定义内
+        import inspect
+        import governance_hub
+        src = inspect.getsource(governance_hub)
+        assert src.count("sqlite3.connect(DB_PATH") == 1  # 仅工厂内一处
+
+
 class TestCollaboration:
     def test_low_risk_no_trigger(self, collab):
         result = collab.should_collaborate("tianshu", confidence=0.95, complexity=0.1, risk="low")
