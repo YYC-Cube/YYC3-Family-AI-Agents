@@ -13,7 +13,6 @@ v1.0.0 | 2026-07-28
 部署: 作为独立服务运行 (Port 25700) 或嵌入 agent_server.py
 """
 
-import hashlib
 import json
 import logging
 import os
@@ -21,7 +20,7 @@ import sqlite3
 import threading
 import time
 from collections import defaultdict, deque
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
@@ -210,7 +209,7 @@ class BehaviorAuditor:
         self._action_counts: Dict[str, List[Tuple[float, str]]] = defaultdict(list)
         self._lock = threading.Lock()
 
-    def record(self, agent: str, action: str, details: Dict[str, Any] = None,
+    def record(self, agent: str, action: str, details: Optional[Dict[str, Any]] = None,
                correlation_id: str = "") -> Dict[str, Any]:
         details = details or {}
         risk = self._assess_risk(action, details)
@@ -309,7 +308,7 @@ class BehaviorAuditor:
         logger.info(f"UNFREEZE: {agent} restored to active")
         return {"agent": agent, "state": "active"}
 
-    def get_audit_trail(self, agent: str = None, limit: int = 100) -> List[Dict]:
+    def get_audit_trail(self, agent: Optional[str] = None, limit: int = 100) -> List[Dict]:
         conn = sqlite3.connect(DB_PATH)
         if agent:
             rows = conn.execute(
@@ -415,7 +414,7 @@ class TokenBudgetManager:
             b.cost_today = 0.0
         logger.info("Daily token budgets reset")
 
-    def get_usage_history(self, agent: str = None, hours: int = 24) -> List[Dict]:
+    def get_usage_history(self, agent: Optional[str] = None, hours: int = 24) -> List[Dict]:
         since = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
         conn = sqlite3.connect(DB_PATH)
         if agent:
@@ -586,7 +585,7 @@ acs_mapper = ACSPolicyMapper()
 class ContextGraph:
     """动态上下文图谱 — 实体/关系/权限的实时存储与注入"""
 
-    def add_entity(self, entity_type: str, entity_id: str, attributes: Dict = None) -> Dict:
+    def add_entity(self, entity_type: str, entity_id: str, attributes: Optional[Dict] = None) -> Dict:
         ts = datetime.now(timezone.utc).isoformat()
         conn = sqlite3.connect(DB_PATH)
         conn.execute(
@@ -598,7 +597,7 @@ class ContextGraph:
         return {"status": "ok", "entity": f"{entity_type}/{entity_id}"}
 
     def add_relation(self, src_type: str, src_id: str, tgt_type: str, tgt_id: str,
-                     relation: str, weight: float = 1.0, attributes: Dict = None) -> Dict:
+                     relation: str, weight: float = 1.0, attributes: Optional[Dict] = None) -> Dict:
         conn = sqlite3.connect(DB_PATH)
         conn.execute(
             "INSERT OR REPLACE INTO context_relations (source_type, source_id, target_type, target_id, relation_type, weight, attributes) VALUES (?,?,?,?,?,?,?)",
@@ -763,8 +762,10 @@ def ctx_add_relation():
 
 @app.route("/context/query", methods=["GET"])
 def ctx_query():
-    etype = request.args.get("type")
-    eid = request.args.get("id")
+    etype = request.args.get("type", "")
+    eid = request.args.get("id", "")
+    if not etype or not eid:
+        return jsonify({"status": "error", "detail": "type and id are required"}), 400
     return jsonify(context_graph.query_neighbors(etype, eid))
 
 @app.route("/context/inject", methods=["POST"])
@@ -779,23 +780,25 @@ def ctx_stats():
 # --- P0-3: 记忆路由 + 多成员Profile ---
 
 _chroma_client = None
+_profile_router_instance = None
 
 def get_chroma():
     global _chroma_client
     if _chroma_client is None:
-        import chromadb
+        import chromadb  # type: ignore[import-not-found]  # 可选依赖：记忆服务部署时才存在
         _chroma_client = chromadb.HttpClient(host='127.0.0.1', port=19500)
     return _chroma_client
 
 def get_profile_router():
+    global _profile_router_instance
     import sys
     mem_path = os.path.expanduser("~/.nemoclaw/memory")
     if mem_path not in sys.path:
         sys.path.insert(0, mem_path)
-    from profile_router import ProfileRouter
-    if not hasattr(get_profile_router, '_router'):
-        get_profile_router._router = ProfileRouter()
-    return get_profile_router._router
+    from profile_router import ProfileRouter  # type: ignore[import-not-found]  # 外部 ~/.nemoclaw 动态路径
+    if _profile_router_instance is None:
+        _profile_router_instance = ProfileRouter()
+    return _profile_router_instance
 
 @app.route("/memory/recall", methods=["GET"])
 def memory_recall():
@@ -911,7 +914,7 @@ def agents_list():
         _agent_path = os.path.expanduser("~/.nemoclaw/agents")
         if _agent_path not in _sys.path:
             _sys.path.insert(0, _agent_path)
-        from agent_registry import AGENTS
+        from agent_registry import AGENTS  # type: ignore[import-not-found]  # 外部 ~/.nemoclaw 动态路径
         result = []
         for aid, a in AGENTS.items():
             result.append({
@@ -931,8 +934,8 @@ def agent_soul(agent_id):
         _agent_path = os.path.expanduser("~/.nemoclaw/agents")
         if _agent_path not in _sys.path:
             _sys.path.insert(0, _agent_path)
-        from soul_prompts import build_soul_prompt, build_compact_prompt
-        from agent_registry import AGENTS
+        from soul_prompts import build_soul_prompt, build_compact_prompt  # type: ignore[import-not-found]  # 外部 ~/.nemoclaw 动态路径
+        from agent_registry import AGENTS  # type: ignore[import-not-found]
         if agent_id not in AGENTS:
             return jsonify({"status": "error", "detail": f"Unknown agent: {agent_id}"}), 404
         full = request.args.get("format", "full") == "full"
@@ -958,7 +961,7 @@ def agent_profile(agent_id):
         _agent_path = os.path.expanduser("~/.nemoclaw/agents")
         if _agent_path not in _sys.path:
             _sys.path.insert(0, _agent_path)
-        from agent_registry import AGENTS, FAMILY_CREED, FAMILY_MISSION, COLLABORATION_MATRIX
+        from agent_registry import AGENTS, FAMILY_CREED, COLLABORATION_MATRIX  # type: ignore[import-not-found]  # 外部动态路径
         if agent_id not in AGENTS:
             return jsonify({"status": "error", "detail": f"Unknown agent: {agent_id}"}), 404
         a = AGENTS[agent_id]
@@ -996,7 +999,7 @@ def full_dashboard():
 
     memory_info = {"available": False}
     try:
-        import chromadb as _cdb
+        import chromadb as _cdb  # type: ignore[import-not-found]  # 可选依赖
         _cc = _cdb.HttpClient(host="127.0.0.1", port=19500)
         _cols = _cc.list_collections()
         memory_info = {"available": True, "collections": len(_cols)}
