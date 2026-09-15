@@ -1,0 +1,5 @@
+# YYC3 Family-AI Agents 测试依赖（CI 与本地全量门禁）
+-r requirements.txt
+
+# 测试框架
+pytest>=8.0,<9

@@ -6,3 +6,6 @@ openai>=1.0,<2
 
 # 按角色启用（对应 compose 中 thinker/prophet 服务的扩展安装）：
 #   pandas numpy scipy
+
+# 可观测（可选，P3-2）：设置 YYC3_OTLP_ENDPOINT 后启用 OTLP span 导出
+#   opentelemetry-sdk opentelemetry-exporter-otlp-proto-http

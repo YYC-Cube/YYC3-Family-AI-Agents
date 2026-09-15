@@ -33,6 +33,27 @@ jobs:
       - name: 安装运行时依赖
         run: pip install -r requirements.txt
 
+  unit-tests:
+    name: 测试全量门禁 (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安装测试依赖
+        run: pip install -r requirements-dev.txt
+      - name: pytest 全量（单元/集成/UAT 静态契约；LLM 实答自动门控 skip）
+        run: python -m pytest tests/ -q --tb=short
+      - name: 上传测试报告（失败时）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-output
+          path: |
+            tests/
+          retention-days: 7
+
   docs-links:
     name: 文档完整性
     runs-on: ubuntu-latest

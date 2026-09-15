@@ -23,6 +23,7 @@
 - **P2-4 LLM 实答 UAT**：`tests/uat/test_llm_persona.py` 8 例身份抽检——环境门控（`YYC3_UAT_LLM=1` + vLLM 可达方执行，默认 skip），断言回答命中名号关键词防人设漂移
 - **P3-1 生产全链路验收脚本**：`deploy/acceptance.sh`——7 组验收（基础健康/模板下发/可观测/零信任认证/correlation_id 端到端/LLM 实答 UAT/Jaeger span 导出），生产服务器一条命令验收，退出码=失败数；本机已用裸进程拉起 hub+agent 完成核心端点冒烟
 - **P3-2 可观测栈接入**：telemetry 支持 `YYC3_OTLP_ENDPOINT` OTLP/HTTP span 导出（服务名 `yyc3.family-ai`）；compose 新增 `observability` profile——`otel-collector`（4317/4318）+ `jaeger` all-in-one（UI 16686），按需启动不增加常驻资源
+- **P3-3 CI 测试门禁**：新增 `unit-tests` job——安装 `requirements-dev.txt` 后 `pytest tests/ -q` 全量门禁（单元/集成/UAT 静态契约，LLM 实答自动门控 skip），失败时上传测试产物；新增 `requirements-dev.txt` 依赖清单
 
 ### Changed
 
