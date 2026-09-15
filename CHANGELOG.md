@@ -18,9 +18,13 @@
 - **P1-2 correlation_id 贯穿**：`/chat` 生成 UUID（支持调用方传入 `correlation_id` 复用）贯穿一次对话全部治理上报（chat_request/context_inject/budget_record/chat_response/collaboration_check/frozen_block），并随响应体返回调用方
 - **P1-3 SQLite 并发加固**：`connect_db()` 统一连接工厂——WAL 日志模式（读写不互斥）+ `busy_timeout=10000`（防锁冲突）+ `synchronous=NORMAL`（性能/持久平衡），替换全部 16 处裸连接
 - **P2-1 UAT 人设一致性测试**：`tests/uat/test_persona_consistency.py` 82 例静态人设契约——8 位家人 × (三件套存在性/名号跨文件一致/角色/座右铭三源对齐/端口热线注册/五维职能+约束+誓言章节/MBTI/旧称禁入/与 hub 注册表对齐)；LLM 问答抽检属部署后验收范畴
+- **P2-2 模板版本化下发**：hub `/prompts/<agent>`（三件套清单含 sha256/size/mtime）+ `/prompts/<agent>/<file>`（text/json 双格式）——复用 `AGENT_ALIAS_MAP` 归一（全名/短名同源），`PROMPTS_SOURCE_DIR` 环境变量适配容器挂载
+- **P2-3 telemetry 可观测门面**：新增 `telemetry.py`——OTel 可选依赖（安装即真 span，未安装降级结构化 JSON 日志）+ `correlation_id` 全链路贯穿 + 内存指标快照 + hub `/metrics` 只读端点；agent `/chat` 主链路接入 frozen_check/context_injection/llm_inference 三阶段 span
+- **P2-4 LLM 实答 UAT**：`tests/uat/test_llm_persona.py` 8 例身份抽检——环境门控（`YYC3_UAT_LLM=1` + vLLM 可达方执行，默认 skip），断言回答命中名号关键词防人设漂移
 
 ### Changed
-- 测试矩阵 47 → 142：P0-3 +7（窗口）、P1-2 +3（贯穿）、P1-3 +3（WAL/并发写/工厂统一）、P2-1 +82（人设契约）
+
+- 测试矩阵 47 → 154 passed + 8 skipped：P0-3 +7（窗口）、P1-2 +3（贯穿）、P1-3 +3（WAL/并发写/工厂统一）、P2-1 +82（人设契约）、P2-2 +6（模板下发）、P2-3 +8（telemetry/接线）、P2-4 +8（门控 skip）
 - Agent 5 个治理上报函数异常处理由静默 `pass` 改为 `logger.debug`（含 correlation_id 上下文），治理中枢故障可观测且不阻塞对话
 
 ### Fixed

@@ -1125,6 +1125,78 @@ def full_dashboard():
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
 
+# ── P2-2: /prompts/* 模板版本化下发 ─────────────────────────────────────────
+# 容器内优先 PROMPTS_SOURCE_DIR（挂载 agents/ 仓库目录），本地默认仓库根 agents/
+PROMPTS_SOURCE_DIR = os.environ.get("PROMPTS_SOURCE_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "agents"))
+PROMPT_FILES = ("IDENTITY.md", "SOUL.md", "SYSTEM.md")
+
+
+def _agent_prompt_dir(short_agent: str) -> Optional[str]:
+    """短名 → agents/<compose 目录名>（复用 ALIAS_MAP 反查，保持单一事实源）"""
+    for full, short in AGENT_ALIAS_MAP.items():
+        dirname = full.replace("_", "-")
+        candidate = os.path.join(PROMPTS_SOURCE_DIR, dirname)
+        if short == short_agent and os.path.isdir(candidate):
+            return candidate
+    # 短名本身（幂等）也尝试直查
+    dirname = short_agent
+    candidate = os.path.join(PROMPTS_SOURCE_DIR, dirname)
+    return candidate if os.path.isdir(candidate) else None
+
+
+@app.route("/prompts/<agent_id>", methods=["GET"])
+def prompts_overview(agent_id: str):
+    agent_id = normalize_agent(agent_id)
+    agent_dir = _agent_prompt_dir(agent_id)
+    if not agent_dir:
+        return jsonify({"status": "error", "detail": f"Unknown agent or prompts dir missing: {agent_id}"}), 404
+    templates = {}
+    for fname in PROMPT_FILES:
+        path = os.path.join(agent_dir, fname)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            templates[fname] = {
+                "size": len(content),
+                "sha256": __import__("hashlib").sha256(content.encode("utf-8")).hexdigest(),
+                "mtime": datetime.fromtimestamp(os.path.getmtime(path), tz=timezone.utc).isoformat(),
+            }
+    return jsonify({"status": "ok", "agent": agent_id, "source_dir": agent_dir, "templates": templates})
+
+
+@app.route("/prompts/<agent_id>/<filename>", methods=["GET"])
+def prompts_get(agent_id: str, filename: str):
+    agent_id = normalize_agent(agent_id)
+    if filename not in PROMPT_FILES:
+        return jsonify({"status": "error", "detail": f"Unknown template: {filename}"}), 404
+    agent_dir = _agent_prompt_dir(agent_id)
+    path = os.path.join(agent_dir, filename) if agent_dir else None
+    if not path or not os.path.exists(path):
+        return jsonify({"status": "error", "detail": f"Template not found: {agent_id}/{filename}"}), 404
+    fmt = request.args.get("format", "text")
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    if fmt == "json":
+        return jsonify({
+            "status": "ok", "agent": agent_id, "template": filename,
+            "content": content,
+            "sha256": __import__("hashlib").sha256(content.encode("utf-8")).hexdigest(),
+        })
+    return app.response_class(content, mimetype="text/markdown; charset=utf-8")
+
+
+@app.route("/metrics", methods=["GET"])
+def metrics_snapshot():
+    """P2-3 telemetry 内存指标快照（读路径豁免认证）"""
+    try:
+        import telemetry as _tel
+        return jsonify({"status": "ok", **_tel.get_metrics(),
+                        "timestamp": datetime.now(timezone.utc).isoformat()})
+    except Exception as e:
+        return jsonify({"status": "ok", "counters": {}, "otel": False,
+                        "detail": f"telemetry unavailable: {e}"})
+
+
 if __name__ == "__main__":
     init_db()
     port = int(os.environ.get("GOVERNANCE_PORT", "25700"))

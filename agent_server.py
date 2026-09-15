@@ -25,6 +25,8 @@ from datetime import datetime, timezone
 import requests
 from flask import Flask, jsonify, request
 
+import telemetry
+
 app = Flask(__name__)
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"),
@@ -199,8 +201,14 @@ def chat():
     # P1-2 correlation_id 贯穿：一次对话的全部治理上报（审计/预算/上下文/协同）共享同一 UUID
     correlation_id = data.get("correlation_id") or str(uuid.uuid4())
 
-    frozen, reason = _check_frozen()
+    # P2-3 telemetry：对话主链路全阶段追踪（OTel 可选，降级为结构化日志）
+    telemetry.record_event("chat_request", correlation_id, agent=AGENT_NAME,
+                           message_len=len(user_message), risk=risk)
+
+    with telemetry.trace_span("frozen_check", correlation_id, agent=AGENT_NAME):
+        frozen, reason = _check_frozen()
     if frozen:
+        telemetry.record_event("frozen_block", correlation_id, level="warning", agent=AGENT_NAME)
         _governance_report("frozen_block", {"reason": reason, "message": user_message[:100]},
                            correlation_id=correlation_id)
         return jsonify({"error": "Agent is frozen", "reason": reason, "agent": AGENT_NAME}), 403
@@ -208,18 +216,20 @@ def chat():
     _governance_report("chat_request", {"message_len": len(user_message), "risk": risk},
                        correlation_id=correlation_id)
 
-    system_prompt = load_system_prompt()
-    context_injection = _inject_context(user_message, correlation_id=correlation_id)
-    if context_injection:
-        system_prompt += context_injection
+    with telemetry.trace_span("context_injection", correlation_id, agent=AGENT_NAME):
+        system_prompt = load_system_prompt()
+        context_injection = _inject_context(user_message, correlation_id=correlation_id)
+        if context_injection:
+            system_prompt += context_injection
 
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(history)
     messages.append({"role": "user", "content": user_message})
 
-    start = time.time()
-    response, usage = call_vllm(messages, temperature=temperature, max_tokens=max_tokens)
-    latency = round((time.time() - start) * 1000, 1)
+    with telemetry.trace_span("llm_inference", correlation_id, agent=AGENT_NAME, model=VLLM_MODEL):
+        start = time.time()
+        response, usage = call_vllm(messages, temperature=temperature, max_tokens=max_tokens)
+        latency = round((time.time() - start) * 1000, 1)
 
     prompt_tokens = usage.get("prompt_tokens", 0)
     completion_tokens = usage.get("completion_tokens", 0)
@@ -233,6 +243,10 @@ def chat():
     confidence = 0.85
     collab = _check_collaboration(user_message, confidence, complexity, risk,
                                   correlation_id=correlation_id)
+
+    telemetry.record_event("chat_response", correlation_id, agent=AGENT_NAME,
+                           latency_ms=latency,
+                           tokens=prompt_tokens + completion_tokens)
 
     return jsonify({
         "agent": AGENT_NAME, "label": AGENT_LABEL, "role": AGENT_ROLE,
