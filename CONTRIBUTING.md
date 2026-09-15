@@ -97,7 +97,9 @@ docs/
 | ---- | ---- | ---- |
 | Python 语法 | `python3 -m py_compile agent_server.py governance_hub.py` | 0 error |
 | 依赖安装 | `pip install -r requirements.txt` | 无冲突 |
+| 单元/集成测试 | `.venv/bin/python -m pytest tests/ -q` | 全绿（含 11 例零信任认证契约） |
 | 服务冒烟 | `python3 agent_server.py` 后 `curl :25600/health` | 200 |
+| 认证冒烟（P0-2） | 未带 Key `curl -X POST :25600/chat` | 401（配置 `AGENT_API_KEY` 后）；带 `X-API-Key` 头放行 |
 | 文档链接 | 检查本次改动 md 内相对链接可达 | 无死链 |
 | 敏感信息 | 不硬编码密钥/Token，`.env` 不入库 | git status 干净 |
 

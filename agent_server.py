@@ -13,6 +13,7 @@ YYC³ FAmily-AI Agent Server v3.1 — 集成治理中枢
 """
 
 import argparse
+import hmac
 import json
 import logging
 import os
@@ -36,9 +37,12 @@ VLLM_ENDPOINT = os.environ.get("VLLM_ENDPOINT", "http://host.docker.internal:800
 VLLM_MODEL = os.environ.get("VLLM_MODEL", "Qwen/Qwen3.6-27B-FP8")
 SYSTEM_PROMPT_PATH = os.environ.get("SYSTEM_PROMPT_PATH", "/workspace/SYSTEM.md")
 GOVERNANCE_ENDPOINT = os.environ.get("GOVERNANCE_ENDPOINT", "http://localhost:25700")
+GOVERNANCE_API_KEY = os.environ.get("GOVERNANCE_API_KEY", "")
+AGENT_API_KEY = os.environ.get("AGENT_API_KEY", "")  # 空则 /chat 开放（本地开发）；生产必须配置
 START_TIME = datetime.now(timezone.utc)
 
 _system_prompt_cache = None
+
 
 def load_system_prompt():
     global _system_prompt_cache
@@ -51,9 +55,41 @@ def load_system_prompt():
         _system_prompt_cache = f"你是{AGENT_LABEL}，YYC³ FAmily-AI 的成员。"
     return _system_prompt_cache
 
+
+def _gov_headers():
+    """治理上报携带共享 Key（hub 开放模式时空头亦可）"""
+    h = {"Content-Type": "application/json"}
+    if GOVERNANCE_API_KEY:
+        h["X-API-Key"] = GOVERNANCE_API_KEY
+    return h
+
+
+WRITE_METHODS = {"POST", "PUT", "DELETE", "PATCH"}
+
+
+def _constant_time_eq(a: str, b: str) -> bool:
+    return hmac.compare_digest(a.encode("utf-8"), b.encode("utf-8"))
+
+
+@app.before_request
+def zero_trust_auth():
+    """零信任写保护：写操作须持有效 X-API-Key；读操作与未配置 Key（本地开放模式）豁免"""
+    if not AGENT_API_KEY:
+        return None
+    if request.method not in WRITE_METHODS:
+        return None
+    provided = request.headers.get("X-API-Key", "")
+    if not provided or not _constant_time_eq(provided, AGENT_API_KEY):
+        logger.warning(f"AUTH-DENIED: {request.method} {request.path} from {request.remote_addr}")
+        return jsonify({"status": "error", "error": "unauthorized",
+                        "detail": "Missing or invalid X-API-Key header"}), 401
+    return None
+
+
 def _governance_report(action, details):
     try:
         requests.post(f"{GOVERNANCE_ENDPOINT}/audit/record",
+                      headers=_gov_headers(),
                       json={"agent": AGENT_NAME, "action": action,
                             "details": details, "correlation_id": ""}, timeout=2)
     except Exception:
@@ -62,6 +98,7 @@ def _governance_report(action, details):
 def _governance_token(prompt_tokens, completion_tokens, latency_ms, model):
     try:
         requests.post(f"{GOVERNANCE_ENDPOINT}/budget/record",
+                      headers=_gov_headers(),
                       json={"agent": AGENT_NAME, "prompt_tokens": prompt_tokens,
                             "completion_tokens": completion_tokens,
                             "latency_ms": latency_ms, "model": model}, timeout=2)
@@ -81,6 +118,7 @@ def _check_frozen():
 def _inject_context(user_message):
     try:
         r = requests.post(f"{GOVERNANCE_ENDPOINT}/context/inject",
+                          headers=_gov_headers(),
                           json={"agent": AGENT_NAME, "task": user_message}, timeout=3)
         data = r.json()
         if data.get("count", 0) > 0:
@@ -94,6 +132,7 @@ def _inject_context(user_message):
 def _check_collaboration(user_message, confidence=1.0, complexity=0.5, risk="low"):
     try:
         r = requests.post(f"{GOVERNANCE_ENDPOINT}/collaboration/check",
+                          headers=_gov_headers(),
                           json={"primary_agent": AGENT_NAME, "confidence": confidence,
                                 "complexity": complexity, "risk": risk,
                                 "task_description": user_message}, timeout=3)

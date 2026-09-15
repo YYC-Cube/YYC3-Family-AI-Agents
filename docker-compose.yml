@@ -22,7 +22,6 @@ networks:
       config:
         - subnet: 172.29.0.0/16
 
-
 volumes:
   yyc3-shared-prompts:
     driver: local
@@ -54,6 +53,8 @@ services:
     environment:
       - GOVERNANCE_DB=/data/governance.db
       - GOVERNANCE_PORT=25700
+      # P0-2 零信任认证：写操作须持 X-API-Key（未设置则开放模式，本地开发用）
+      - GOVERNANCE_API_KEY=${GOVERNANCE_API_KEY:?请在 .env 中配置 GOVERNANCE_API_KEY}
       - LOG_LEVEL=INFO
       - TZ=Asia/Shanghai
       - LANG=zh_CN.UTF-8
@@ -65,7 +66,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:25700/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:25700/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -102,6 +109,9 @@ services:
       SYSTEM_PROMPT_PATH: /prompts/main-system.md
       OPENCLAW_GATEWAY: http://host.docker.internal:18789
       GOVERNANCE_ENDPOINT: http://governance-hub:25700
+      # P0-2 零信任认证：治理上报 Key + /chat 写保护 Key（生产必须配置，缺失时 compose 启动即报错）
+      GOVERNANCE_API_KEY: ${GOVERNANCE_API_KEY:?请在 .env 中配置 GOVERNANCE_API_KEY}
+      AGENT_API_KEY: ${AGENT_API_KEY:?请在 .env 中配置 AGENT_API_KEY}
       TZ: Asia/Shanghai
       LANG: zh_CN.UTF-8
     working_dir: /workspace
@@ -113,7 +123,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6000/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6000/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -155,7 +171,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6001/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6001/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -197,7 +219,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6002/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6002/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -239,7 +267,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6003/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6003/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -281,7 +315,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6004/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6004/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -323,7 +363,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6005/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6005/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -365,7 +411,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6006/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6006/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -407,7 +459,13 @@ services:
       - yyc3-agent-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6007/health', timeout=5)"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:6007/health', timeout=5)",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -9,8 +9,16 @@
 
 ## [Unreleased]
 
+### Added
+- **P0-2 零信任端点认证**：`governance_hub.py` 与 `agent_server.py` 各自引入 `before_request` 认证中间件——写操作（POST/PUT/DELETE/PATCH）须持有效 `X-API-Key`（`hmac.compare_digest` 恒时比较）；读操作与 `/health` 豁免；未配置 Key 时保持本地开放模式
+- Agent 侧 4 个治理上报函数（审计/预算/上下文注入/协同检查）自动携带 `X-API-Key`（`_gov_headers()`）
+- `docker-compose.yml` 注入 `GOVERNANCE_API_KEY` / `AGENT_API_KEY`（`${VAR:?}` 缺失即启动报错，fail-fast）；`.env.example` 同步模板与说明
+
+### Changed
+- 测试矩阵 36 → 47：新增 11 例零信任认证契约（无 Key 401 / 错 Key 401 / 带 Key 放行 / 读豁免 / 开放模式 / 上报头传递）
+
 ### Planned
-- P0：生产端点接入零信任网关认证（复用 `examples/13-YYC3-企业蓝图-代码示例/1307-代码示例-安全合规/zero_trust_gateway.py`）
+- P0-3：Token 预算日重置自动化
 - P1：telemetry 可观测 SDK 嵌入 + 治理中枢 `/prompts/*` 模板服务
 - P2：A2A/MCP 协议栈接入与业务规则引擎场景化
 

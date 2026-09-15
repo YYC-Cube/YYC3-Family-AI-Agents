@@ -128,3 +128,81 @@ class TestGovernanceAgentNameContract:
     def test_all_short_names_registered(self):
         assert len(AGENTS) == 8
         assert set(self.FULL_TO_SHORT.values()) == set(AGENTS)
+
+
+class TestZeroTrustAuthHub:
+    """P0-2 零信任认证契约（hub 侧）：写操作须持有效 X-API-Key；读操作豁免；未配置 Key 为本地开放模式"""
+
+    KEY = "test-hub-key"
+
+    @pytest.fixture()
+    def secure_client(self, gov_client, monkeypatch):
+        import governance_hub
+        monkeypatch.setattr(governance_hub, "GOVERNANCE_API_KEY", self.KEY)
+        return gov_client
+
+    def test_write_without_key_denied(self, secure_client):
+        r = secure_client.post("/kill-switch", json={"agent": "tianshu", "reason": "drill"})
+        assert r.status_code == 401
+        body = r.get_json()
+        assert body["error"] == "unauthorized"
+
+    def test_write_with_wrong_key_denied(self, secure_client):
+        r = secure_client.post("/kill-switch", json={"agent": "tianshu", "reason": "drill"},
+                               headers={"X-API-Key": "wrong-key"})
+        assert r.status_code == 401
+
+    def test_write_with_valid_key_allowed(self, secure_client):
+        r = secure_client.post("/audit/record", json={
+            "agent": "tianshu", "action": "api_call", "details": {}},
+            headers={"X-API-Key": self.KEY})
+        assert r.status_code == 200
+
+    def test_read_operations_exempt(self, secure_client):
+        assert secure_client.get("/health").status_code == 200
+        assert secure_client.get("/agent-states").status_code == 200
+
+    def test_open_mode_when_key_unset(self, gov_client, monkeypatch):
+        import governance_hub
+        monkeypatch.setattr(governance_hub, "GOVERNANCE_API_KEY", "")
+        r = gov_client.post("/kill-switch", json={"agent": "ALL", "reason": "drill"})
+        assert r.status_code == 200
+
+
+class TestZeroTrustAuthAgent:
+    """P0-2 零信任认证契约（agent 侧）：/chat 写保护 + /health 读豁免 + 治理上报自动携带 Key"""
+
+    KEY = "test-agent-key"
+
+    @pytest.fixture()
+    def secure_agent_client(self, agent_client, monkeypatch):
+        monkeypatch.setattr(agent_server, "AGENT_API_KEY", self.KEY)
+        return agent_client
+
+    def test_chat_without_key_denied(self, secure_agent_client):
+        r = secure_agent_client.post("/chat", json={"message": "你好"})
+        assert r.status_code == 401
+        assert r.get_json()["error"] == "unauthorized"
+
+    def test_chat_with_wrong_key_denied(self, secure_agent_client):
+        r = secure_agent_client.post("/chat", json={"message": "你好"}, headers={"X-API-Key": "bad"})
+        assert r.status_code == 401
+
+    def test_chat_with_valid_key_passes_auth(self, secure_agent_client):
+        r = secure_agent_client.post("/chat", json={"message": "你好"},
+                                     headers={"X-API-Key": self.KEY})
+        assert r.status_code == 200  # 认证放行（vLLM 不可达 → 业务层 error 对象）
+
+    def test_health_read_exempt(self, secure_agent_client):
+        assert secure_agent_client.get("/health").status_code == 200
+
+    def test_open_mode_when_key_unset(self, agent_client, monkeypatch):
+        monkeypatch.setattr(agent_server, "AGENT_API_KEY", "")
+        r = agent_client.post("/chat", json={"message": "你好"})
+        assert r.status_code == 200
+
+    def test_gov_headers_carries_key(self, monkeypatch):
+        monkeypatch.setattr(agent_server, "GOVERNANCE_API_KEY", "gov-secret")
+        assert agent_server._gov_headers()["X-API-Key"] == "gov-secret"
+        monkeypatch.setattr(agent_server, "GOVERNANCE_API_KEY", "")
+        assert "X-API-Key" not in agent_server._gov_headers()

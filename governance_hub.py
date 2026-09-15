@@ -13,6 +13,7 @@ v1.0.0 | 2026-07-28
 部署: 作为独立服务运行 (Port 25700) 或嵌入 agent_server.py
 """
 
+import hmac
 import json
 import logging
 import os
@@ -643,6 +644,42 @@ class ContextGraph:
         return {"entities": entity_count, "relations": relation_count}
 
 context_graph = ContextGraph()
+
+# ════════════════════════════════════════════════════════════════════════════
+# P0-2 零信任端点认证（对齐蓝图 1209 + examples/1307 zero_trust_gateway）
+# 策略：写操作强制认证；读操作豁免（健康/仪表盘只读）；恒时比较防时序攻击
+# ════════════════════════════════════════════════════════════════════════════
+
+# 未配置 KEY 时保持开放（本地开发/测试兼容），生产部署必须配置
+GOVERNANCE_API_KEY = os.environ.get("GOVERNANCE_API_KEY", "")
+
+WRITE_METHODS = {"POST", "PUT", "DELETE", "PATCH"}
+# 只读豁免端点（健康检查、仪表盘、状态查询——监控与运维可视需要）
+READONLY_EXEMPT_PREFIXES = ("/health", "/dashboard", "/agent-states", "/context/stats")
+
+def _constant_time_eq(a: str, b: str) -> bool:
+    return hmac.compare_digest(a.encode("utf-8"), b.encode("utf-8"))
+
+@app.before_request
+def zero_trust_auth():
+    # 未配置密钥 → 开放模式（本地开发）；生产 compose/systemd 必须注入 GOVERNANCE_API_KEY
+    if not GOVERNANCE_API_KEY:
+        return None
+    if request.method not in WRITE_METHODS:
+        # 读操作默认豁免；写路径白名单外一律要求认证
+        return None
+    path = request.path
+    if any(path.startswith(p) for p in READONLY_EXEMPT_PREFIXES):
+        return None
+    provided = request.headers.get("X-API-Key", "")
+    if not provided or not _constant_time_eq(provided, GOVERNANCE_API_KEY):
+        logger.warning(f"AUTH-DENIED: {request.method} {path} from {request.remote_addr}")
+        return jsonify({
+            "status": "error",
+            "error": "unauthorized",
+            "detail": "Missing or invalid X-API-Key header",
+        }), 401
+    return None
 
 # ════════════════════════════════════════════════════════════════════════════
 # Flask API 路由
