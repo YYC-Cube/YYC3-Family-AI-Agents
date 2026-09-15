@@ -81,15 +81,50 @@ class TestGovernanceEndpoints:
 
 
 class TestGovernanceAgentNameContract:
-    """P0 缺陷回归：hub 的 AGENTS 短名必须能匹配 compose 的 AGENT_NAME 全名前缀"""
+    """P0-1 身份归一回归：生产全名（compose AGENT_NAME）上报必须命中治理
+    （审计归属短名 / 预算生效 / 冻结生效）— hub.normalize_agent 归一入口"""
 
-    def test_compose_agent_names_map_to_hub_short_names(self):
-        # compose 使用 zhiyu_bole 等 8 个全名；hub AGENTS 为短名
-        mapping = {"yuanqi_tianshu": "tianshu", "yanqi_qianhang": "qianxing",
-                   "yushu_wanwu": "wanwu", "yujian_xianzhi": "xianzhi",
-                   "zhiyu_bole": "bole", "zhiyun_shouhu": "shouhu",
-                   "gewu_zongshi": "zongshi", "chuangxiang_lingyun": "lingyun"}
-        for full, short in mapping.items():
-            assert short in AGENTS, f"hub 缺少短名 {short}"
-        # 但二者并不相等 — 该测试固化当前不一致现状，修复后应更新为全名断言
-        assert set(mapping.values()) != set(mapping.keys())
+    FULL_TO_SHORT = {
+        "yuanqi_tianshu": "tianshu", "yanqi_qianhang": "qianxing",
+        "yushu_wanwu": "wanwu", "yujian_xianzhi": "xianzhi",
+        "zhiyu_bole": "bole", "zhiyun_shouhu": "shouhu",
+        "gewu_zongshi": "zongshi", "chuangxiang_lingyun": "lingyun",
+    }
+
+    def test_normalize_map_complete(self):
+        from governance_hub import AGENT_ALIAS_MAP, normalize_agent
+        assert AGENT_ALIAS_MAP == self.FULL_TO_SHORT
+        for full, short in self.FULL_TO_SHORT.items():
+            assert normalize_agent(full) == short
+        assert normalize_agent("bole") == "bole"  # 短名幂等
+
+    def test_full_name_budget_record_hits(self, gov_client):
+        r = gov_client.post("/budget/record", json={
+            "agent": "zhiyu_bole", "prompt_tokens": 100, "completion_tokens": 50})
+        body = r.get_json()
+        assert "error" not in body
+        assert body["daily"]["used"] == 150  # 命中 bole 预算而非 Unknown agent
+
+    def test_full_name_audit_uses_short_name(self, gov_client):
+        gov_client.post("/audit/record", json={
+            "agent": "yuanqi_tianshu", "action": "api_call", "details": {}})
+        trail = gov_client.get("/audit/trail?agent=yuanqi_tianshu&limit=5").get_json()
+        assert trail and all(e["agent"] == "tianshu" for e in trail)
+
+    def test_full_name_kill_switch_then_frozen_check(self, gov_client):
+        gov_client.post("/kill-switch", json={"agent": "zhiyu_bole", "reason": "drill"})
+        states = {s["agent"]: s["state"] for s in gov_client.get("/agent-states").get_json()}
+        assert states["bole"] == "frozen"
+        gov_client.post("/unfreeze", json={"agent": "zhiyu_bole"})
+        states = {s["agent"]: s["state"] for s in gov_client.get("/agent-states").get_json()}
+        assert states["bole"] == "active"
+
+    def test_full_name_collaboration_triggers(self, gov_client):
+        body = gov_client.post("/collaboration/check", json={
+            "primary_agent": "yuanqi_tianshu", "confidence": 0.5,
+            "complexity": 0.2, "risk": "high"}).get_json()
+        assert body["should_collaborate"] is True
+
+    def test_all_short_names_registered(self):
+        assert len(AGENTS) == 8
+        assert set(self.FULL_TO_SHORT.values()) == set(AGENTS)

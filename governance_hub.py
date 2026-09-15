@@ -35,6 +35,23 @@ logger = logging.getLogger("yyc3.governance")
 DB_PATH = os.environ.get("GOVERNANCE_DB", "/data/governance.db")
 AGENTS = ["tianshu", "qianxing", "wanwu", "xianzhi", "bole", "shouhu", "zongshi", "lingyun"]
 
+# P0-1 身份归一：生产容器以全名（AGENT_NAME）上报，hub 内部统一短名存储。
+# 唯一映射源：docker-compose.yml & systemd override 的 AGENT_NAME → AGENTS 短名。
+AGENT_ALIAS_MAP = {
+    "yuanqi_tianshu": "tianshu",
+    "yanqi_qianhang": "qianxing",
+    "yushu_wanwu": "wanwu",
+    "yujian_xianzhi": "xianzhi",
+    "zhiyu_bole": "bole",
+    "zhiyun_shouhu": "shouhu",
+    "gewu_zongshi": "zongshi",
+    "chuangxiang_lingyun": "lingyun",
+}
+
+def normalize_agent(name: str) -> str:
+    """全名/短名归一为 hub 内部短名（未知名原样返回，由调用方决定策略）"""
+    return AGENT_ALIAS_MAP.get(name, name)
+
 # ════════════════════════════════════════════════════════════════════════════
 # 数据模型
 # ════════════════════════════════════════════════════════════════════════════
@@ -642,24 +659,30 @@ def health():
 @app.route("/audit/record", methods=["POST"])
 def audit_record():
     d = request.get_json(force=True)
-    result = auditor.record(d.get("agent",""), d.get("action",""), d.get("details",{}), d.get("correlation_id",""))
+    result = auditor.record(normalize_agent(d.get("agent","")), d.get("action",""),
+                            d.get("details",{}), d.get("correlation_id",""))
     return jsonify(result)
 
 @app.route("/audit/trail", methods=["GET"])
 def audit_trail():
     agent = request.args.get("agent")
     limit = int(request.args.get("limit", 100))
-    return jsonify(auditor.get_audit_trail(agent, limit))
+    return jsonify(auditor.get_audit_trail(normalize_agent(agent) if agent else None, limit))
 
 @app.route("/kill-switch", methods=["POST"])
 def kill_switch():
     d = request.get_json(force=True)
-    return jsonify(auditor.kill_switch(d.get("agent", "ALL"), d.get("reason", "Manual")))
+    agent = d.get("agent", "ALL")
+    targets = [normalize_agent(a) for a in (AGENTS if agent == "ALL" else [agent])]
+    results = {}
+    for a in targets:
+        results.update(auditor.kill_switch(a, d.get("reason", "Manual"))["killed"])
+    return jsonify({"killed": results, "reason": d.get("reason", "Manual")})
 
 @app.route("/unfreeze", methods=["POST"])
 def unfreeze():
     d = request.get_json(force=True)
-    return jsonify(auditor.unfreeze(d.get("agent", "")))
+    return jsonify(auditor.unfreeze(normalize_agent(d.get("agent", ""))))
 
 @app.route("/agent-states", methods=["GET"])
 def agent_states():
@@ -679,7 +702,7 @@ def budget_dashboard():
 def budget_record():
     d = request.get_json(force=True)
     return jsonify(budget_mgr.record_usage(
-        d.get("agent",""), d.get("prompt_tokens",0), d.get("completion_tokens",0),
+        normalize_agent(d.get("agent","")), d.get("prompt_tokens",0), d.get("completion_tokens",0),
         d.get("latency_ms",0), d.get("model","")
     ))
 
@@ -687,7 +710,7 @@ def budget_record():
 def budget_history():
     agent = request.args.get("agent")
     hours = int(request.args.get("hours", 24))
-    return jsonify(budget_mgr.get_usage_history(agent, hours))
+    return jsonify(budget_mgr.get_usage_history(normalize_agent(agent) if agent else None, hours))
 
 @app.route("/budget/reset-daily", methods=["POST"])
 def budget_reset():
@@ -700,7 +723,7 @@ def budget_reset():
 def collab_check():
     d = request.get_json(force=True)
     return jsonify(collab_engine.should_collaborate(
-        d.get("primary_agent",""), d.get("confidence",1.0), d.get("complexity",0.0),
+        normalize_agent(d.get("primary_agent","")), d.get("confidence",1.0), d.get("complexity",0.0),
         d.get("risk","low"), d.get("task_description","")
     ))
 
@@ -747,7 +770,7 @@ def ctx_query():
 @app.route("/context/inject", methods=["POST"])
 def ctx_inject():
     d = request.get_json(force=True)
-    return jsonify(context_graph.inject_context(d.get("agent",""), d.get("task","")))
+    return jsonify(context_graph.inject_context(normalize_agent(d.get("agent","")), d.get("task","")))
 
 @app.route("/context/stats", methods=["GET"])
 def ctx_stats():
@@ -776,7 +799,7 @@ def get_profile_router():
 
 @app.route("/memory/recall", methods=["GET"])
 def memory_recall():
-    agent = request.args.get("agent", "tianshu")
+    agent = normalize_agent(request.args.get("agent", "tianshu"))
     member = request.args.get("member", "default")
     query = request.args.get("query", "")
     top_k = int(request.args.get("top_k", 5))
