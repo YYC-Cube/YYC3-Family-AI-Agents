@@ -10,21 +10,26 @@
 ## [Unreleased]
 
 ### Added
+
 - **P0-2 零信任端点认证**：`governance_hub.py` 与 `agent_server.py` 各自引入 `before_request` 认证中间件——写操作（POST/PUT/DELETE/PATCH）须持有效 `X-API-Key`（`hmac.compare_digest` 恒时比较）；读操作与 `/health` 豁免；未配置 Key 时保持本地开放模式
 - Agent 侧 4 个治理上报函数（审计/预算/上下文注入/协同检查）自动携带 `X-API-Key`（`_gov_headers()`）
 - `docker-compose.yml` 注入 `GOVERNANCE_API_KEY` / `AGENT_API_KEY`（`${VAR:?}` 缺失即启动报错，fail-fast）；`.env.example` 同步模板与说明
+- **P0-3 预算窗口惰性重置**：`TokenBudgetManager._ensure_windows()` 基于窗口键（日 `YYYY-MM-DD` / ISO 周 `YYYY-Www` / 月 `YYYY-MM`，UTC 对齐）检测跨窗自动清零计数器——`record_usage` 与 `_check_budget` 双入口挂载，冷启动（空键）不误清；修复原 `last_reset_*` 死字段导致日界永不重置、周/月窗口无任何重置机制的缺陷，零外部定时器依赖
 
 ### Changed
-- 测试矩阵 36 → 47：新增 11 例零信任认证契约（无 Key 401 / 错 Key 401 / 带 Key 放行 / 读豁免 / 开放模式 / 上报头传递）
+
+- 测试矩阵 47 → 54：新增 7 例预算窗口重置契约（键格式含 ISO 周一换界/惰性日重置/周月重置/冷启动不误清/同日 noop/人工重置盖键/只读入口触发重置）
+- `/budget/reset-daily` 人工端点清零后同步盖当前日窗口键，与惰性机制状态一致
 
 ### Planned
-- P0-3：Token 预算日重置自动化
+
 - P1：telemetry 可观测 SDK 嵌入 + 治理中枢 `/prompts/*` 模板服务
 - P2：A2A/MCP 协议栈接入与业务规则引擎场景化
 
 ## [3.1.0] - 2026-09-14
 
 ### Added
+
 - 8 位家人 Agent 统一 Flask 服务 `agent_server.py`（v3.1，能力矩阵 + 降级 + 治理上报）
 - 治理中枢 `governance_hub.py` v1.0.0（审计/预算/熔断/协同/图谱/记忆，25 端点）
 - 8 位家人身份档案体系（`agents/*/IDENTITY.md`、`SOUL.md`、`SYSTEM.md`）
@@ -35,11 +40,13 @@
 - 版本标签体系（`v3.1.0` + 组件标签 ×2 + 里程碑标签）
 
 ### Changed
+
 - 命名归一：「知遇·伯乐」→「千里·伯乐」（55 文件 190 处，以生产层为权威事实源）
 - 12 系列 README 模块总览对齐实际目录（1202=能力建设/1203=价值创造/1204=资源管理）
 - 仓库架构重组：12 系列迁入 `docs/10-*`，13 系列迁入 `examples/13-*`
 
 ### Fixed
+
 - docs/ 跨目录失效链接（010300/010305 旧编号 → 实际路径）
 - 家人档案 README 中指向不存在「品牌标识」文档的链接
 - 管理蓝图索引中 `/Volumes/Max/...` 外部卷绝对路径
@@ -47,6 +54,7 @@
 ## [3.0.0] - 2026-08-30
 
 ### Added
+
 - 治理中枢雏形（/health /agents /kill /audit）
 - docker-compose 容器编排与 GPU 直通（N2 DGX Spark）
 

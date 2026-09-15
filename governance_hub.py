@@ -345,6 +345,24 @@ DEFAULT_BUDGETS = {
 # 成本估算 (本地 vLLM, 仅电力+折旧估算, 元/百万token)
 COST_PER_MILLION_TOKENS = 0.5
 
+# ── P0-3 预算窗口键（UTC 对齐，周按 ISO 周一为界）────────────────────────
+DAY_FMT = "%Y-%m-%d"
+WEEK_FMT = "%G-W%V"
+MONTH_FMT = "%Y-%m"
+
+
+def day_key(now: datetime) -> str:
+    return now.strftime(DAY_FMT)
+
+
+def week_key(now: datetime) -> str:
+    return now.strftime(WEEK_FMT)
+
+
+def month_key(now: datetime) -> str:
+    return now.strftime(MONTH_FMT)
+
+
 class TokenBudgetManager:
     """Token 预算管理 — 日/周/月限额 + 成本追踪 + 自动降级"""
 
@@ -368,6 +386,9 @@ class TokenBudgetManager:
         if not budget:
             return {"error": f"Unknown agent: {agent}"}
 
+        # P0-3 惰性窗口重置：任何写入前先确保日/周/月窗口未过期
+        self._ensure_windows(agent)
+
         budget.used_today += total
         budget.used_this_week += total
         budget.used_this_month += total
@@ -388,7 +409,41 @@ class TokenBudgetManager:
             logger.warning(f"BUDGET EXCEEDED: {agent} — daily={status['daily']['pct']:.1f}% monthly={status['monthly']['pct']:.1f}%")
         return status
 
+    def _ensure_windows(self, agent: str):
+        """P0-3 惰性跨窗重置：last_reset_* 与当前窗口键不一致则清零对应计数器。
+        last_reset_* 为空（冷启动）视为当前窗口，不误清。"""
+        b = self._budgets.get(agent)
+        if not b:
+            return
+        now = datetime.now(timezone.utc)
+
+        d_key = day_key(now)
+        if b.last_reset_daily:
+            if b.last_reset_daily != d_key:
+                b.used_today = 0
+                b.cost_today = 0.0
+                b.last_reset_daily = d_key
+        else:
+            b.last_reset_daily = d_key
+
+        w_key = week_key(now)
+        if b.last_reset_weekly:
+            if b.last_reset_weekly != w_key:
+                b.used_this_week = 0
+                b.last_reset_weekly = w_key
+        else:
+            b.last_reset_weekly = w_key
+
+        m_key = month_key(now)
+        if b.last_reset_monthly:
+            if b.last_reset_monthly != m_key:
+                b.used_this_month = 0
+                b.last_reset_monthly = m_key
+        else:
+            b.last_reset_monthly = m_key
+
     def _check_budget(self, agent: str) -> Dict[str, Any]:
+        self._ensure_windows(agent)
         b = self._budgets[agent]
         daily_pct = (b.used_today / b.daily_limit) * 100
         weekly_pct = (b.used_this_week / b.weekly_limit) * 100
@@ -410,9 +465,12 @@ class TokenBudgetManager:
         return {agent: self._check_budget(agent) for agent in AGENTS}
 
     def reset_daily(self):
+        """人工日重置入口（/budget/reset-daily）：清零后盖当前窗口键，与惰性机制状态一致"""
+        now = datetime.now(timezone.utc)
         for b in self._budgets.values():
             b.used_today = 0
             b.cost_today = 0.0
+            b.last_reset_daily = day_key(now)
         logger.info("Daily token budgets reset")
 
     def get_usage_history(self, agent: Optional[str] = None, hours: int = 24) -> List[Dict]:

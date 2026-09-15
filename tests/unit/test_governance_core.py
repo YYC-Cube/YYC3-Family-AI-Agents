@@ -93,6 +93,73 @@ class TestTokenBudget:
         assert set(dashboard.keys()) == set(AGENTS)
 
 
+class TestBudgetWindowReset:
+    """P0-3 预算日重置契约：惰性跨窗清零（日/周/月），冷启动不误清，人工重置盖键一致"""
+
+    def test_day_key_format(self):
+        from governance_hub import day_key, month_key, week_key
+        from datetime import datetime as dt, timezone as tz
+        # 2026-01-01 为周四，ISO 周 2026-W01；周日 2026-01-04 仍在 W01，周一 01-05 进入 W02
+        assert day_key(dt(2026, 1, 1, tzinfo=tz.utc)) == "2026-01-01"
+        assert week_key(dt(2026, 1, 1, tzinfo=tz.utc)) == "2026-W01"
+        assert week_key(dt(2026, 1, 4, tzinfo=tz.utc)) == "2026-W01"  # 周日不换周
+        assert week_key(dt(2026, 1, 5, tzinfo=tz.utc)) == "2026-W02"  # 周一换周
+        assert month_key(dt(2026, 1, 31, tzinfo=tz.utc)) == "2026-01"
+
+    def test_lazy_daily_reset_on_record(self, budget, monkeypatch):
+        budget.record_usage("tianshu", 100, 50)
+        b = budget._budgets["tianshu"]
+        assert b.used_today == 150
+        # 模拟 yesterday 的窗口键（相同格式不同值）→ 下一笔记录应清零
+        monkeypatch.setattr(b, "last_reset_daily", "2026-01-01")
+        status = budget.record_usage("tianshu", 10, 5)
+        assert b.used_today == 15
+        assert status["daily"]["used"] == 15
+
+    def test_lazy_weekly_and_monthly_reset(self, budget, monkeypatch):
+        budget.record_usage("tianshu", 100, 50)
+        b = budget._budgets["tianshu"]
+        assert b.used_this_week == 150 and b.used_this_month == 150
+        monkeypatch.setattr(b, "last_reset_weekly", "2025-W52")
+        monkeypatch.setattr(b, "last_reset_monthly", "2025-12")
+        budget.record_usage("tianshu", 10, 5)
+        assert b.used_this_week == 15 and b.used_this_month == 15
+        # 盖上当前窗口键（YYYY-Www / YYYY-MM 格式）
+        import re
+        assert re.fullmatch(r"\d{4}-W\d{2}", b.last_reset_weekly)
+        assert re.fullmatch(r"\d{4}-\d{2}", b.last_reset_monthly)
+
+    def test_cold_start_no_false_reset(self, budget):
+        # last_reset_* 为空（冷启动）视为当前窗口，首笔记录后计数正常且不清理
+        status = budget.record_usage("tianshu", 100, 50)
+        assert status["daily"]["used"] == 150
+        b = budget._budgets["tianshu"]
+        assert b.last_reset_daily  # 已盖当前键
+
+    def test_ensure_windows_same_day_noop(self, budget):
+        budget.record_usage("tianshu", 100, 50)
+        b = budget._budgets["tianshu"]
+        budget._ensure_windows("tianshu")  # 同日重复检查不清零
+        assert b.used_today == 150
+
+    def test_manual_reset_daily_stamps_key(self, budget):
+        budget.record_usage("tianshu", 100, 50)
+        budget.reset_daily()
+        b = budget._budgets["tianshu"]
+        assert b.used_today == 0 and b.cost_today == 0.0
+        # 人工重置后惰性检测不应再次清零（键已同步）
+        from governance_hub import day_key
+        from datetime import datetime as dt, timezone as tz
+        assert b.last_reset_daily == day_key(dt.now(tz.utc))
+
+    def test_check_budget_lazy_reset(self, budget, monkeypatch):
+        budget.record_usage("tianshu", 100, 50)
+        b = budget._budgets["tianshu"]
+        monkeypatch.setattr(b, "last_reset_daily", "2026-01-01")
+        status = budget._check_budget("tianshu")  # 只读入口也触发惰性重置
+        assert status["daily"]["used"] == 0
+
+
 class TestCollaboration:
     def test_low_risk_no_trigger(self, collab):
         result = collab.should_collaborate("tianshu", confidence=0.95, complexity=0.1, risk="low")
