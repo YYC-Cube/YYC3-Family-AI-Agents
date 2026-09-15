@@ -2,7 +2,7 @@
 """P0-1 命名归一脚本：知遇·伯乐 → 千里·伯乐（以生产层为权威事实源）"""
 import pathlib
 
-ROOTS = ["12-YYC3-提示词工程-企业蓝图", "13-YYC3-企业蓝图-代码示例"]
+ROOTS = ["docs/10-YYC3-提示词工程-企业蓝图", "examples/13-YYC3-企业蓝图-代码示例"]
 SKIP_SUFFIX = {".png", ".jpg", ".jpeg", ".gif", ".bin", ".pyc", ".ico"}
 PATTERNS = [
     ("知遇·伯乐", "千里·伯乐"),

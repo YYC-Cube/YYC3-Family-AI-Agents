@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax-check:
+    name: Python 语法检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: py_compile 生产运行时
+        run: |
+          python3 -m py_compile agent_server.py governance_hub.py
+      - name: py_compile 示例代码
+        run: |
+          find examples -name "*.py" -print0 | xargs -0 -n1 python3 -m py_compile
+
+  deps-check:
+    name: 依赖安装检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安装运行时依赖
+        run: pip install -r requirements.txt
+
+  docs-links:
+    name: 文档完整性
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 检查核心文档存在
+        run: |
+          for f in README.md CHANGELOG.md CONTRIBUTING.md ARCHITECTURE.md CODE_OF_CONDUCT.md LICENSE docs/README.md; do
+            test -f "$f" || { echo "缺失: $f"; exit 1; }
+          done
+      - name: 检查文档无旧编号死链（010300/010305）
+        run: |
+          ! grep -rn "010300-FAmily\|010305-FAmily" docs --include="*.md"
+      - name: 检查命名归一（无历史旧称「知遇·伯乐」）
+        run: |
+          ! grep -rn "知遇·伯乐" docs examples agents README.md --include="*.md" --include="*.py"

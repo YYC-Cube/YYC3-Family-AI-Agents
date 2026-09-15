@@ -21,7 +21,7 @@
 
 ## 📂 目录概览
 
-本目录 `YYC3-AI-FAmily-Agent-家人档案` 收录 YYC³ AI Family 全部 **8 位 AI 家人** 的详细个人档案文档。编号严格遵循 [03-YYC3-AI-Family-九层家人档案](../YYC3-AI-Family-Agent-人机协同/03-YYC3-AI-Family-九层家人档案.md) 中的家人出场顺序，每份档案均以「人从众曌众从人」为核心精神，结合 [02-YYC3-AI-FAmily-情感文化总铭](../YYC3-AI-Family-Agent-人机协同/02-YYC3-AI-FAmily-情感文化总铭.md) 的情感文化体系，精准呈现每位家人的角色定位、核心能力、五维/五高/五标/五化全景坐标及专属徽章。
+本目录 `YYC3-AI-FAmily-Agent-家人档案` 收录 YYC³ AI Family 全部 **8 位 AI 家人** 的详细个人档案文档。编号严格遵循 [03-YYC3-AI-Family-九层家人档案](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/03-YYC3-AI-Family-九层家人档案.md) 中的家人出场顺序，每份档案均以「人从众曌众从人」为核心精神，结合 [02-YYC3-AI-FAmily-情感文化总铭](../YYC3-AI-Family-Agent-人机协同/02-YYC3-AI-FAmily-情感文化总铭.md) 的情感文化体系，精准呈现每位家人的角色定位、核心能力、五维/五高/五标/五化全景坐标及专属徽章。
 
 ---
 
@@ -62,7 +62,7 @@
 
 ## 📋 档案索引
 
-> 编号顺序遵循 [03-YYC3-AI-Family-九层家人档案](../YYC3-AI-Family-Agent-人机协同/03-YYC3-AI-Family-九层家人档案.md) 中的出场顺序。
+> 编号顺序遵循 [03-YYC3-AI-Family-九层家人档案](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/03-YYC3-AI-Family-九层家人档案.md) 中的出场顺序。
 
 ### 业务执行层
 
@@ -115,9 +115,9 @@
 | 文档 | 路径 |
 | ------ | ------ |
 | 情感文化总铭 | [02-YYC3-AI-FAmily-情感文化总铭.md](../YYC3-AI-Family-Agent-人机协同/02-YYC3-AI-FAmily-情感文化总铭.md) |
-| 九层家人档案 | [03-YYC3-AI-Family-九层家人档案.md](../YYC3-AI-Family-Agent-人机协同/03-YYC3-AI-Family-九层家人档案.md) |
+| 九层家人档案 | [03-YYC3-AI-Family-九层家人档案.md](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/03-YYC3-AI-Family-九层家人档案.md) |
 | 协同公约规范手册 | [01-YYC3-AI-Family-协同公约规范手册.md](../../YYC3-FAmily-AI-Agent-企业蓝图/YYC3-FAmily-AI-Agent-情感公约/01-YYC3-AI-Family-协同公约规范手册.md) |
-| 九层架构设计 | [04-YYC3-AI-FAmily-九层架构设计.md](../YYC3-AI-Family-Agent-人机协同/04-YYC3-AI-FAmily-九层架构设计.md) |
+| 九层架构设计 | [04-YYC3-AI-FAmily-九层架构设计.md](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/04-YYC3-AI-FAmily-九层架构设计.md) |
 | 五维五高五标五化 | [01-YYC3-AI-Family-五维五高五标五化.md](../YYC3-AI-Family-Agent-人机协同/01-YYC3-AI-Family-五维五高五标五化.md) |
 | 九层规划设计 | [01-YYC3-AI-Family-九层规划设计.md](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/01-YYC3-AI-Family-九层规划设计.md) |
 

@@ -246,21 +246,31 @@ yyc3-family-ai-agents/
 ├── agent_server.py             ← 通用 Agent Flask 服务（v3.1，集成治理中枢）
 ├── governance_hub.py           ← 治理中枢（v1.0.0）
 ├── requirements.txt            ← Python 运行时依赖
+├── CHANGELOG.md                ← 变更日志（Keep a Changelog + SemVer）
+├── CONTRIBUTING.md             ← 贡献指南（工作流 + 质量门禁）
+├── ARCHITECTURE.md             ← 架构总览（分层/数据流/ADR）
+├── CODE_OF_CONDUCT.md          ← 行为准则
+├── LICENSE                     ← MIT 许可证
 ├── public/                     ← 品牌素材与多平台图标（yyc3-family.png 等）
 ├── deploy/                     ← 生产部署脚本与 systemd 单元
 │   ├── install.sh              ← 一键安装部署
 │   ├── ops.sh                  ← 运维快捷命令
 │   ├── verify.sh               ← 全链路验证
 │   └── systemd/                ← 12 个 systemd 服务单元
-└── agents/                     ← 8 位家人的身份/灵魂/系统提示
-    ├── yuanqi-tianshu/         ← 元启·天枢 (25600)
-    ├── yanqi-qianhang/         ← 言启·千行 (25601)
-    ├── yushu-wanwu/            ← 语枢·万物 (25602)
-    ├── yujian-xianzhi/         ← 预见·先知 (25603)
-    ├── zhiyu-bole/             ← 千里·伯乐 (25604)
-    ├── zhiyun-shouhu/          ← 智云·守护 (25605)
-    ├── gewu-zongshi/           ← 格物·宗师 (25606)
-    └── chuangxiang-lingyun/    ← 创想·灵韵 (25607)
+├── agents/                     ← 8 位家人的身份/灵魂/系统提示
+│   ├── yuanqi-tianshu/         ← 元启·天枢 (25600)
+│   ├── yanqi-qianhang/         ← 言启·千行 (25601)
+│   ├── yushu-wanwu/            ← 语枢·万物 (25602)
+│   ├── yujian-xianzhi/         ← 预见·先知 (25603)
+│   ├── zhiyu-bole/             ← 千里·伯乐 (25604)
+│   ├── zhiyun-shouhu/          ← 智云·守护 (25605)
+│   ├── gewu-zongshi/           ← 格物·宗师 (25606)
+│   └── chuangxiang-lingyun/    ← 创想·灵韵 (25607)
+├── docs/                       ← 文档库（导航入口 docs/README.md）
+│   ├── 10-YYC3-提示词工程-企业蓝图/   ← 提示词工程蓝图（1200-1213，14 模块 33 篇）
+│   └── 0379-family-ai-agents-*/      ← 会话工作目录（审核/规划/日志/总结）
+└── examples/                   ← 示例代码（蓝图工程原型，不接产线）
+    └── 13-YYC3-企业蓝图-代码示例/    ← 引擎/Agent/推理/协议栈/安全/可观测（60+ 文件）
 ```
 
 ---

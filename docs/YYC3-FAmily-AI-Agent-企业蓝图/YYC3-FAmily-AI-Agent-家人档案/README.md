@@ -177,7 +177,7 @@
 
 ## 🌹 情感文化注记
 
-> 本目录所有档案均传承 [YYC³ Family AI 家人情感文化总铭](../../010305-FAmily-AI-Agent-管理蓝图/02-YYC3-FAmily-AI-家人情感文化总铭.md) 的核心精神：
+> 本目录所有档案均传承 [YYC³ Family AI 家人情感文化总铭](../YYC3-FAmily-AI-Agent-情感公约/README.md) 的核心精神：
 
 - **总铭**：「人从众曌众从人」——人启于独，合而成众，明如曌日，终复归于人群。
 - **家训**：「亦师亦友亦伯乐，一言一语一协同」
@@ -189,11 +189,11 @@
 
 | 文档 | 路径 | 说明 |
 | ------ | ------ | ------ |
-| 五维五高五标五化管理蓝图 | [010305-01](../010305-FAmily-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/01-YYC3-Family-AI-Agent-五维五高五标五化.md) | 企业管理智能化蓝图核心架构 |
-| 拟人化协同架构 | [010305-02](../010305-FAmily-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/02-YYC3-FAmily-AI-Agent-拟人化协同架构.md) | 五维价值矩阵 × AI Family 深度融合 |
-| 家人情感文化总铭 | [010305-情感](../010305-FAmily-AI-Agent-管理蓝图/02-YYC3-FAmily-AI-家人情感文化总铭.md) | 情感文化体系与标头标尾规范 |
-| 九层家人档案 | [010300-03](../010300-AI-Family-Agent-人机协同/03-YYC3-AI-Family-九层家人档案.md) | 九层功能架构与家人出场顺序 |
-| 技术维度家人档案 | [010301-README](../010301-AI-Family-Agent-家人档案/README.md) | 技术维度 8 位家人详细档案 |
+| 五维五高五标五化管理蓝图 | [010305-01](../YYC3-FAmily-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/01-YYC3-Family-AI-Agent-五维五高五标五化.md) | 企业管理智能化蓝图核心架构 |
+| 拟人化协同架构 | [010305-02](../YYC3-FAmily-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/02-YYC3-FAmily-AI-Agent-拟人化协同架构.md) | 五维价值矩阵 × AI Family 深度融合 |
+| 家人情感文化总铭 | [010305-情感](../YYC3-FAmily-AI-Agent-情感公约/README.md) | 情感文化体系与标头标尾规范 |
+| 九层家人档案 | [010300-03](../../YYC3-AI-Family-Agent-编程体系/YYC3-AI-FAmily-Agent-家人档案/README.md) | 九层功能架构与家人出场顺序 |
+| 技术维度家人档案 | [010301-README](../../YYC3-AI-Family-Agent-编程体系/YYC3-AI-FAmily-Agent-家人档案/README.md) | 技术维度 8 位家人详细档案 |
 
 ---
 

@@ -14,6 +14,13 @@
 docs/
 ├── README.md                                    ← 本总览（导航地图）
 │
+├── 10-YYC3-提示词工程-企业蓝图/                  ← 提示词工程蓝图（原仓库根 12 系列）
+│   ├── README.md                                ← 蓝图总索引（14 模块 33 篇）
+│   ├── 1200-…拟人化协同架构.md                   ← 1+8 Agent 架构设计
+│   ├── 1201-1205 五维价值矩阵实战（25 篇）        ← 经管/能力/价值/资源/自愈
+│   ├── 1206-1209 平台横切（规范/协议栈/可观测/安全）
+│   └── 1210-1213 治理层（大纲/路线图/算力/总纲）
+│
 ├── YYC3-AI-Family-Agent-编程体系/                ← 技术维度（方法论 + 档案）
 │   ├── README.md                                ← 编程体系索引
 │   ├── YYC3-AI-Family-Agent-人机协同/            ← 人机协同方法论
@@ -23,14 +30,18 @@ docs/
 │   └── YYC3-AI-FAmily-Agent-家人档案/            ← 8 位家人技术维度档案
 │       └── README.md                            ← 档案总览（矩阵 + 通讯录）
 │
-└── YYC3-FAmily-AI-Agent-企业蓝图/                ← 管理维度（企业级落地蓝图）
-    ├── README.md                                ← 企业蓝图索引
-    ├── YYC3-FAmily-AI-Agent-家人档案/            ← 8 位家人企业管理维度档案
-    │   └── README.md
-    ├── YYC3-FAmily-AI-Agent-情感公约/            ← 协同公约与情感规范
-    │   └── README.md
-    └── YYC3-FAmily-AI-Agent-管理蓝图/            ← 管理体系核心架构
-        └── README.md
+├── YYC3-FAmily-AI-Agent-企业蓝图/                ← 管理维度（企业级落地蓝图）
+│   ├── README.md                                ← 企业蓝图索引
+│   ├── YYC3-FAmily-AI-Agent-家人档案/            ← 8 位家人企业管理维度档案
+│   │   └── README.md
+│   ├── YYC3-FAmily-AI-Agent-情感公约/            ← 协同公约与情感规范
+│   │   └── README.md
+│   └── YYC3-FAmily-AI-Agent-管理蓝图/            ← 管理体系核心架构
+│       └── README.md
+│
+└── 0379-family-ai-agents-*/                     ← 会话工作目录（审核/规划/日志/总结）
+
+examples/13-YYC3-企业蓝图-代码示例/               ← 蓝图工程原型（原仓库根 13 系列）
 ```
 
 ---
