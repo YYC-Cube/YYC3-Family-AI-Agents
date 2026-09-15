@@ -220,12 +220,15 @@ class BehaviorAuditor:
         return {"event_id": event.correlation_id, "risk": risk.value, "anomaly": anomaly}
 
     def _assess_risk(self, action: str, details: Dict) -> RiskLevel:
+        sensitive = any(k in str(details).lower() for k in ["password", "secret", "key", "token", "credential"])
         if action in self.DANGEROUS_ACTIONS:
             base = self.DANGEROUS_ACTIONS[action]
+            # 敏感数据细节将风险至少提升至 HIGH（不得被早返回绕过）
+            if sensitive and base in (RiskLevel.LOW, RiskLevel.MEDIUM):
+                base = RiskLevel.HIGH
             if details.get("external_target") and base.value in ("medium", "low"):
                 base = RiskLevel(base.value == "low" and "medium" or "high") if base == RiskLevel.LOW else RiskLevel.HIGH
             return base
-        sensitive = any(k in str(details).lower() for k in ["password", "secret", "key", "token", "credential"])
         if sensitive:
             return RiskLevel.HIGH
         return RiskLevel.LOW
