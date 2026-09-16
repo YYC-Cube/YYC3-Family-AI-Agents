@@ -1084,6 +1084,17 @@ def agent_profile(agent_id):
 
 # --- 综合仪表盘 ---
 
+@app.route("/", methods=["GET"])
+def dashboard_ui():
+    """P4-1 治理中枢 Web Dashboard（读路径，认证豁免区）"""
+    ui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard.html")
+    if os.path.exists(ui_path):
+        with open(ui_path, "r", encoding="utf-8") as f:
+            return app.response_class(f.read(), mimetype="text/html; charset=utf-8")
+    return jsonify({"service": "yyc3-governance", "status": "healthy",
+                    "dashboard": "ui file missing (dashboard.html)", "version": "1.0.0"})
+
+
 @app.route("/dashboard", methods=["GET"])
 def full_dashboard():
     conn = connect_db()
