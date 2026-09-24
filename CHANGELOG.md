@@ -25,6 +25,7 @@
 - **P3-2 可观测栈接入**：telemetry 支持 `YYC3_OTLP_ENDPOINT` OTLP/HTTP span 导出（服务名 `yyc3.family-ai`）；compose 新增 `observability` profile——`otel-collector`（4317/4318）+ `jaeger` all-in-one（UI 16686），按需启动不增加常驻资源
 - **P3-3 CI 测试门禁**：新增 `unit-tests` job——安装 `requirements-dev.txt` 后 `pytest tests/ -q` 全量门禁（单元/集成/UAT 静态契约，LLM 实答自动门控 skip），失败时上传测试产物；新增 `requirements-dev.txt` 依赖清单
 - **P4-1 治理中枢 Web Dashboard**：新增 `dashboard.html`（单文件零依赖，暗色主题 + 紫/青家族设计语言，对齐 YYC3-APP-HUB 生态）——6 项 KPI（在册/事件/24h 高危/Token/协同/熔断）+ 8 位家人状态与日预算进度条（>80% 变红）+ 审计追踪表（含 correlation_id），30s 自动刷新；hub 根路径 `/` 挂载（读路径免认证），JSON API 契约不变
+- **P4-2 Dashboard 增强**：预算窗口日/周/月切换（复用 P0-3 三窗口服务端字段）+ correlation_id 点击跳转 Jaeger trace 检索（`window.JAEGER_BASE` 可配置，默认 127.0.0.1:16686）+ 预算显示 used/limit
 
 ### Changed
 

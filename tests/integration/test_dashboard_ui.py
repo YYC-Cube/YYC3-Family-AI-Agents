@@ -1,4 +1,4 @@
-"""P4-1 治理中枢 Web Dashboard 契约测试"""
+"""P4-1/P4-2 Dashboard 契约：UI 挂载 + 数据面字段 + 周/月窗口 + Jaeger 跳转"""
 import pytest
 
 
@@ -32,7 +32,24 @@ class TestDashboardUI:
             assert {"agent", "action", "risk", "correlation_id", "timestamp"} <= set(trail[0].keys())
 
     def test_ui_budget_fields_present(self, gov_client):
-        # 前端日窗口进度条依赖 budgets.<agent>.daily.{used,limit}
+        # 前端进度条依赖 budgets.<agent>.daily.{used,limit}
         budgets = gov_client.get("/budget/dashboard").get_json()
         sample = next(iter(budgets.values()))
         assert "daily" in sample and "used" in sample["daily"] and "limit" in sample["daily"]
+
+
+class TestWindowSwitchData:
+    """前端周/月窗口切换依赖 budgets.<agent>.{daily,weekly,monthly}.pct"""
+
+    def test_weekly_monthly_pct_present(self, gov_client):
+        budgets = gov_client.get("/budget/dashboard").get_json()
+        sample = budgets["bole"]
+        for win in ("daily", "weekly", "monthly"):
+            assert win in sample, f"缺窗口 {win}"
+            assert {"used", "limit", "pct", "exceeded"} <= set(sample[win].keys())
+            assert isinstance(sample[win]["pct"], (int, float))
+
+    def test_ui_html_contains_window_switch_and_jaeger(self, gov_client):
+        html = gov_client.get("/").get_data(as_text=True)
+        assert "setWindow(" in html and "weekly" in html and "monthly" in html
+        assert "openTrace(" in html and "16686" in html  # Jaeger 检索跳转
