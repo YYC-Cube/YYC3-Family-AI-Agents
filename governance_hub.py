@@ -1169,6 +1169,7 @@ _PROMPT_DIR_INDEX = _build_prompt_dir_index()
 
 @app.route("/prompts/<agent_id>", methods=["GET"])
 def prompts_overview(agent_id: str):
+    agent_id = normalize_agent(agent_id)
     agent_dir = _PROMPT_DIR_INDEX.get(agent_id)
     if not agent_dir:
         return jsonify({"status": "error", "detail": f"Unknown agent or prompts dir missing: {agent_id}"}), 404
@@ -1188,6 +1189,7 @@ def prompts_overview(agent_id: str):
 
 @app.route("/prompts/<agent_id>/<filename>", methods=["GET"])
 def prompts_get(agent_id: str, filename: str):
+    agent_id = normalize_agent(agent_id)
     agent_dir = _PROMPT_DIR_INDEX.get(agent_id)
     if not agent_dir or filename not in PROMPT_FILES:
         return jsonify({"status": "error", "detail": f"Unknown agent or template: {agent_id}/{filename}"}), 404
