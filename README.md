@@ -26,6 +26,10 @@ _万象归元于云枢 · 深栈智启新纪元_
 ![LLM](https://img.shields.io/badge/LLM-Qwen3.6--27B--FP8-6C3BAA?style=for-the-badge)
 ![Agents](https://img.shields.io/badge/Agents-8-ff8c00?style=for-the-badge)
 ![Governance Hub](https://img.shields.io/badge/Governance%20Hub-v1.0.0-brightgreen?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+![Code of Conduct](https://img.shields.io/badge/Code_of_Conduct-Contributor%20Covenant-2b7bbb?style=for-the-badge)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)
+![Security Policy](https://img.shields.io/badge/Security-Policy-8A2BE2?style=for-the-badge)
 
 ### 家族徽章
 
@@ -51,6 +55,8 @@ _万象归元于云枢 · 深栈智启新纪元_
 | 🛡️ **统一治理** | 行为审计、Kill Switch 熔断、Token 预算、成本追踪、协同触发、上下文图谱 |
 | 🧠 **本地推理** | Qwen3.6-27B-FP8（vLLM）+ Qwen3-Embedding-8B + Qwen3-Reranker-8B |
 | 📦 **双部署模式** | Docker Compose 容器编排 与 systemd 裸机守护进程（DGX Spark N2 生产验证） |
+
+**关键词 / Keywords**：多智能体 · AI 家人 · 治理中枢 · 行为审计 · Token 预算 · 零信任认证 · 本地推理 · vLLM · Flask · Docker Compose · systemd · 可观测性 · OTel
 
 ---
 
@@ -314,7 +320,16 @@ yyc3-family-ai-agents/
 
 ## 📄 许可与声明
 
-本项目为 **YanYuCloudCube™（YYC³）** 旗下开源运行仓库。未经授权请勿用于商业用途。
+本项目为 **YanYuCloudCube™（YYC³）** 旗下开源运行仓库，许可 [MIT](LICENSE)。未经授权请勿用于商业用途。
+
+| 社区规范 | 文档 |
+| ---- | ---- |
+| 许可证 | [LICENSE](LICENSE) |
+| 行为准则 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
+| 贡献指南 | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| 安全政策 | [SECURITY.md](SECURITY.md) |
+
+> 团队标准规范单一事实源：`YYC3-团队通用-标准规范`（含 GitHub 社区规范权威四件套与派生规则）；本仓四件套由其派生（社区规范 v1.0.0 · 2026-10-29）。
 
 > 「**YanYuCloudCube**」
 > 「**Words Initiate Quadrants, Language Serves as Core for the Future**」

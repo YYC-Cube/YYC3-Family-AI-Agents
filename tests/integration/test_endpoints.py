@@ -149,7 +149,7 @@ class TestZeroTrustAuthHub:
 
     def test_write_with_wrong_key_denied(self, secure_client):
         r = secure_client.post("/kill-switch", json={"agent": "tianshu", "reason": "drill"},
-                               headers={"X-API-Key": "wrong-key"})
+                               headers={"X-API-Key": self.KEY + "-tampered"})
         assert r.status_code == 401
 
     def test_write_with_valid_key_allowed(self, secure_client):

@@ -27,6 +27,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from flask import Flask, jsonify, request
+from werkzeug.utils import safe_join
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s %(message)s")
@@ -1142,23 +1143,33 @@ PROMPTS_SOURCE_DIR = os.environ.get("PROMPTS_SOURCE_DIR", os.path.join(os.path.d
 PROMPT_FILES = ("IDENTITY.md", "SOUL.md", "SYSTEM.md")
 
 
-def _agent_prompt_dir(short_agent: str) -> Optional[str]:
-    """短名 → agents/<compose 目录名>（复用 ALIAS_MAP 反查，保持单一事实源）"""
+def _build_prompt_dir_index() -> Dict[str, str]:
+    """启动期构建提示词目录白名单索引：全名/短名/目录名 三键 → agents/ 下绝对路径。
+
+    来源仅两处可信输入：AGENT_ALIAS_MAP 常量 + PROMPTS_SOURCE_DIR 目录枚举。
+    运行期 handler 只做纯字典查表（含全名归一），不再有以请求参数为源的路径拼接。
+    """
+    idx: Dict[str, str] = {}
+    try:
+        entries = set(os.listdir(PROMPTS_SOURCE_DIR))
+    except OSError:
+        return idx
     for full, short in AGENT_ALIAS_MAP.items():
-        dirname = full.replace("_", "-")
-        candidate = os.path.join(PROMPTS_SOURCE_DIR, dirname)
-        if short == short_agent and os.path.isdir(candidate):
-            return candidate
-    # 短名本身（幂等）也尝试直查
-    dirname = short_agent
-    candidate = os.path.join(PROMPTS_SOURCE_DIR, dirname)
-    return candidate if os.path.isdir(candidate) else None
+        d = full.replace("_", "-")
+        if d in entries:
+            p = os.path.join(PROMPTS_SOURCE_DIR, d)
+            idx[short] = p
+            idx.setdefault(full, p)
+            idx.setdefault(d, p)
+    return idx
+
+
+_PROMPT_DIR_INDEX = _build_prompt_dir_index()
 
 
 @app.route("/prompts/<agent_id>", methods=["GET"])
 def prompts_overview(agent_id: str):
-    agent_id = normalize_agent(agent_id)
-    agent_dir = _agent_prompt_dir(agent_id)
+    agent_dir = _PROMPT_DIR_INDEX.get(agent_id)
     if not agent_dir:
         return jsonify({"status": "error", "detail": f"Unknown agent or prompts dir missing: {agent_id}"}), 404
     templates = {}
@@ -1177,11 +1188,10 @@ def prompts_overview(agent_id: str):
 
 @app.route("/prompts/<agent_id>/<filename>", methods=["GET"])
 def prompts_get(agent_id: str, filename: str):
-    agent_id = normalize_agent(agent_id)
-    if filename not in PROMPT_FILES:
-        return jsonify({"status": "error", "detail": f"Unknown template: {filename}"}), 404
-    agent_dir = _agent_prompt_dir(agent_id)
-    path = os.path.join(agent_dir, filename) if agent_dir else None
+    agent_dir = _PROMPT_DIR_INDEX.get(agent_id)
+    if not agent_dir or filename not in PROMPT_FILES:
+        return jsonify({"status": "error", "detail": f"Unknown agent or template: {agent_id}/{filename}"}), 404
+    path = safe_join(agent_dir, filename)
     if not path or not os.path.exists(path):
         return jsonify({"status": "error", "detail": f"Template not found: {agent_id}/{filename}"}), 404
     fmt = request.args.get("format", "text")

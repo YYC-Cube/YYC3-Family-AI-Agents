@@ -21,6 +21,7 @@ YYC³ 零信任安全网关 v1.0
 """
 
 import json
+import os
 import uuid
 import time
 import hashlib
@@ -465,7 +466,7 @@ async def example_usage():
     
     # 1. 认证
     headers = {
-        "X-API-Key": "元启·天枢:yyc3-secret-tianshu",
+        "X-API-Key": os.environ.get("YYC3_API_KEY", ""),
         "X-Correlation-ID": str(uuid.uuid4()),
     }
     auth_result = await gateway.authenticate(headers, ip_address="10.0.0.1")

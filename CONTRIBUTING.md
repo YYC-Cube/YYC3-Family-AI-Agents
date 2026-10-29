@@ -23,7 +23,7 @@ bash deploy/install.sh
 bash deploy/verify.sh          # 全链路验证
 ```
 
-### 本地运行（端口 3030 起 🚨）
+### 本地运行（主服务宿主端口 25600 · 元启·天枢 🚨）
 
 ```bash
 python3 agent_server.py                     # 单 Agent 服务
@@ -86,6 +86,28 @@ docs/
 - 版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)，变更记录写入 [CHANGELOG.md](CHANGELOG.md)
 - 发布时打三类标签：`vX.Y.Z` + `component/<组件>-vX.Y.Z` + `milestone/<里程碑>`
 - 未经仓库所有者指示，不执行 `git push --force`，不直接推送 main 之外的保护分支
+
+---
+
+## 🌿 分支与 PR（团队铁律）
+
+| 类型 | 格式 | 示例 |
+| ---- | ---- | ---- |
+| 功能 | `feat/<scope>-<简述>` | `feat/hub-audit-export` |
+| 修复 | `fix/<scope>-<简述>` | `fix/budget-window-reset` |
+| 文档 | `docs/<简述>` | `docs/community-standards` |
+
+- **`main` 分支受保护：禁止直接 push，一律走 PR**（CI 检查即保护策略要求；用 `--auto` 合规挂自动合并，不使用 `--admin` 绕过）
+- 一个 PR 聚焦一个主题；合并方式 **Squash Merge**（保持线性历史）
+- 未经仓库所有者指示，不执行 `git push --force`
+
+### PR 自检清单
+
+- [ ] 动机与影响面写清楚（Why > What）
+- [ ] CI 全绿：语法检查 / 依赖安装 / pytest 全量门禁
+- [ ] 无「空断言」或「恒真断言」；未实现能力显式跳过并写明原因
+- [ ] 文档相对链接可达，无死链
+- [ ] 无密钥、Token、真实生产数据（`.env` 不入库）
 
 ---
 

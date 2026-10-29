@@ -19,6 +19,7 @@ YYC³ A2A (Agent-to-Agent) 通信协议客户端 v1.0
 """
 
 import json
+import os
 import uuid
 import time
 import logging
@@ -480,7 +481,7 @@ async def example_usage():
     # 场景：元启天枢委托语枢万物进行数据分析
     async with A2AClient(
         base_url="https://yyc3.ai/agents/thinker",
-        api_key="yyc3-api-key-xxx",
+        api_key=os.environ.get("YYC3_A2A_API_KEY", ""),
     ) as client:
         
         # 1. 获取 Agent Card（服务发现）

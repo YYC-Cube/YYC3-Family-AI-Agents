@@ -67,6 +67,6 @@ jobs:
       - name: 检查文档无旧编号死链（010300/010305）
         run: |
           ! grep -rn "010300-FAmily\|010305-FAmily" docs --include="*.md"
-      - name: 检查命名归一（无历史旧称「知遇·伯乐」/「知遇伯乐」）
+      - name: 检查命名归一（无历史旧称「知遇·伯乐」/「知遇伯乐」；蓝图镜像与会话归档为只读历史来源，不在此列）
         run: |
-          ! grep -rn "知遇·伯乐\|知遇伯乐" docs examples agents README.md --include="*.md" --include="*.py" --include="*.yml" --include="*.yaml"
+          ! grep -rn "知遇·伯乐\|知遇伯乐" docs examples agents README.md --include="*.md" --include="*.py" --include="*.yml" --include="*.yaml" --exclude-dir="YYC3-FAmily-AI-Agent-企业蓝图" --exclude-dir="YYC3-AI-Family-Agent-编程体系" --exclude-dir="0379-family-ai-agents-trae-20260914"

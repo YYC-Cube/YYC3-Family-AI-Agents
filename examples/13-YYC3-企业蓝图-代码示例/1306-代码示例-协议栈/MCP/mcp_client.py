@@ -19,6 +19,7 @@ YYC³ MCP (Model Context Protocol) 客户端 v1.0
 """
 
 import json
+import os
 import uuid
 import time
 import logging
@@ -462,7 +463,7 @@ async def example_usage():
     async with MCPClient(
         server_url="http://localhost:30201",
         transport=MCPTransportType.STREAMABLE_HTTP,
-        api_key="yyc3-api-key-xxx",
+        api_key=os.environ.get("YYC3_MCP_API_KEY", ""),
     ) as client:
         
         # 2. 列出所有工具
