@@ -799,6 +799,91 @@ def agent_states():
     cols = ["agent", "state", "frozen_reason", "frozen_at", "updated_at"]
     return jsonify([dict(zip(cols, r)) for r in rows])
 
+# --- E2-2: MCP server（2026-07-28 stateless 子集：单 POST JSON-RPC 2.0，JSON 响应形态） ---
+
+MCP_PROTOCOL_VERSION = "2026-07-28"
+MCP_SERVER_INFO = {"name": "yyc3-governance-mcp", "title": "YYC³ 治理中枢 MCP", "version": "1.0.0"}
+MCP_TOOLS = [
+    {"name": "governance_budget_overview",
+     "description": "全家族 Token 预算仪表盘（日/周/月窗口用量与熔断状态）",
+     "inputSchema": {"type": "object", "properties": {}, "required": []}},
+    {"name": "governance_audit_search",
+     "description": "审计追踪检索（可按家人短名过滤，limit 上限 200）",
+     "inputSchema": {"type": "object", "properties": {
+         "agent": {"type": "string", "description": "家人短名（可选，如 tianshu）"},
+         "limit": {"type": "integer", "default": 20, "maximum": 200}},
+         "required": []}},
+    {"name": "governance_agent_states",
+     "description": "八位家人运行状态（active/frozen 与冻结原因）",
+     "inputSchema": {"type": "object", "properties": {}, "required": []}},
+]
+
+
+def _mcp_tool_call(name: str, args: dict):
+    if name == "governance_budget_overview":
+        return {"dashboard": budget_mgr.get_dashboard()}
+    if name == "governance_audit_search":
+        agent = normalize_agent(args.get("agent")) if args.get("agent") else None
+        limit = max(1, min(int(args.get("limit", 20)), 200))
+        return {"trail": auditor.get_audit_trail(agent, limit)}
+    if name == "governance_agent_states":
+        conn = connect_db()
+        rows = conn.execute("SELECT * FROM agent_state").fetchall()
+        conn.close()
+        cols = ["agent", "state", "frozen_reason", "frozen_at", "updated_at"]
+        return {"states": [dict(zip(cols, r)) for r in rows]}
+    raise KeyError(name)
+
+
+def _mcp_error(req_id, code: int, message: str):
+    return jsonify({"jsonrpc": "2.0", "id": req_id,
+                    "error": {"code": code, "message": message}})
+
+
+@app.route("/mcp", methods=["POST"])
+def mcp_endpoint():
+    """E2-2 治理中枢 MCP 端点：stateless JSON-RPC 2.0（initialize/ping/tools.list/tools.call）。
+    鉴权沿用零信任写保护（POST 须 X-API-Key）；每次 tools/call 计入审计链；
+    kill-switch 等高危能力刻意不经 MCP 暴露（治理动作仅限治理面）。"""
+    req = request.get_json(force=True, silent=True)
+    if not isinstance(req, dict) or req.get("jsonrpc") != "2.0" or not isinstance(req.get("method"), str):
+        return _mcp_error(req.get("id") if isinstance(req, dict) else None,
+                          -32600, "Invalid Request")
+    req_id = req.get("id")
+    method = req.get("method")
+    if "id" not in req:
+        # JSON-RPC 通知（无 id）：无需响应体
+        return "", 202
+    if method == "initialize":
+        result = {"protocolVersion": MCP_PROTOCOL_VERSION,
+                  "capabilities": {"tools": {"listChanged": False}},
+                  "serverInfo": MCP_SERVER_INFO}
+    elif method == "ping":
+        result = {}
+    elif method == "tools/list":
+        result = {"tools": MCP_TOOLS}
+    elif method == "tools/call":
+        params = req.get("params") or {}
+        name = params.get("name", "")
+        args = params.get("arguments") or {}
+        cid = request.headers.get("X-Correlation-ID") or f"mcp-{req_id}"
+        try:
+            data = _mcp_tool_call(name, args)
+        except KeyError:
+            return _mcp_error(req_id, -32602, f"Unknown tool: {name}")
+        except (TypeError, ValueError) as e:
+            return _mcp_error(req_id, -32602, f"Invalid params: {e}")
+        try:
+            auditor.record("governance_hub", "mcp_tool_call",
+                           {"tool": name, "arg_keys": sorted(args.keys())}, cid)
+        except Exception:
+            pass
+        result = {"content": [{"type": "text", "text": json.dumps(data, ensure_ascii=False)}],
+                  "structuredContent": data, "isError": False}
+    else:
+        return _mcp_error(req_id, -32601, f"Method not found: {method}")
+    return jsonify({"jsonrpc": "2.0", "id": req_id, "result": result})
+
 # --- P0-2: Token 预算 ---
 
 @app.route("/budget/dashboard", methods=["GET"])
