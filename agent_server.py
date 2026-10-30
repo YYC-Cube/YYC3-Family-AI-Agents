@@ -13,11 +13,13 @@ YYC³ FAmily-AI Agent Server v3.1 — 集成治理中枢
 """
 
 import argparse
+import hashlib
 import hmac
 import json
 import logging
 import os
 import sys
+import threading
 import time
 import uuid
 from datetime import datetime, timezone
@@ -42,6 +44,13 @@ SYSTEM_PROMPT_PATH = os.environ.get("SYSTEM_PROMPT_PATH", "/workspace/SYSTEM.md"
 GOVERNANCE_ENDPOINT = os.environ.get("GOVERNANCE_ENDPOINT", "http://localhost:25700")
 GOVERNANCE_API_KEY = os.environ.get("GOVERNANCE_API_KEY", "")
 AGENT_API_KEY = os.environ.get("AGENT_API_KEY", "")  # 空则 /chat 开放（本地开发）；生产必须配置
+# E1-3 缓存与降级矩阵：语义缓存（TTL 秒，0=关闭；上限条数 LRU 驱逐）+ vLLM 备援端点（空=关闭）
+CHAT_CACHE_TTL = int(os.environ.get("YYC3_CHAT_CACHE_TTL", "300"))
+CHAT_CACHE_MAX = int(os.environ.get("YYC3_CHAT_CACHE_MAX", "256"))
+VLLM_ENDPOINT_BACKUP = os.environ.get("VLLM_ENDPOINT_BACKUP", "")
+_chat_cache: dict = {}
+_cache_lock = threading.Lock()
+_cache_stats = {"hits": 0, "misses": 0}
 START_TIME = datetime.now(timezone.utc)
 
 _system_prompt_cache = None
@@ -146,37 +155,114 @@ def _check_collaboration(user_message, confidence=1.0, complexity=0.5, risk="low
         logger.debug(f"[{correlation_id}] collaboration check failed (no collab): {e}")
         return {"should_collaborate": False}
 
-def call_vllm(messages, temperature=0.7, max_tokens=4096):
-    headers = {"Content-Type": "application/json"}
-    payload = {"model": VLLM_MODEL, "messages": messages,
-               "temperature": temperature, "max_tokens": max_tokens, "stream": False,
-               "chat_template_kwargs": {"enable_thinking": False}}
-    try:
-        resp = requests.post(f"{VLLM_ENDPOINT}/chat/completions",
-                             headers=headers, json=payload, timeout=120)
-        resp.raise_for_status()
-        data = resp.json()
-        usage = data.get("usage", {})
-        content = data["choices"][0]["message"]["content"]
-        if content is None:
-            content = data["choices"][0]["message"].get("reasoning", "") or "(模型推理超时,请增大max_tokens)"
-        return content, usage
-    except requests.exceptions.ConnectionError:
-        return {"error": "vLLM endpoint unavailable", "endpoint": VLLM_ENDPOINT}, {}
-    except Exception as e:
-        return {"error": str(e)}, {}
+def _cache_key(messages, temperature, max_tokens):
+    """E1-3 缓存键：模型 + 全量 messages（含注入后 system）+ 采样参数（不含 correlation_id）"""
+    blob = json.dumps({"model": VLLM_MODEL, "messages": messages,
+                       "temperature": temperature, "max_tokens": max_tokens},
+                      sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
-def _iter_vllm_stream(messages, temperature=0.7, max_tokens=4096):
-    """E1-1 vLLM OpenAI 兼容流式调用：yield SSE 原始 data 行；连接/HTTP 失败抛异常由调用方转 error 事件"""
-    payload = {"model": VLLM_MODEL, "messages": messages,
-               "temperature": temperature, "max_tokens": max_tokens,
-               "stream": True, "stream_options": {"include_usage": True},
-               "chat_template_kwargs": {"enable_thinking": False}}
-    resp = requests.post(f"{VLLM_ENDPOINT}/chat/completions",
-                         headers={"Content-Type": "application/json"},
-                         json=payload, timeout=(5, 120), stream=True)
-    resp.raise_for_status()
+def _cache_get(key):
+    if CHAT_CACHE_TTL <= 0:
+        return None
+    with _cache_lock:
+        entry = _chat_cache.get(key)
+        if not entry:
+            _cache_stats["misses"] += 1
+            return None
+        if time.time() - entry["ts"] > CHAT_CACHE_TTL:
+            _chat_cache.pop(key, None)
+            _cache_stats["misses"] += 1
+            return None
+        _cache_stats["hits"] += 1
+        return entry
+
+
+def _cache_put(key, text, usage):
+    if CHAT_CACHE_TTL <= 0:
+        return
+    with _cache_lock:
+        if len(_chat_cache) >= CHAT_CACHE_MAX:
+            _chat_cache.pop(next(iter(_chat_cache)), None)
+        _chat_cache[key] = {"text": text, "usage": usage, "ts": time.time()}
+
+
+def call_vllm(messages, temperature=0.7, max_tokens=4096, correlation_id=""):
+    """E1-3 降级矩阵：vLLM 主端点连接异常/5xx 自动切换备援端点，4xx 属请求问题不切换；
+    降级即留痕（telemetry model_failover + 审计 model_degraded）"""
+    endpoints = [VLLM_ENDPOINT] + ([VLLM_ENDPOINT_BACKUP] if VLLM_ENDPOINT_BACKUP else [])
+    last_error = None
+    for idx, endpoint in enumerate(endpoints):
+        resp = None
+        try:
+            resp = requests.post(f"{endpoint}/chat/completions",
+                                 headers={"Content-Type": "application/json"},
+                                 json={"model": VLLM_MODEL, "messages": messages,
+                                       "temperature": temperature, "max_tokens": max_tokens,
+                                       "stream": False,
+                                       "chat_template_kwargs": {"enable_thinking": False}},
+                                 timeout=120)
+            resp.raise_for_status()
+            data = resp.json()
+            usage = data.get("usage", {})
+            content = data["choices"][0]["message"]["content"]
+            if content is None:
+                content = data["choices"][0]["message"].get("reasoning", "") or "(模型推理超时,请增大max_tokens)"
+            if idx > 0:
+                telemetry.record_event("model_failover", correlation_id, level="warning",
+                                       primary=VLLM_ENDPOINT, backup=endpoint)
+                _governance_report("model_degraded", {"primary": VLLM_ENDPOINT,
+                                                      "backup": endpoint},
+                                   correlation_id=correlation_id)
+            return content, usage
+        except requests.exceptions.HTTPError as e:
+            last_error = e
+            if resp is not None and getattr(resp, "status_code", 0) < 500:
+                break
+        except requests.exceptions.RequestException as e:
+            last_error = e
+        except Exception as e:
+            last_error = e
+            break
+    return {"error": f"all endpoints failed: {last_error}",
+            "endpoints": endpoints}, {}
+
+
+def _iter_vllm_stream(messages, temperature=0.7, max_tokens=4096, correlation_id=""):
+    """E1-1 vLLM OpenAI 兼容流式调用：yield SSE 原始 data 行；连接/HTTP 失败抛异常由调用方转 error 事件。
+    E1-3 降级矩阵：主端点在建流阶段失败自动切备援（流一旦开始不切换）。"""
+    endpoints = [VLLM_ENDPOINT] + ([VLLM_ENDPOINT_BACKUP] if VLLM_ENDPOINT_BACKUP else [])
+    resp = None
+    last_error = None
+    for idx, endpoint in enumerate(endpoints):
+        try:
+            resp = requests.post(f"{endpoint}/chat/completions",
+                                 headers={"Content-Type": "application/json"},
+                                 json={"model": VLLM_MODEL, "messages": messages,
+                                       "temperature": temperature, "max_tokens": max_tokens,
+                                       "stream": True,
+                                       "stream_options": {"include_usage": True},
+                                       "chat_template_kwargs": {"enable_thinking": False}},
+                                 timeout=(5, 120), stream=True)
+            resp.raise_for_status()
+            if idx > 0:
+                telemetry.record_event("model_failover", correlation_id, level="warning",
+                                       primary=VLLM_ENDPOINT, backup=endpoint, stream=True)
+                _governance_report("model_degraded", {"primary": VLLM_ENDPOINT,
+                                                      "backup": endpoint, "stream": True},
+                                   correlation_id=correlation_id)
+            break
+        except requests.exceptions.HTTPError as e:
+            last_error = e
+            if getattr(resp, "status_code", 0) < 500:
+                raise requests.exceptions.HTTPError(
+                    f"{endpoint} rejected request: {e}", request=e.request, response=resp)
+            # 5xx → 尝试下一端点
+        except requests.exceptions.RequestException as e:
+            last_error = e
+    if resp is None:
+        raise requests.exceptions.ConnectionError(f"all endpoints failed: {last_error}")
     try:
         for line in resp.iter_lines(decode_unicode=True):
             if line:
@@ -248,6 +334,23 @@ def chat():
     messages.extend(history)
     messages.append({"role": "user", "content": user_message})
 
+    # E1-3 语义缓存：命中则零推理返回（预算不再计费，审计注明 cached）
+    cache_key = _cache_key(messages, temperature, max_tokens)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        telemetry.record_event("cache_hit", correlation_id, agent=AGENT_NAME)
+        _governance_report("chat_response", {"latency_ms": 0, "tokens": 0, "cached": True},
+                           correlation_id=correlation_id)
+        collab = _check_collaboration(user_message, confidence=0.85, complexity=complexity,
+                                      risk=risk, correlation_id=correlation_id)
+        return jsonify({
+            "agent": AGENT_NAME, "label": AGENT_LABEL, "role": AGENT_ROLE,
+            "response": cached["text"], "correlation_id": correlation_id,
+            "usage": cached["usage"], "latency_ms": 0, "cached": True,
+            "collaboration": collab,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+
     with telemetry.trace_span("llm_inference", correlation_id, agent=AGENT_NAME, model=VLLM_MODEL,
                               attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME)):
         start = time.time()
@@ -267,6 +370,9 @@ def chat():
     collab = _check_collaboration(user_message, confidence, complexity, risk,
                                   correlation_id=correlation_id)
 
+    if isinstance(response, str):
+        _cache_put(cache_key, response, usage)
+
     telemetry.record_event("chat_response", correlation_id, agent=AGENT_NAME,
                            latency_ms=latency,
                            tokens=prompt_tokens + completion_tokens,
@@ -279,6 +385,7 @@ def chat():
         "response": response,
         "correlation_id": correlation_id,
         "usage": usage, "latency_ms": latency,
+        "cached": False,
         "collaboration": collab,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
@@ -323,52 +430,74 @@ def chat_stream():
     messages.extend(history)
     messages.append({"role": "user", "content": user_message})
 
+    # E1-3 语义缓存：命中则重放（见 generate() 内单 delta 回放），预算零计费
+    cache_key = _cache_key(messages, temperature, max_tokens)
+    cached = _cache_get(cache_key)
+
     def generate():
         start = time.time()
         usage = {}
         pieces = []
         completed = False
+        cached_hit = cached is not None
         try:
             yield _sse({"type": "meta", "agent": AGENT_NAME, "label": AGENT_LABEL,
                         "role": AGENT_ROLE, "correlation_id": correlation_id,
                         "model": VLLM_MODEL})
-            with telemetry.trace_span("llm_inference_stream", correlation_id,
-                                      agent=AGENT_NAME, model=VLLM_MODEL,
-                                      attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME,
-                                                                  operation="chat.stream")):
-                for line in _iter_vllm_stream(messages, temperature, max_tokens):
-                    if not line.startswith("data:"):
-                        continue
-                    payload_text = line[len("data:"):].strip()
-                    if payload_text == "[DONE]":
-                        break
-                    try:
-                        chunk = json.loads(payload_text)
-                    except ValueError:
-                        continue
-                    if chunk.get("usage"):
-                        usage = chunk["usage"]
-                    choices = chunk.get("choices") or []
-                    delta = (choices[0].get("delta") or {}) if choices else {}
-                    piece = delta.get("content")
-                    if piece:
-                        pieces.append(piece)
-                        yield _sse({"type": "delta", "content": piece,
-                                    "correlation_id": correlation_id})
+            if cached_hit:
+                # E1-3 缓存命中重放：单 delta 全量回放，不触推理（预算零计费）
+                telemetry.record_event("cache_hit", correlation_id, agent=AGENT_NAME, stream=True)
+                text = cached["text"]
+                usage = cached.get("usage") or {}
+                pieces.append(text)
+                yield _sse({"type": "delta", "content": text,
+                            "correlation_id": correlation_id})
+            else:
+                with telemetry.trace_span("llm_inference_stream", correlation_id,
+                                          agent=AGENT_NAME, model=VLLM_MODEL,
+                                          attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME,
+                                                                      operation="chat.stream")):
+                    for line in _iter_vllm_stream(messages, temperature, max_tokens,
+                                                  correlation_id=correlation_id):
+                        if not line.startswith("data:"):
+                            continue
+                        payload_text = line[len("data:"):].strip()
+                        if payload_text == "[DONE]":
+                            break
+                        try:
+                            chunk = json.loads(payload_text)
+                        except ValueError:
+                            continue
+                        if chunk.get("usage"):
+                            usage = chunk["usage"]
+                        choices = chunk.get("choices") or []
+                        delta = (choices[0].get("delta") or {}) if choices else {}
+                        piece = delta.get("content")
+                        if piece:
+                            pieces.append(piece)
+                            yield _sse({"type": "delta", "content": piece,
+                                        "correlation_id": correlation_id})
             completed = True
         except Exception as e:
             yield _sse({"type": "error", "error": str(e)[:200],
                         "correlation_id": correlation_id})
         finally:
             latency = round((time.time() - start) * 1000, 1)
-            prompt_tokens = usage.get("prompt_tokens", 0)
-            completion_tokens = usage.get("completion_tokens", 0)
+            if cached_hit:
+                # E1-3 缓存命中：无新增推理花费，预算零计费（done 事件仍展示原始用量供参考）
+                prompt_tokens, completion_tokens = 0, 0
+            else:
+                prompt_tokens = usage.get("prompt_tokens", 0)
+                completion_tokens = usage.get("completion_tokens", 0)
+                if completed and pieces:
+                    _cache_put(cache_key, "".join(pieces), usage)
             _governance_token(prompt_tokens, completion_tokens, latency, VLLM_MODEL,
                               correlation_id=correlation_id)
             _governance_report("chat_response", {"latency_ms": latency,
                                                  "tokens": prompt_tokens + completion_tokens,
                                                  "stream": True, "completed": completed,
-                                                 "partial": not completed},
+                                                 "partial": not completed,
+                                                 "cached": cached_hit},
                                correlation_id=correlation_id)
             collab = _check_collaboration(user_message, confidence=0.85, complexity=complexity,
                                           risk=risk, correlation_id=correlation_id)
@@ -383,6 +512,7 @@ def chat_stream():
             if completed:
                 yield _sse({"type": "done", "correlation_id": correlation_id,
                             "usage": usage, "latency_ms": latency,
+                            "cached": cached_hit,
                             "collaboration": collab,
                             "timestamp": datetime.now(timezone.utc).isoformat()})
 
@@ -399,9 +529,13 @@ def status():
     return jsonify({
         "agent": AGENT_NAME, "label": AGENT_LABEL, "role": AGENT_ROLE,
         "model": VLLM_MODEL, "vllm_endpoint": VLLM_ENDPOINT,
+        "vllm_backup_configured": bool(VLLM_ENDPOINT_BACKUP),
         "governance_endpoint": GOVERNANCE_ENDPOINT,
         "system_prompt_loaded": os.path.exists(SYSTEM_PROMPT_PATH),
         "uptime_seconds": round((datetime.now(timezone.utc) - START_TIME).total_seconds(), 1),
+        "cache": {"enabled": CHAT_CACHE_TTL > 0, "ttl_seconds": CHAT_CACHE_TTL,
+                  "max_entries": CHAT_CACHE_MAX, "entries": len(_chat_cache),
+                  **_cache_stats},
     })
 
 @app.route("/identity", methods=["GET"])
