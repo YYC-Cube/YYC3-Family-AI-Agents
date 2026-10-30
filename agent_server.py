@@ -27,6 +27,7 @@ from datetime import datetime, timezone
 import requests
 from flask import Flask, jsonify, request, Response
 
+import guardrails
 import telemetry
 
 app = Flask(__name__)
@@ -313,6 +314,19 @@ def chat():
     telemetry.record_event("chat_request", correlation_id, agent=AGENT_NAME,
                            message_len=len(user_message), risk=risk)
 
+    # E2-4 护栏管线：输入注入检测（block 拒绝 / degrade 放行留痕）
+    gate = guardrails.inspect_input(user_message)
+    if gate["verdict"] == "block":
+        telemetry.record_event("guardrail_block", correlation_id, level="warning", agent=AGENT_NAME,
+                               labels=",".join(gate["labels"]))
+        _governance_report("guardrail_block", {"labels": gate["labels"], "message": user_message[:100]},
+                           correlation_id=correlation_id)
+        return jsonify({"error": "guardrail_block", "labels": gate["labels"],
+                        "agent": AGENT_NAME, "correlation_id": correlation_id}), 422
+    if gate["verdict"] == "degrade":
+        _governance_report("guardrail_degrade", {"labels": gate["labels"]},
+                           correlation_id=correlation_id)
+
     with telemetry.trace_span("frozen_check", correlation_id, agent=AGENT_NAME):
         frozen, reason = _check_frozen()
     if frozen:
@@ -371,6 +385,10 @@ def chat():
                                   correlation_id=correlation_id)
 
     if isinstance(response, str):
+        response, redact_labels = guardrails.redact_output(response)
+        if redact_labels:
+            _governance_report("guardrail_redact", {"labels": redact_labels},
+                               correlation_id=correlation_id)
         _cache_put(cache_key, response, usage)
 
     telemetry.record_event("chat_response", correlation_id, agent=AGENT_NAME,
@@ -386,6 +404,7 @@ def chat():
         "correlation_id": correlation_id,
         "usage": usage, "latency_ms": latency,
         "cached": False,
+        "input_verdict": gate["verdict"],
         "collaboration": collab,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
@@ -408,6 +427,19 @@ def chat_stream():
     correlation_id = data.get("correlation_id") or str(uuid.uuid4())
     telemetry.record_event("chat_stream_request", correlation_id, agent=AGENT_NAME,
                            message_len=len(user_message), risk=risk)
+
+    # E2-4 护栏管线（流式）：输入注入检测（block 拒绝 / degrade 放行留痕）
+    gate = guardrails.inspect_input(user_message)
+    if gate["verdict"] == "block":
+        telemetry.record_event("guardrail_block", correlation_id, level="warning", agent=AGENT_NAME,
+                               labels=",".join(gate["labels"]))
+        _governance_report("guardrail_block", {"labels": gate["labels"], "message": user_message[:100]},
+                           correlation_id=correlation_id)
+        return jsonify({"error": "guardrail_block", "labels": gate["labels"],
+                        "agent": AGENT_NAME, "correlation_id": correlation_id}), 422
+    if gate["verdict"] == "degrade":
+        _governance_report("guardrail_degrade", {"labels": gate["labels"]},
+                           correlation_id=correlation_id)
 
     with telemetry.trace_span("frozen_check", correlation_id, agent=AGENT_NAME):
         frozen, reason = _check_frozen()
