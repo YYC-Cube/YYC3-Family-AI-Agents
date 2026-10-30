@@ -58,6 +58,19 @@ def get_metrics() -> dict:
         return {"counters": dict(_counters), "otel": OTEL_AVAILABLE}
 
 
+def genai_attrs(system: str = "vllm", model: str = "", agent: str = "",
+                operation: str = "chat", **extra) -> dict:
+    """E1-4 OTel GenAI 语义约定属性组（gen_ai.*，对齐 semantic-conventions-genai Development 子集）。
+    与既有自有字段并存不替换；OTel 在场时作为 span attributes，降级时随 JSON 日志输出。"""
+    attrs = {"gen_ai.system": system, "gen_ai.operation.name": operation}
+    if model:
+        attrs["gen_ai.request.model"] = model
+    if agent:
+        attrs["gen_ai.agent.name"] = agent
+    attrs.update(extra)
+    return attrs
+
+
 def _log_event(level: str, name: str, correlation_id: str, attrs: dict, duration_ms=None):
     if TELEMETRY_LEVEL == "off":
         return
@@ -74,9 +87,12 @@ def _log_event(level: str, name: str, correlation_id: str, attrs: dict, duration
 
 
 @contextmanager
-def trace_span(name: str, correlation_id: str = "", **attrs):
-    """追踪一个阶段：OTel 在场则真 span，否则结构化日志（含时长）。永不抛异常。"""
+def trace_span(name: str, correlation_id: str = "", attrs: dict = None, **kwargs):
+    """追踪一个阶段：OTel 在场则真 span，否则结构化日志（含时长）。永不抛异常。
+    attrs 字典（可含 gen_ai.* 等点号键）与 kwargs 合并，kwargs 优先。"""
     start = time.time()
+    merged = dict(attrs or {})
+    merged.update(kwargs)
     span = None
     if OTEL_AVAILABLE and _OTEL_TRACER is not None:
         try:
@@ -84,7 +100,7 @@ def trace_span(name: str, correlation_id: str = "", **attrs):
             span.__enter__()
             if correlation_id:
                 span.set_attribute("correlation_id", correlation_id)
-            for k, v in attrs.items():
+            for k, v in merged.items():
                 span.set_attribute(k, v)
         except Exception:
             span = None
@@ -99,7 +115,7 @@ def trace_span(name: str, correlation_id: str = "", **attrs):
                 span.__exit__(type("E", (Exception,), {}), Exception("error"), None)
             except Exception:
                 pass
-        _log_event("warning", name, correlation_id, {"status": "error"}, dur)
+        _log_event("warning", name, correlation_id, {"status": "error", **merged}, dur)
         raise
     else:
         dur = (time.time() - start) * 1000
@@ -109,13 +125,15 @@ def trace_span(name: str, correlation_id: str = "", **attrs):
                 span.__exit__(None, None, None)
             except Exception:
                 pass
-        _log_event("info", name, correlation_id, {"status": "ok"}, dur)
+        _log_event("info", name, correlation_id, {"status": "ok", **merged}, dur)
 
 
-def record_event(name: str, correlation_id: str = "", level: str = "info", **attrs):
-    """记录单点事件（无时长语义）。永不抛异常。"""
+def record_event(name: str, correlation_id: str = "", level: str = "info", attrs: dict = None, **kwargs):
+    """记录单点事件（无时长语义）。永不抛异常。attrs 字典与 kwargs 合并，kwargs 优先。"""
     try:
         _bump(f"event.{name}")
-        _log_event(level, name, correlation_id, attrs)
+        merged = dict(attrs or {})
+        merged.update(kwargs)
+        _log_event(level, name, correlation_id, merged)
     except Exception:
         pass
