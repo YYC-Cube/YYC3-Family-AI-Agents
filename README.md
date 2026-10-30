@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/yyc3-aifamily.png" alt="YYC³ AI Family — 言启象限 · 语枢未来" />
+<img src="./public/yyc3-family.png" alt="YYC³ AI Family — 言启象限 · 语枢未来" />
 
 # YYC³ FAmily-AI Agent
 
@@ -19,7 +19,7 @@ _万象归元于云枢 · 深栈智启新纪元_
 ### 构建与质量 · Build & Quality
 
 [![CI](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml/badge.svg)](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-166%20passed%20%2B%208%20skipped-2ea043?style=for-the-badge)
+![Tests](https://img.shields.io/badge/tests-261%20passed%20%2B%208%20skipped-2ea043?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Regression Gate](https://img.shields.io/badge/main%E5%88%86%E6%94%AF%E4%BF%9D%E6%8A%A4-CI%20%E5%9B%9B%E6%A3%80%E6%9F%A5%E5%BF%85%E7%BB%BF-0969da?style=for-the-badge)
@@ -29,9 +29,21 @@ _万象归元于云枢 · 深栈智启新纪元_
 ![LLM](https://img.shields.io/badge/LLM-Qwen3.6--27B--FP8-6C3BAA?style=for-the-badge)
 ![Agents](https://img.shields.io/badge/Agents-8-ff8c00?style=for-the-badge)
 ![SSE Streaming](https://img.shields.io/badge/SSE-%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA-8b5cf6?style=for-the-badge)
+![Durable Execution](https://img.shields.io/badge/%E6%8C%81%E4%B9%85%E5%8C%96%E6%89%A7%E8%A1%8C-checkpoint%2Fresume-7c3aed?style=for-the-badge)
 ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-v3.0-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![systemd](https://img.shields.io/badge/systemd-12%20Services-4B8BBE?style=for-the-badge&logo=systemd&logoColor=white)
-![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-OTLP-425cc7?style=for-the-badge&logo=opentelemetry&logoColor=white)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-gen__ai.*%20%E8%AF%AD%E4%B9%89-425cc7?style=for-the-badge&logo=opentelemetry&logoColor=white)
+
+### 协议与互操作 · Protocol & Interop
+
+![MCP](https://img.shields.io/badge/MCP-2026--07--28%20stateless-2b7bbb?style=for-the-badge)
+![A2A](https://img.shields.io/badge/A2A-Agent%20Card%20%2B%20tasks-8A2BE2?style=for-the-badge)
+
+### 评估与记忆 · Evaluation & Memory
+
+![Evals](https://img.shields.io/badge/%E8%AF%84%E4%BC%B0%E5%9F%BA%E7%BA%BF-golden%2024%20%E4%BE%8B%20%2B%20judge-8b5cf6?style=for-the-badge)
+![Semantic Memory](https://img.shields.io/badge/%E5%88%86%E5%B1%82%E8%AE%B0%E5%BF%86-Semantic%20%E9%A6%96%E6%89%B9-2ea043?style=for-the-badge)
+![Guardrails](https://img.shields.io/badge/%E6%8A%A4%E6%A0%8F%E7%AE%A1%E7%BA%BF-%E6%B3%A8%E5%85%A5%E6%8B%A6%E6%88%AA%20%2B%20%E8%BE%93%E5%87%BA%E8%84%B1%E6%95%8F-dc143c?style=for-the-badge)
 
 ### 治理与安全 · Governance & Security
 
@@ -73,10 +85,16 @@ _万象归元于云枢 · 深栈智启新纪元_
 | ---- | ---- |
 | 🧑‍🤝‍🧑 **8 位家人** | 总指挥 / 导航员 / 思考者 / 预言家 / 推荐官 / 安全官 / 质量官 / 创意官 |
 | 🛡️ **统一治理** | 行为审计、Kill Switch 熔断、Token 预算、成本追踪、协同触发、上下文图谱 |
+| 📡 **流式对话** | `POST /chat/stream` SSE 逐 token（meta/delta/done/error 事件，治理上报同构） |
+| ⚡ **持久化执行** | 步骤级 checkpoint + correlation_id 断点恢复（失败重入不重复推理、预算零计费） |
+| 🧩 **协议互通** | MCP server（2026-07-28 stateless 子集，治理工具三件）+ MCP client + A2A Agent Card / tasks |
+| 🛡️ **护栏管线** | 输入注入检测分级处置（block/degrade）+ 输出脱敏，全量入审计链 |
+| 🧬 **分层记忆** | Semantic 语义事实（抽取→去重合并→置信度衰减）+ Chroma 向量记忆，增删改入审计链 |
+| 📊 **评估基线** | golden set 24 例（规则断言离线可跑）+ LLM-judge 钩子，CI 结构门禁 |
 | 🧠 **本地推理** | Qwen3.6-27B-FP8（vLLM）+ Qwen3-Embedding-8B + Qwen3-Reranker-8B |
 | 📦 **双部署模式** | Docker Compose 容器编排 与 systemd 裸机守护进程（DGX Spark N2 生产验证） |
 
-**关键词 / Keywords**：多智能体 · AI 家人 · 治理中枢 · 行为审计 · Token 预算 · 零信任认证 · 本地推理 · vLLM · Flask · Docker Compose · systemd · 可观测性 · OTel
+**关键词 / Keywords**：多智能体 · AI 家人 · 治理中枢 · 行为审计 · Token 预算 · 零信任认证 · 流式对话 · 持久化执行 · MCP · A2A · 护栏管线 · 分层记忆 · 评估基线 · 本地推理 · vLLM · Flask · Docker Compose · systemd · 可观测性 · OTel
 
 ---
 
@@ -144,6 +162,22 @@ sequenceDiagram
     A-->>U: JSON 响应
 ```
 
+> 流式变体：`POST /chat/stream`（SSE：meta → delta… → done/error），治理上报与上表完全同构；
+> 持久化变体：同一 `correlation_id` 重入经步骤级 checkpoint 断点恢复（`resumed_steps` 随响应返回）。
+
+### 协议互通链路（E2）
+
+```mermaid
+flowchart LR
+    subgraph MCP["MCP（2026-07-28 stateless 子集）"]
+        MC["MCP Client<br/>mcp_client.py"] -->|JSON-RPC /mcp| MS["MCP Server<br/>governance_hub"]
+    end
+    subgraph A2A["A2A"]
+        TA["第三方 A2A 客户端"] -->|发现| AC["/.well-known/agent.json"]
+        TA -->|message/send / tasks/get| AE["POST /a2a<br/>全治理管线"]
+    end
+```
+
 ### 部署架构
 
 ```mermaid
@@ -204,6 +238,16 @@ flowchart LR
 
 ## 🚀 快速开始
 
+### 方式零：本地克隆与测试
+
+```bash
+git clone git@github.com:YYC-Cube/YYC3-Family-AI-Agents.git
+cd YYC3-Family-AI-Agents
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
+python -m pytest tests/ -q        # 全量门禁（261+8）
+```
+
 ### 方式一：Docker Compose（容器编排）
 
 ```bash
@@ -236,6 +280,14 @@ curl -N -X POST http://localhost:25600/chat/stream \
   -H "Content-Type: application/json" \
   -d '{"message": "分析当前系统状态"}'
 
+# A2A 发现卡（第三方客户端入口）
+curl http://localhost:25600/.well-known/agent.json | python3 -m json.tool
+
+# A2A 任务（JSON-RPC message/send，经全治理管线）
+curl -X POST http://localhost:25600/a2a \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"message/send","params":{"message":{"role":"user","parts":[{"kind":"text","text":"分析当前系统状态"}]}}}'
+
 # 健康检查
 curl http://localhost:25600/health | python3 -m json.tool
 
@@ -254,19 +306,26 @@ curl http://127.0.0.1:25700/dashboard | python3 -m json.tool
 | `/status` | GET | 运行时状态与配置 |
 | `/identity` | GET | 身份档案（IDENTITY.md / SOUL.md） |
 | `/capabilities` | GET | 能力清单 |
-| `/chat` | POST | 对话推理（自动接入治理中枢） |
+| `/chat` | POST | 对话推理（自动接入治理中枢；同 cid+指纹重入经 checkpoint 断点恢复） |
 | `/chat/stream` | POST | 流式对话（SSE：meta / delta / done / error 事件，治理上报同构） |
+| `/a2a` | POST | A2A JSON-RPC（message.send / tasks.get，全治理管线） |
+| `/.well-known/agent.json` | GET | A2A Agent Card（第三方客户端发现入口） |
 
 ### 治理中枢 API（节选）
 
 | 端点 | 方法 | 说明 |
 | ---- | ---- | ---- |
+| `/mcp` | POST | MCP server（stateless JSON-RPC：initialize / tools.list / tools.call） |
 | `/audit/record` | POST | 行为审计上报 |
+| `/audit/trail` | GET | 审计追踪检索 |
 | `/kill-switch` | POST | 一键冻结 Agent |
 | `/budget/dashboard` | GET | Token 预算仪表盘 |
 | `/collaboration/check` | POST | 协同触发检查 |
 | `/context/inject` | POST | 动态上下文注入 |
-| `/memory/recall` | GET | 向量记忆召回 |
+| `/memory/recall` | GET | 向量记忆召回（Chroma） |
+| `/memory/semantic/store` | POST | 语义事实写入（抽取 → 去重合并 → 入审计链） |
+| `/memory/semantic/recall` | GET | 语义事实召回（关键词覆盖 × 置信度衰减） |
+| `/memory/semantic/forget` | POST | 语义事实软删除（可追溯） |
 
 ---
 
@@ -275,15 +334,21 @@ curl http://127.0.0.1:25700/dashboard | python3 -m json.tool
 ```
 yyc3-family-ai-agents/
 ├── docker-compose.yml          ← 8 Agent + 治理中枢容器编排
-├── agent_server.py             ← 通用 Agent Flask 服务（v3.1，集成治理中枢）
-├── governance_hub.py           ← 治理中枢（v1.0.0）
+├── agent_server.py             ← 通用 Agent Flask 服务（v3.1，集成治理中枢 + 流式 + A2A + 持久化执行）
+├── governance_hub.py           ← 治理中枢（v1.0.0，含 MCP server + 语义记忆）
+├── guardrails.py               ← 护栏管线（注入检测分级处置 + 输出脱敏）
+├── memory_semantic.py          ← 分层记忆 Semantic 层（抽取/去重合并/置信度衰减）
+├── mcp_client.py               ← MCP 客户端（stateless JSON-RPC）
+├── durable.py                  ← 持久化执行（步骤级 checkpoint + 断点恢复）
 ├── requirements.txt            ← Python 运行时依赖
+├── evals/                      ← 评估基线（golden set + 规则断言 runner + LLM-judge 钩子）
+├── tests/                      ← 契约/集成/UAT 测试（261+8，CI 全量门禁）
 ├── CHANGELOG.md                ← 变更日志（Keep a Changelog + SemVer）
 ├── CONTRIBUTING.md             ← 贡献指南（工作流 + 质量门禁）
 ├── ARCHITECTURE.md             ← 架构总览（分层/数据流/ADR）
 ├── CODE_OF_CONDUCT.md          ← 行为准则
 ├── LICENSE                     ← MIT 许可证
-├── public/                     ← 品牌素材与多平台图标（yyc3-family.png 等）
+├── public/                     ← 品牌素材与多平台图标（yyc3-family.png 顶图等）
 ├── deploy/                     ← 生产部署脚本与 systemd 单元
 │   ├── install.sh              ← 一键安装部署
 │   ├── ops.sh                  ← 运维快捷命令
@@ -299,6 +364,8 @@ yyc3-family-ai-agents/
 │   ├── gewu-zongshi/           ← 格物·宗师 (25606)
 │   └── chuangxiang-lingyun/    ← 创想·灵韵 (25607)
 ├── docs/                       ← 文档库（导航入口 docs/README.md）
+│   ├── 11-…演进完善拓展规划.md        ← 大数据 Agent 对标 + E1/E2/E3 路线 + 执行台账
+│   ├── 12-…可视化交互体系设计.md      ← 可视化/交互/SSE-UX 协议（中英双语）
 │   ├── 10-YYC3-提示词工程-企业蓝图/   ← 提示词工程蓝图（1200-1213，14 模块 33 篇）
 │   └── 0379-family-ai-agents-*/      ← 会话工作目录（审核/规划/日志/总结）
 └── examples/                   ← 示例代码（蓝图工程原型，不接产线）
@@ -313,9 +380,11 @@ yyc3-family-ai-agents/
 | ---- | ---- |
 | 运行时 | Python 3.12 · Flask 3.x |
 | 推理后端 | vLLM · Qwen3.6-27B-FP8（本地部署） |
-| 记忆/检索 | ChromaDB · Qwen3-Embedding-8B · Qwen3-Reranker-8B |
+| 记忆/检索 | ChromaDB（向量）· 语义事实记忆（SQLite）· Qwen3-Embedding-8B · Qwen3-Reranker-8B |
+| 协议 | MCP（2026-07-28 stateless 子集，server + client）· A2A（Agent Card / message.send）· SSE 流式 |
+| 韧性 | 步骤级 checkpoint 断点恢复 · 语义缓存 · vLLM 主备 failover · 语义缓存 TTL |
 | 部署 | Docker Compose v3 · systemd · DGX Spark N2 |
-| 安全 | OpenShell 安全沙箱 · 治理中枢 Kill Switch · ACS 策略 |
+| 安全 | OpenShell 安全沙箱 · 治理中枢 Kill Switch · ACS 策略 · 护栏管线（注入检测/输出脱敏）· pip-audit + SBOM 周扫 |
 
 ---
 
@@ -341,6 +410,8 @@ yyc3-family-ai-agents/
 | `milestone/v1-family-launch` | 里程碑 | 「YYC³ 家族」8 位家人 + 治理中枢首次完整齐备并投产（DGX Spark N2） |
 
 > 📌 后续发版遵循 [SemVer](https://semver.org/lang/zh-CN/)：MAJOR（架构不兼容变更）· MINOR（新增能力）· PATCH（缺陷修复）；组件标签随 `agent_server.py` / `governance_hub.py` 版本号同步演进。
+
+> 🚀 **演进批次**：E1（生产补课：流式/评估基线/缓存降级/OTel 语义/供应链）与 E2（协议与记忆：MCP server+client / A2A / 护栏管线 / 分层记忆）已于 **2026-10-30 完整收官**；E3 已启动（durable execution ✅ · 大数据语义层 · 规模化形态）——路线与逐项佐证见 [11- 演进规划 §9 执行台账](docs/11-YYC3-Family-AI-Agent-演进完善拓展规划.md)。
 
 ---
 
