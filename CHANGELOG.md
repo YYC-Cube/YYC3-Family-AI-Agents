@@ -14,6 +14,8 @@
 - **E1-1 SSE 流式对话**：`POST /chat/stream` 以 `text/event-stream` 逐 delta 转发 vLLM 流（`stream_options.include_usage` 获取真实用量）——`meta/delta/done/error` 四类事件、`X-Correlation-ID` 响应头；frozen 检查/审计/预算/协同/telemetry 上报与 `/chat` 完全同构，客户端断连经生成器 `finally` 兜底 `partial` 上报（审计链不因流式而缺口）；生成器不触请求上下文（规避 werkzeug 3.1 `request_ctx` 弹栈错乱）；契约测试 6 例（`tests/integration/test_streaming.py`）
 - **E1-5 供应链自动化**：`security.yml`——每周一 pip-audit 审计运行时与测试依赖（高危即红）+ anchore/sbom-action 产出 SPDX JSON SBOM 附件；`dependabot.yml`——pip 与 github-actions 双生态周更
 - **E1 规划指导**：`docs/11-YYC3-Family-AI-Agent-演进完善拓展规划.md`——大数据 Agent 生态对标（编排/协议/语义层/记忆/观测五维）+ 差距定级 + E1/E2/E3 三阶段路线 + 生产落地检查清单 + 执行进度台账
+- **README 升级**：顶图换新 `public/yyc3-aifamily.png`（1800×450 原尺寸，复用 `YYC-Cube/public/YYC3-README-顶图` 家族资产）；徽章体系五组重构（构建质量/运行时部署/治理安全/社区规范/家族 1+8，新增真实 CI 徽章与 SSE/零信任/审计链/OTel/pip-audit 能力徽章）；使用指南补 `/chat/stream` 流式示例；新增核心文档导航
+- **可视化交互体系设计（中英双语）**：`docs/12-YYC3-Family-AI-Agent-可视化交互体系设计.md`——六条设计原则、信息架构、组件体系（KPI 卡/家族行/审计表）、交互契约（30s 轮询降级保活/窗口切换/cid→Jaeger 深链）、**SSE 流式 UX 协议**（meta/delta/done/error → UI 状态唯一映射）、视觉令牌表与演进路线 R1-R5，全部取材自 `dashboard.html` 实码与 E1-1 流式契约
 - **P0-2 零信任端点认证**：`governance_hub.py` 与 `agent_server.py` 各自引入 `before_request` 认证中间件——写操作（POST/PUT/DELETE/PATCH）须持有效 `X-API-Key`（`hmac.compare_digest` 恒时比较）；读操作与 `/health` 豁免；未配置 Key 时保持本地开放模式
 - Agent 侧 4 个治理上报函数（审计/预算/上下文注入/协同检查）自动携带 `X-API-Key`（`_gov_headers()`）
 - `docker-compose.yml` 注入 `GOVERNANCE_API_KEY` / `AGENT_API_KEY`（`${VAR:?}` 缺失即启动报错，fail-fast）；`.env.example` 同步模板与说明

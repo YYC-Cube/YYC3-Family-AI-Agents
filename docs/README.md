@@ -22,6 +22,7 @@ docs/
 │   └── 1210-1213 治理层（大纲/路线图/算力/总纲）
 │
 ├── 11-YYC3-Family-AI-Agent-演进完善拓展规划.md   ← 大数据 Agent 生态对标 · 演进 E1/E2/E3 路线 + 生产落地检查清单
+├── 12-YYC3-Family-AI-Agent-可视化交互体系设计.md ← 治理中枢 Dashboard 可视化/交互/SSE-UX 协议（中英双语设计规范）
 │
 ├── YYC3-AI-Family-Agent-编程体系/                ← 技术维度（方法论 + 档案）
 │   ├── README.md                                ← 编程体系索引
