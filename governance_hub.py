@@ -18,6 +18,7 @@ import json
 import logging
 import memory_semantic
 import os
+import semantic_layer
 import sqlite3
 import threading
 import time
@@ -1152,6 +1153,74 @@ def mem_sem_list():
     finally:
         conn.close()
     return jsonify({"status": "ok", "agent": agent, "facts": items})
+
+# --- E3-1: 大数据语义层（MDL 建模 + SQL 即代码指标执行；SQL 复杂度从 LLM 卸载到语义层） ---
+
+_SEMANTIC_LAYER = None
+
+
+def _semantic_layer():
+    global _SEMANTIC_LAYER
+    if _SEMANTIC_LAYER is None:
+        mdl_path = os.environ.get(
+            "YYC3_SEMANTIC_MDL",
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "mdl", "demo.mdl.yaml"))
+        _SEMANTIC_LAYER = semantic_layer.SemanticLayer.load(mdl_path)
+        _SEMANTIC_LAYER.check_registry_drift()
+    return _SEMANTIC_LAYER
+
+
+@app.route("/semantic/mdl", methods=["GET"])
+def semantic_mdl():
+    layer = _semantic_layer()
+    return jsonify({"status": "ok", "name": layer.mdl.get("name"),
+                    "version": layer.mdl.get("version"),
+                    "row_limit": layer.row_limit,
+                    "tables": sorted(layer.tables),
+                    "metrics": sorted(semantic_layer.METRIC_REGISTRY)})
+
+
+@app.route("/semantic/query", methods=["POST"])
+def semantic_query():
+    """指标问答：确定性匹配已治理指标并执行（行数硬上限 + 结构化错误码）；全量入审计链。"""
+    d = request.get_json(force=True)
+    question = (d.get("question") or "").strip()
+    if not question:
+        return jsonify({"status": "error", "detail": "question is required"}), 400
+    target = os.environ.get("YYC3_SEMANTIC_TARGET_DB", "")
+    if not target:
+        return jsonify({"status": "error",
+                        "detail": "目标库未配置（YYC3_SEMANTIC_TARGET_DB）"}), 503
+    layer = _semantic_layer()
+    correlation_id = d.get("correlation_id") or request.headers.get("X-Correlation-ID") or ""
+    metric_name = layer.match_metric(question)
+    if not metric_name:
+        return jsonify({"status": "error", "code": "NO_METRIC_MATCHED",
+                        "detail": "未能匹配到已治理指标",
+                        "hint": "可用指标: " + ", ".join(sorted(semantic_layer.METRIC_REGISTRY))}), 422
+    try:
+        conn = sqlite3.connect(target)
+        try:
+            result = layer.execute_metric(conn, metric_name)
+        finally:
+            conn.close()
+    except semantic_layer.SemanticGuardError as e:
+        try:
+            auditor.record("governance_hub", "semantic_query_blocked",
+                           {"question": question[:100], "metric": metric_name,
+                            "code": e.code}, correlation_id)
+        except Exception:
+            pass
+        return jsonify({"status": "error", "code": e.code,
+                        "detail": e.detail, "hint": e.hint}), 422
+    try:
+        auditor.record("governance_hub", "semantic_query",
+                       {"question": question[:100], "metric": result["metric"],
+                        "rows": result["row_count"]}, correlation_id)
+    except Exception:
+        pass
+    return jsonify({"status": "ok", **result, "question": question,
+                    "correlation_id": correlation_id})
 
 # --- Agent SOUL 端点 ---
 
