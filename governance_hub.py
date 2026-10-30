@@ -15,6 +15,7 @@ v1.0.0 | 2026-07-28
 
 import hmac
 import json
+import learning_loop
 import logging
 import memory_semantic
 import os
@@ -36,11 +37,17 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelna
 logger = logging.getLogger("yyc3.governance")
 
 DB_PATH = os.environ.get("GOVERNANCE_DB", "/data/governance.db")
+# E3-5 规模化预案：Postgres 迁移开关预置（sqlite 为主路径；postgres 为迁移预留位，
+# 迁移剧本见 deploy/scaling.md——切换前须完成表结构/事务语义对照与双写演练）
+DB_BACKEND = os.environ.get("YYC3_DB_BACKEND", "sqlite")
 
 
 def connect_db() -> sqlite3.Connection:
     """P1-3 SQLite 并发加固统一入口：WAL 读写不互斥 + busy_timeout 防锁冲突。
     连接生命周期遵循「谁创建谁关闭」，不跨请求复用（Flask 多线程下天然隔离）。"""
+    if DB_BACKEND != "sqlite":
+        logger.warning("YYC3_DB_BACKEND=%s 为 E3-5 预留迁移位，当前仍使用 SQLite（迁移剧本 deploy/scaling.md）",
+                       DB_BACKEND)
     conn = sqlite3.connect(DB_PATH, timeout=10, check_same_thread=False)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=10000")
@@ -1154,6 +1161,91 @@ def mem_sem_list():
         conn.close()
     return jsonify({"status": "ok", "agent": agent, "facts": items})
 
+# --- E3-4: 学习闭环（usage 回填 / golden 候选 / 指标版本门控） ---
+
+@app.route("/learning/usage-insights", methods=["GET"])
+def learning_usage_insights():
+    hours = int(request.args.get("hours", 24))
+    conn = connect_db()
+    try:
+        insights = learning_loop.usage_insights(conn, hours=hours)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", **insights})
+
+@app.route("/learning/golden-candidates", methods=["GET"])
+def learning_golden_candidates():
+    conn = connect_db()
+    try:
+        candidates = learning_loop.golden_candidates_from_events(conn, limit=20)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", "candidates": candidates,
+                    "hint": "采纳走 POST /learning/golden-adopt（全量入审计链）"})
+
+@app.route("/learning/golden-adopt", methods=["POST"])
+def learning_golden_adopt():
+    d = request.get_json(force=True)
+    question = (d.get("question") or "").strip()
+    if len(question) < 4:
+        return jsonify({"status": "error", "detail": "question (>=4 chars) is required"}), 400
+    conn = connect_db()
+    try:
+        result = learning_loop.adopt_candidate(conn, question,
+                                               agent=normalize_agent(d.get("agent", "")),
+                                               correlation_id=d.get("correlation_id", ""),
+                                               audit_cb=auditor.record)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", **result})
+
+@app.route("/learning/metric-version", methods=["GET"])
+def learning_metric_version():
+    metric = request.args.get("metric", "")
+    if not metric:
+        return jsonify({"status": "error", "detail": "metric is required"}), 400
+    conn = connect_db()
+    try:
+        learning_loop.ensure_metric_version(conn, metric, audit_cb=auditor.record)
+        state = learning_loop.current_metric_version(conn, metric)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", **state,
+                    "promote_threshold": learning_loop.PROMOTE_THRESHOLD,
+                    "rollback_threshold": learning_loop.ROLLBACK_THRESHOLD})
+
+@app.route("/learning/metric-promote", methods=["POST"])
+def learning_metric_promote():
+    d = request.get_json(force=True)
+    metric = d.get("metric", "")
+    if not metric:
+        return jsonify({"status": "error", "detail": "metric is required"}), 400
+    eval_pass_rate = float(d.get("eval_pass_rate", 0))
+    conn = connect_db()
+    try:
+        result = learning_loop.promote_metric(conn, metric, eval_pass_rate,
+                                              correlation_id=d.get("correlation_id", ""),
+                                              audit_cb=auditor.record)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", **result})
+
+@app.route("/learning/metric-rollback", methods=["POST"])
+def learning_metric_rollback():
+    d = request.get_json(force=True)
+    metric = d.get("metric", "")
+    if not metric:
+        return jsonify({"status": "error", "detail": "metric is required"}), 400
+    conn = connect_db()
+    try:
+        result = learning_loop.rollback_metric(conn, metric,
+                                               float(d.get("eval_pass_rate", 0)),
+                                               correlation_id=d.get("correlation_id", ""),
+                                               audit_cb=auditor.record)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", **result})
+
 # --- E3-1: 大数据语义层（MDL 建模 + SQL 即代码指标执行；SQL 复杂度从 LLM 卸载到语义层） ---
 
 _SEMANTIC_LAYER = None
@@ -1187,17 +1279,22 @@ def semantic_query():
     question = (d.get("question") or "").strip()
     if not question:
         return jsonify({"status": "error", "detail": "question is required"}), 400
-    target = os.environ.get("YYC3_SEMANTIC_TARGET_DB", "")
-    if not target:
-        return jsonify({"status": "error",
-                        "detail": "目标库未配置（YYC3_SEMANTIC_TARGET_DB）"}), 503
     layer = _semantic_layer()
     correlation_id = d.get("correlation_id") or request.headers.get("X-Correlation-ID") or ""
     metric_name = layer.match_metric(question)
     if not metric_name:
+        try:
+            auditor.record("governance_hub", "semantic_query_no_match",
+                           {"question": question[:100]}, correlation_id)
+        except Exception:
+            pass
         return jsonify({"status": "error", "code": "NO_METRIC_MATCHED",
                         "detail": "未能匹配到已治理指标",
                         "hint": "可用指标: " + ", ".join(sorted(semantic_layer.METRIC_REGISTRY))}), 422
+    target = os.environ.get("YYC3_SEMANTIC_TARGET_DB", "")
+    if not target:
+        return jsonify({"status": "error",
+                        "detail": "目标库未配置（YYC3_SEMANTIC_TARGET_DB）"}), 503
     try:
         conn = sqlite3.connect(target)
         try:
