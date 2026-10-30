@@ -1,0 +1,50 @@
+# YYC³ 语义层 MDL（Modeling Definition Language）— 演示业务域种子模型
+# E3-1 大数据语义层：表/字段/指标显式建模，SQL 复杂度从 LLM 卸载到语义层
+# 安全架构（SQL 即代码）：可执行 SQL 仅存在于 semantic_layer.py 的 execute_metric 字面量派发；
+# 本文件 metrics.registry 引用注册表，漂移由 SemanticLayer.check_registry_drift + 测试零漂移校验
+version: "1.0"
+name: yyc3-demo
+description: YYC³ 语义层演示业务域（用户与事件）
+dialect: sqlite
+row_limit: 500
+tables:
+  - name: users
+    description: 注册用户表
+    columns:
+      - name: user_id
+        type: integer
+        description: 用户唯一 ID
+      - name: name
+        type: text
+        description: 用户名
+      - name: city
+        type: text
+        description: 所在城市
+      - name: created_at
+        type: text
+        description: 注册时间（ISO8601）
+  - name: events
+    description: 用户行为事件表
+    columns:
+      - name: event_id
+        type: integer
+        description: 事件唯一 ID
+      - name: user_id
+        type: integer
+        description: 关联用户 ID
+      - name: event_type
+        type: text
+        description: 事件类型（login/purchase/view）
+      - name: created_at
+        type: text
+        description: 事件时间（ISO8601）
+metrics:
+  - name: total_users
+    description: 注册用户总数
+    registry: total_users
+  - name: active_users
+    description: 近 30 天活跃用户数（去重）
+    registry: active_users
+  - name: events_total
+    description: 事件总量
+    registry: events_total
