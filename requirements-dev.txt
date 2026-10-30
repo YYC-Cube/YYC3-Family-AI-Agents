@@ -2,4 +2,4 @@
 -r requirements.txt
 
 # 测试框架
-pytest>=8.0,<9
+pytest>=9.1.1,<10

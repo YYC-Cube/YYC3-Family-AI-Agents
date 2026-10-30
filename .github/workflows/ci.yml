@@ -11,8 +11,8 @@ jobs:
     name: Python 语法检查
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: py_compile 生产运行时
@@ -26,8 +26,8 @@ jobs:
     name: 依赖安装检查
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: 安装运行时依赖
@@ -37,8 +37,8 @@ jobs:
     name: 测试全量门禁 (pytest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: 安装测试依赖
@@ -47,7 +47,7 @@ jobs:
         run: python -m pytest tests/ -q --tb=short
       - name: 上传测试报告（失败时）
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pytest-output
           path: |
@@ -58,7 +58,7 @@ jobs:
     name: 文档完整性
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: 检查核心文档存在
         run: |
           for f in README.md CHANGELOG.md CONTRIBUTING.md ARCHITECTURE.md CODE_OF_CONDUCT.md LICENSE docs/README.md; do
