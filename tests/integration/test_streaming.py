@@ -92,10 +92,14 @@ class TestChatStreamContract:
         records = []
         monkeypatch.setattr(agent_server, "_governance_report",
                             lambda action, details, correlation_id="": records.append((action, details)))
-        r = agent_client.post("/chat/stream", json={"message": "你好"})
-        it = iter(r.response)
-        next(it)  # 仅消费 meta 事件即断开
-        r.close()  # 触发生成器 GeneratorExit → finally 兜底治理上报
+        # 不经 test client（其上下文弹栈顺序跨 werkzeug 版本脆弱）：
+        # 直接在 request context 中驱动生成器，meta 后 close 模拟客户端断开
+        with agent_server.app.test_request_context("/chat/stream", method="POST",
+                                                   json={"message": "你好"}):
+            resp = agent_server.chat_stream()
+            gen = iter(resp.response)
+            next(gen)   # 仅消费 meta 事件
+            gen.close()  # GeneratorExit → finally 兜底治理上报
         actions = [a for a, _ in records]
         assert "chat_request" in actions
         chat_response = [d for a, d in records if a == "chat_response"][0]
