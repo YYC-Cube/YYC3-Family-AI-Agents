@@ -218,7 +218,17 @@ license: "MIT"
 | E2-3 分层记忆落地 | ✅ Semantic 首批已落地（2026-10-30） | PR #25 · squash `eb91e9a` | `memory_semantic.py`（自包含 SQLite）：规则抽取 MVP 四类模式（身份/偏好/归属/事实声明，LLM 抽取为钩子后续）→ 去重合并（hits+1 置信度 +0.1 封顶 1.0）→ 读取时按天指数衰减（半衰期 30 天）低于阈值沉睡不删；hub 四端点 /memory/semantic/{store,recall,forget,list}；**增/改/删全量入审计链**（先提交再审计防锁库）。契约测试 15 例含 50 事实规模往返。**LongMemEval 类 100 例自建集为部署侧验收，未跑** |
 
 > 台账纪律：每项落地 PR 合并后 24h 内更新本表（状态/载体/佐证三列）；跳票须写明原因与新排期。
-> **E2 阶段五项全部落地（2026-10-30）✅ 完整收官**（E1 同日收官）。遗留部署侧验收：① E1-2 judge 一致率实测；② E1-3 降级演练（主端点故障注入）；③ openai ≥3.39 依赖的真实调用回归；④ 兄弟仓跨仓 MCP 联调与第三方 A2A 委托；⑤ E2-3 LongMemEval 类 100 例自建集实测。
+> **E2 阶段五项全部落地（2026-10-30）✅ 完整收官**（E1 同日收官）。遗留部署侧验收：① E1-2 judge 一致率实测；② E1-3 降级演练；③ openai ≥3.39 回归；④ 兄弟仓跨仓 MCP 联调与第三方 A2A 委托；⑤ E2-3 LongMemEval 类 100 例自建集实测。
+
+### E3 阶段进度
+
+| 项 | 状态 | 载体 | 佐证 |
+|---|---|---|---|
+| E3-3 持久化执行 MVP | ✅ 已落地（2026-10-30） | PR #27 · squash `7a8ff56` | `durable.py` 步骤级 checkpoint（SQLite 自包含 data/durable.db，cid+请求指纹+步骤唯一）+ /chat 管线接入：context_injection 与 llm_inference 完成即落 checkpoint，同 cid+指纹重入复用产物（LLM 步骤恢复零 vLLM 调用、预算零计费，响应含 resumed_steps）；失败步骤不落 checkpoint（重入自动重执行）。契约测试 7 例 + conftest 全局隔离夹具（防持久库跨运行残留——该污染真实发生并修复）。流式与更多步骤列入后续批次 |
+| E3-1 大数据语义层 | ⏳ 计划中 | — | YAML MDL 简化版 + dry-plan(EXPLAIN) + 行数上限 + 白名单 + 沙箱执行 + 结构化报错回流 |
+| E3-2 ChatBI 场景化 | ⏳ 计划中 | — | 指标问答优先、明细 SQL 兜底双路由；行列权限在语义层裁决 |
+| E3-4 学习闭环落地 | ⏳ 计划中 | — | usage 回填 → golden set 扩充 → 模板版本晋升/回滚 |
+| E3-5 规模化预案 | ⏳ 计划中 | — | DGX 纵向优化或 K8s+Helm 横向（含 MCP stateless 路由）；Postgres 迁移开关预置 |
 
 ---
 
