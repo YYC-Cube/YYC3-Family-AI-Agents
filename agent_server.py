@@ -13,6 +13,7 @@ YYC³ FAmily-AI Agent Server v3.1 — 集成治理中枢
 """
 
 import argparse
+import durable
 import hashlib
 import hmac
 import json
@@ -338,11 +339,27 @@ def _execute_chat(data: dict):
     _governance_report("chat_request", {"message_len": len(user_message), "risk": risk},
                        correlation_id=correlation_id)
 
-    with telemetry.trace_span("context_injection", correlation_id, agent=AGENT_NAME):
-        system_prompt = load_system_prompt()
-        context_injection = _inject_context(user_message, correlation_id=correlation_id)
-        if context_injection:
-            system_prompt += context_injection
+    # E3-3 持久化执行：步骤级 checkpoint（同 cid+请求指纹重入时复用已完成步骤产物）
+    durable_fp = durable.fingerprint({"message": user_message, "history": history,
+                                      "temperature": temperature, "max_tokens": max_tokens,
+                                      "model": VLLM_MODEL})
+    durable_conn = durable.connect()
+    resumed_steps = []
+
+    ctx_step = durable.get_step(durable_conn, correlation_id, durable_fp, "context_injection")
+    if ctx_step:
+        system_prompt = ctx_step["system_prompt"]
+        resumed_steps.append("context_injection")
+        telemetry.record_event("durable_resume", correlation_id, agent=AGENT_NAME,
+                               step="context_injection")
+    else:
+        with telemetry.trace_span("context_injection", correlation_id, agent=AGENT_NAME):
+            system_prompt = load_system_prompt()
+            context_injection = _inject_context(user_message, correlation_id=correlation_id)
+            if context_injection:
+                system_prompt += context_injection
+        durable.record_step(durable_conn, correlation_id, durable_fp,
+                            "context_injection", "done", {"system_prompt": system_prompt})
 
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(history)
@@ -365,14 +382,33 @@ def _execute_chat(data: dict):
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }), 200
 
-    with telemetry.trace_span("llm_inference", correlation_id, agent=AGENT_NAME, model=VLLM_MODEL,
-                              attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME)):
-        start = time.time()
-        response, usage = call_vllm(messages, temperature=temperature, max_tokens=max_tokens)
-        latency = round((time.time() - start) * 1000, 1)
+    llm_step = durable.get_step(durable_conn, correlation_id, durable_fp, "llm_inference")
+    if llm_step:
+        # 断点恢复：LLM 步骤已在上次运行完成，直接复用产物（预算零计费）
+        response = llm_step["response"]
+        usage = llm_step.get("usage") or {}
+        latency = 0.0
+        resumed_steps.append("llm_inference")
+        telemetry.record_event("durable_resume", correlation_id, agent=AGENT_NAME,
+                               step="llm_inference")
+        _governance_report("durable_resume", {"steps": resumed_steps},
+                           correlation_id=correlation_id)
+    else:
+        with telemetry.trace_span("llm_inference", correlation_id, agent=AGENT_NAME, model=VLLM_MODEL,
+                                  attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME)):
+            start = time.time()
+            response, usage = call_vllm(messages, temperature=temperature, max_tokens=max_tokens)
+            latency = round((time.time() - start) * 1000, 1)
+        if isinstance(response, str):
+            durable.record_step(durable_conn, correlation_id, durable_fp,
+                                "llm_inference", "done",
+                                {"response": response, "usage": usage})
 
     prompt_tokens = usage.get("prompt_tokens", 0)
     completion_tokens = usage.get("completion_tokens", 0)
+    if "llm_inference" in resumed_steps:
+        # 断点恢复：产物复用不产生新增推理花费，预算零计费（usage 仍随响应返回供参考）
+        prompt_tokens, completion_tokens = 0, 0
     _governance_token(prompt_tokens, completion_tokens, latency, VLLM_MODEL,
                       correlation_id=correlation_id)
 
@@ -404,6 +440,7 @@ def _execute_chat(data: dict):
         "correlation_id": correlation_id,
         "usage": usage, "latency_ms": latency,
         "cached": False,
+        "resumed_steps": resumed_steps,
         "input_verdict": gate["verdict"],
         "collaboration": collab,
         "timestamp": datetime.now(timezone.utc).isoformat(),

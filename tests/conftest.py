@@ -17,6 +17,14 @@ os.environ.setdefault("VLLM_ENDPOINT", "http://localhost:29999/v1")
 os.environ.setdefault("SYSTEM_PROMPT_PATH", str(REPO_ROOT / "agents" / "yuanqi-tianshu" / "SYSTEM.md"))
 
 
+@pytest.fixture(autouse=True)
+def _isolated_durable(tmp_path, monkeypatch):
+    """E3-3 durable checkpoint 每用例隔离（持久文件库会跨运行残留断点，污染回归）"""
+    import durable
+    monkeypatch.setattr(durable, "DB_PATH", str(tmp_path / "durable.db"))
+    yield
+
+
 @pytest.fixture()
 def gov_db(tmp_path, monkeypatch):
     """为 governance_hub 提供隔离的临时数据库"""
