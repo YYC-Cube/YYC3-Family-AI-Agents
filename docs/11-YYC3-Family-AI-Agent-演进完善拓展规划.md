@@ -3,7 +3,7 @@ file: "11-YYC3-Family-AI-Agent-演进完善拓展规划.md"
 title: "YYC³ FAmily-AI Agent · 演进完善拓展规划指导（大数据 Agent 对标版）"
 description: "基于 2025-2026 大数据 Agent 核心架构、社区共识与开源应用全景对标本仓，产出以生产落地为唯一北极星的演进（E1）/完善（E2）/拓展（E3）三阶段规划与上线检查清单"
 author: "YanYuCloudCube Team <admin@0379.email>"
-version: "v1.0.0"
+version: "v1.1.0"
 created: "2026-10-30"
 updated: "2026-10-30"
 status: "active"
@@ -193,6 +193,18 @@ license: "MIT"
 - DB-GPT（AWEL / SMMF / 沙箱化 / Text2SQL 微调）：[github.com/eosphoros-ai/DB-GPT](https://github.com/eosphoros-ai/DB-GPT) · [金融场景实践](https://bbs.csdn.net/weixin_30984001/article/details/100203665)
 - 记忆层四架构与 2026 选型（Mem0 94.4% / Zep 时序图 / Letta 状态化）：[知乎四层架构](https://zhuanlan.zhihu.com/p/2050287092194973690) · [Mem0 vs Letta vs Zep](https://dataaspirant.com/blog/mem0-vs-letta-vs-zep) · [github.com/mem0ai/mem0](https://github.com/mem0ai/mem0)
 - OTel GenAI 语义约定与 agent spans（Development 状态）：[semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai) · [agent spans 规范](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md)
+
+## 9. 执行进度台账（每阶段落地后同步更新）
+
+| 项 | 状态 | 载体 | 佐证 |
+|---|---|---|---|
+| E1-1 SSE 流式输出 | ✅ 已落地（2026-10-30） | PR #3 · squash `71877eb` | `POST /chat/stream`（SSE，meta/delta/done/error 事件；`stream_options.include_usage` 拿用量）；零信任/预算/审计/协同与 /chat 同构；断连经 finally 兜底 partial 上报；契约测试 6 例，全量门禁 166 passed + 8 skipped |
+| E1-5 供应链自动化 | ✅ 已落地（2026-10-30） | PR #4 · squash `11c070c` | `security.yml`（每周一 pip-audit + SPDX SBOM 附件）+ `dependabot.yml`（pip/actions 周更） |
+| E1-2 评估基线 | ⏳ 计划中 | — | golden set 50-100 例 + LLM-judge 双轨，judge 一致率 ≥85% 后入 CI 软门禁 |
+| E1-3 缓存与降级矩阵 | ⏳ 计划中 | — | 语义缓存复用现有 reranker；vLLM 主 → API 备 30s 降级 |
+| E1-4 OTel 语义对齐 | ⏳ 计划中 | — | span 属性迁移 `gen_ai.*` + agent spans，面板五支柱增列 |
+
+> 台账纪律：每项落地 PR 合并后 24h 内更新本表（状态/载体/佐证三列）；跳票须写明原因与新排期。
 
 ---
 
