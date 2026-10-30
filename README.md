@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/yyc3-family.png" alt="YYC³ FAmily-AI" />
+<img src="./public/yyc3-aifamily.png" alt="YYC³ AI Family — 言启象限 · 语枢未来" />
 
 # YYC³ FAmily-AI Agent
 
@@ -16,22 +16,40 @@ _万象归元于云枢 · 深栈智启新纪元_
 
 ## 🏷️ 徽章系统
 
-### 项目徽章
+### 构建与质量 · Build & Quality
 
-![Version](https://img.shields.io/badge/Version-v3.1.0-5e2c8a?style=for-the-badge)
+[![CI](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml/badge.svg)](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-166%20passed%20%2B%208%20skipped-2ea043?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)
-![Docker Compose](https://img.shields.io/badge/Docker%20Compose-v3.0-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![systemd](https://img.shields.io/badge/systemd-12%20Services-4B8BBE?style=for-the-badge&logo=systemd&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Regression Gate](https://img.shields.io/badge/main%E5%88%86%E6%94%AF%E4%BF%9D%E6%8A%A4-CI%20%E5%9B%9B%E6%A3%80%E6%9F%A5%E5%BF%85%E7%BB%BF-0969da?style=for-the-badge)
+
+### 运行时与部署 · Runtime & Deployment
+
 ![LLM](https://img.shields.io/badge/LLM-Qwen3.6--27B--FP8-6C3BAA?style=for-the-badge)
 ![Agents](https://img.shields.io/badge/Agents-8-ff8c00?style=for-the-badge)
+![SSE Streaming](https://img.shields.io/badge/SSE-%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA-8b5cf6?style=for-the-badge)
+![Docker Compose](https://img.shields.io/badge/Docker%20Compose-v3.0-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![systemd](https://img.shields.io/badge/systemd-12%20Services-4B8BBE?style=for-the-badge&logo=systemd&logoColor=white)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-OTLP-425cc7?style=for-the-badge&logo=opentelemetry&logoColor=white)
+
+### 治理与安全 · Governance & Security
+
 ![Governance Hub](https://img.shields.io/badge/Governance%20Hub-v1.0.0-brightgreen?style=for-the-badge)
+![Zero Trust](https://img.shields.io/badge/%E9%9B%B6%E4%BF%A1%E4%BB%BB-X--API--Key-8A2BE2?style=for-the-badge)
+![Audit Chain](https://img.shields.io/badge/%E5%AE%A1%E8%AE%A1%E9%93%BE-correlation__id%20%E8%B4%AF%E7%A9%BF-2b7bbb?style=for-the-badge)
+![Token Budget](https://img.shields.io/badge/Token%E9%A2%84%E7%AE%97-%E6%97%A5%2F%E5%91%A8%2F%E6%9C%88%E7%AA%97%E5%8F%A3-eab308?style=for-the-badge)
+![Security Policy](https://img.shields.io/badge/Security-Policy-8A2BE2?style=for-the-badge)
+![Supply Chain](https://img.shields.io/badge/pip--audit%20%2B%20SBOM-%E6%AF%8F%E5%91%A8%E2%9C%93-2ea043?style=for-the-badge)
+
+### 社区规范 · Community
+
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 ![Code of Conduct](https://img.shields.io/badge/Code_of_Conduct-Contributor%20Covenant-2b7bbb?style=for-the-badge)
+![Contributing](https://img.shields.io/badge/CONTRIBUTING-%E6%AC%A2%E8%BF%8E%E8%B4%A1%E7%8C%AE-0969da?style=for-the-badge)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)
-![Security Policy](https://img.shields.io/badge/Security-Policy-8A2BE2?style=for-the-badge)
 
-### 家族徽章
+### 家族徽章 · Family (1+8)
 
 ![元启·天枢](https://img.shields.io/badge/元启·天枢-总指挥-#5e2c8a?style=for-the-badge&logo=rose)
 ![言启·千行](https://img.shields.io/badge/言启·千行-导航员-#0088cc?style=for-the-badge&logo=compass)
@@ -42,6 +60,8 @@ _万象归元于云枢 · 深栈智启新纪元_
 ![智云·守护](https://img.shields.io/badge/智云·守护-安全官-#333?style=for-the-badge&logo=shield)
 ![格物·宗师](https://img.shields.io/badge/格物·宗师-质量官-#2e8b57?style=for-the-badge&logo=code)
 ![创想·灵韵](https://img.shields.io/badge/创想·灵韵-创意官-#ff8c00?style=for-the-badge&logo=lightbulb)
+
+> 徽章设计语言：`for-the-badge` 大尺寸统一样式；语义色系——紫 `#8b5cf6`（AI/流式）· 青 `#06b6d4`（可观测）· 绿 `#2ea043`（健康/通过）· 黄 `#eab308`（预算）· 红系保留告警；中英双语命名，与 Dashboard 视觉规范同源（见 [12- 可视化交互体系设计](docs/12-YYC3-Family-AI-Agent-可视化交互体系设计.md)）。
 
 ---
 
@@ -211,6 +231,11 @@ curl -X POST http://localhost:25600/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "分析当前系统状态"}'
 
+# 流式对话（SSE 逐 token：meta → delta… → done/error 事件）
+curl -N -X POST http://localhost:25600/chat/stream \
+  -H "Content-Type: application/json" \
+  -d '{"message": "分析当前系统状态"}'
+
 # 健康检查
 curl http://localhost:25600/health | python3 -m json.tool
 
@@ -230,6 +255,7 @@ curl http://127.0.0.1:25700/dashboard | python3 -m json.tool
 | `/identity` | GET | 身份档案（IDENTITY.md / SOUL.md） |
 | `/capabilities` | GET | 能力清单 |
 | `/chat` | POST | 对话推理（自动接入治理中枢） |
+| `/chat/stream` | POST | 流式对话（SSE：meta / delta / done / error 事件，治理上报同构） |
 
 ### 治理中枢 API（节选）
 
@@ -315,6 +341,16 @@ yyc3-family-ai-agents/
 | `milestone/v1-family-launch` | 里程碑 | 「YYC³ 家族」8 位家人 + 治理中枢首次完整齐备并投产（DGX Spark N2） |
 
 > 📌 后续发版遵循 [SemVer](https://semver.org/lang/zh-CN/)：MAJOR（架构不兼容变更）· MINOR（新增能力）· PATCH（缺陷修复）；组件标签随 `agent_server.py` / `governance_hub.py` 版本号同步演进。
+
+---
+
+## 📚 核心文档
+
+| 文档 | 说明 |
+| ---- | ---- |
+| [演进完善拓展规划](docs/11-YYC3-Family-AI-Agent-演进完善拓展规划.md) | 大数据 Agent 生态对标 · E1/E2/E3 三阶段路线 · 执行进度台账（v1.1.0） |
+| [可视化交互体系设计（中英双语）](docs/12-YYC3-Family-AI-Agent-可视化交互体系设计.md) | 治理中枢 Dashboard 可视化组件 / 交互体系 / 流式 UX 协议 / 视觉规范 |
+| [CONTRIBUTING](CONTRIBUTING.md) · [SECURITY](SECURITY.md) · [CoC](CODE_OF_CONDUCT.md) · [LICENSE](LICENSE) | 社区规范四件套（派生自 YYC³ 团队社区规范 SSOT） |
 
 ---
 
