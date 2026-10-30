@@ -22,6 +22,15 @@ class _FakeStreamResp:
         return None
 
 
+@pytest.fixture(autouse=True)
+def _isolated_cache():
+    """E1-3 缓存引入后：每用例清零模块级缓存，杜绝跨文件键污染"""
+    agent_server._chat_cache.clear()
+    agent_server._cache_stats.update({"hits": 0, "misses": 0})
+    yield
+    agent_server._chat_cache.clear()
+
+
 @pytest.fixture()
 def agent_client(monkeypatch):
     monkeypatch.setattr(agent_server, "AGENT_NAME", "yuanqi_tianshu")
