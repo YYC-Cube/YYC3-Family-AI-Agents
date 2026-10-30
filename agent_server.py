@@ -23,7 +23,7 @@ import uuid
 from datetime import datetime, timezone
 
 import requests
-from flask import Flask, jsonify, request, Response, stream_with_context
+from flask import Flask, jsonify, request, Response
 
 import telemetry
 
@@ -376,7 +376,9 @@ def chat_stream():
                             "collaboration": collab,
                             "timestamp": datetime.now(timezone.utc).isoformat()})
 
-    resp = Response(stream_with_context(generate()), mimetype="text/event-stream")
+    # 生成器仅使用局部变量与模块级函数（不触 flask.request），无需 stream_with_context——
+    # 该包装在 werkzeug 3.1 的 request_ctx ContextVar 下提前 close 会触发上下文弹栈错乱
+    resp = Response(generate(), mimetype="text/event-stream")
     resp.headers["Cache-Control"] = "no-cache"
     resp.headers["X-Accel-Buffering"] = "no"
     resp.headers["X-Correlation-ID"] = correlation_id
