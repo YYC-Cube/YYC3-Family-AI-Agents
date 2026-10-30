@@ -226,7 +226,7 @@ license: "MIT"
 |---|---|---|---|
 | E3-1 大数据语义层 | ✅ MVP 已落地（2026-10-30） | PR #30 · squash `e72a0a5` | `semantic_layer.py` + `mdl/demo.mdl.yaml`：MDL YAML 子集零依赖解析器（表/字段/指标建模）+ **SQL 即代码指标执行器**（单行字面量逐指标派发、注册表↔MDL 零漂移校验、构建期 LIMIT ≤ row_limit + 运行期行数硬上限二次校验，超限 ROW_LIMIT_EXCEEDED 不截断返回）+ validate_sql 纯治理校验（单语句/SELECT 白名单/危险关键字黑名单/表级 allowlist/LIMIT 上限，结构化错误码）+ match_metric 问题 2-gram 确定性匹配 + hub /semantic/mdl 与 /semantic/query 端点（全量入审计链）。契约测试 17 例。**LLM 自由 NL→SQL 生成与执行为部署侧接线（validate_sql 前置审查随模块提供）；正确率 ≥20pct 提升对照实验需真实 LLM，未跑** |
 | E3-3 持久化执行 MVP | ✅ 已落地（2026-10-30） | PR #27 · squash `7a8ff56` | `durable.py` 步骤级 checkpoint（SQLite 自包含 data/durable.db，cid+请求指纹+步骤唯一）+ /chat 管线接入：context_injection 与 llm_inference 完成即落 checkpoint，同 cid+指纹重入复用产物（LLM 步骤恢复零 vLLM 调用、预算零计费，响应含 resumed_steps）；失败步骤不落 checkpoint（重入自动重执行）。契约测试 7 例 + conftest 全局隔离夹具（防持久库跨运行残留——该污染真实发生并修复）。流式与更多步骤列入后续批次 |
-| E3-2 ChatBI 场景化 | ⏳ 计划中 | — | 指标问答优先、明细 SQL 兜底双路由；行列权限在语义层裁决（E3-1 确定性指标问答已具雏形，权限裁决待接） |
+| E3-2 ChatBI 场景化 | ✅ 双路由+行列权限已落地（2026-10-30） | PR #32 · squash `fc34690` | MDL permissions 建模（default_columns 全列继承 + agents 显式列裁剪与等值行过滤，权限列引用构建期校验）；detail_query 结构化明细 DSL——零动态 SQL（按表单行字面量取数 LIMIT 参数化，列裁剪/行过滤/投影在语义层模块内存态强制），拒绝码 COLUMN_DENIED/FILTER_COLUMN_DENIED/COLUMN_UNKNOWN/ROW_LIMIT_EXCEEDED；注册表 SQL 文本与字面量零漂移由测试强制。契约测试 10 例。**SQL 级谓词下推（引擎权限联动）列入后续** |
 | E3-4 学习闭环落地 | ⏳ 计划中 | — | usage 回填 → golden set 扩充 → 模板版本晋升/回滚 |
 | E3-5 规模化预案 | ⏳ 计划中 | — | DGX 纵向优化或 K8s+Helm 横向（含 MCP stateless 路由）；Postgres 迁移开关预置 |
 
