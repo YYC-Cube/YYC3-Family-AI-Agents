@@ -198,13 +198,14 @@ license: "MIT"
 
 | 项 | 状态 | 载体 | 佐证 |
 |---|---|---|---|
-| E1-1 SSE 流式输出 | ✅ 已落地（2026-10-30） | PR #3 · squash `71877eb` | `POST /chat/stream`（SSE，meta/delta/done/error 事件；`stream_options.include_usage` 拿用量）；零信任/预算/审计/协同与 /chat 同构；断连经 finally 兜底 partial 上报；契约测试 6 例，全量门禁 166 passed + 8 skipped |
-| E1-5 供应链自动化 | ✅ 已落地（2026-10-30） | PR #4 · squash `11c070c` | `security.yml`（每周一 pip-audit + SPDX SBOM 附件）+ `dependabot.yml`（pip/actions 周更） |
-| E1-2 评估基线 | ⏳ 计划中 | — | golden set 50-100 例 + LLM-judge 双轨，judge 一致率 ≥85% 后入 CI 软门禁 |
-| E1-3 缓存与降级矩阵 | ⏳ 计划中 | — | 语义缓存复用现有 reranker；vLLM 主 → API 备 30s 降级 |
-| E1-4 OTel 语义对齐 | ⏳ 计划中 | — | span 属性迁移 `gen_ai.*` + agent spans，面板五支柱增列 |
+| E1-1 SSE 流式输出 | ✅ 已落地（2026-10-30） | PR #3 · squash `71877eb` | `POST /chat/stream`（SSE，meta/delta/done/error 事件；`stream_options.include_usage` 拿用量）；零信任/预算/审计/协同与 /chat 同构；断连经 finally 兜底 partial 上报；契约测试 6 例 |
+| E1-2 评估基线 | ✅ 结构件已落地（2026-10-30） | PR #17 · squash `06e3b52` | golden set 首批 24 例（8 家人 × 身份/领域/边界，含注入拒绝与越权负例）+ 规则断言引擎（离线可跑，--min-rule-pass 挂退出码）+ LLM-judge 钩子（不可达自动跳过）+ SSRF 边界校验；schema/规则引擎测试 8 例随 CI 全量门禁。**judge 一致率 ≥85% 为部署侧验收动作（需可达 vLLM），当前诚实标注为未验证** |
+| E1-3 缓存与降级矩阵 | ✅ 已落地（2026-10-30） | PR #16 · squash `b10b78c` | 语义缓存（TTL/上限 LRU/命中可观测，流式命中单 delta 重放且预算零计费）+ vLLM 主备 failover（4xx 不切换、5xx/连接异常自动切备援，降级即审计 model_degraded）；契约测试 6 例 + 缓存隔离夹具 |
+| E1-4 OTel 语义对齐 | ✅ 已落地（2026-10-30） | PR #15 · squash `c591f50` | `genai_attrs()` 属性组（gen_ai.system/operation.name/request.model/agent.name + usage 双计数）挂载 /chat 与流式推理 span 及响应事件；降级日志同步携带；OTLP 链路复用 P3-2 导出；测试 3 例 |
+| E1-5 供应链自动化 | ✅ 已落地（2026-10-30） | PR #4 · squash `11c070c` | `security.yml`（每周一 pip-audit + SPDX SBOM 附件）+ `dependabot.yml`（pip/actions 周更）；周更 PR #5–#10 已合并（openai 范围升至 ≥3.39 大版本，部署侧建议回归） |
 
 > 台账纪律：每项落地 PR 合并后 24h 内更新本表（状态/载体/佐证三列）；跳票须写明原因与新排期。
+> **E1 阶段五项全部落地（2026-10-30）**。遗留部署侧验收：① E1-2 judge 一致率实测；② E1-3 降级演练（主端点故障注入）；③ openai ≥3.39 依赖的真实调用回归。
 
 ---
 

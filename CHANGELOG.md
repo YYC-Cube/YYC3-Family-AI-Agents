@@ -13,6 +13,9 @@
 
 - **E1-1 SSE 流式对话**：`POST /chat/stream` 以 `text/event-stream` 逐 delta 转发 vLLM 流（`stream_options.include_usage` 获取真实用量）——`meta/delta/done/error` 四类事件、`X-Correlation-ID` 响应头；frozen 检查/审计/预算/协同/telemetry 上报与 `/chat` 完全同构，客户端断连经生成器 `finally` 兜底 `partial` 上报（审计链不因流式而缺口）；生成器不触请求上下文（规避 werkzeug 3.1 `request_ctx` 弹栈错乱）；契约测试 6 例（`tests/integration/test_streaming.py`）
 - **E1-5 供应链自动化**：`security.yml`——每周一 pip-audit 审计运行时与测试依赖（高危即红）+ anchore/sbom-action 产出 SPDX JSON SBOM 附件；`dependabot.yml`——pip 与 github-actions 双生态周更
+- **E1-4 OTel GenAI 语义对齐**：telemetry 新增 `genai_attrs()` 属性组（`gen_ai.system/operation.name/request.model/agent.name`，对齐 semantic-conventions-genai Development 子集），`trace_span/record_event` 支持 attrs 字典（点号键）；/chat 与流式推理 span 及响应事件挂载 `gen_ai.*` 与 usage 双计数，自有字段并存零破坏；降级日志同步携带属性负载
+- **E1-3 缓存与降级矩阵**：语义缓存（`YYC3_CHAT_CACHE_TTL/MAX`，键=模型+全量 messages+采样参数；命中可观测于 `/status`；流式命中单 delta 重放且预算零计费）+ vLLM 主备 failover（`VLLM_ENDPOINT_BACKUP`，4xx 不切换、5xx/连接异常自动切备援，降级即审计 `model_degraded`）
+- **E1-2 评估基线**：`evals/golden/golden_cases.json` 首批 24 例（8 家人 × 身份/领域/边界，含注入拒绝与越权负例）+ `evals/run_evals.py` 双轨评估（规则断言零 LLM 离线可跑 + LLM-judge 可选钩子）+ SSRF 边界校验；`tests/evals` 8 例结构门禁随 CI 全量运行
 - **E1 规划指导**：`docs/11-YYC3-Family-AI-Agent-演进完善拓展规划.md`——大数据 Agent 生态对标（编排/协议/语义层/记忆/观测五维）+ 差距定级 + E1/E2/E3 三阶段路线 + 生产落地检查清单 + 执行进度台账
 - **README 升级**：顶图换新 `public/yyc3-aifamily.png`（1800×450 原尺寸，复用 `YYC-Cube/public/YYC3-README-顶图` 家族资产）；徽章体系五组重构（构建质量/运行时部署/治理安全/社区规范/家族 1+8，新增真实 CI 徽章与 SSE/零信任/审计链/OTel/pip-audit 能力徽章）；使用指南补 `/chat/stream` 流式示例；新增核心文档导航
 - **可视化交互体系设计（中英双语）**：`docs/12-YYC3-Family-AI-Agent-可视化交互体系设计.md`——六条设计原则、信息架构、组件体系（KPI 卡/家族行/审计表）、交互契约（30s 轮询降级保活/窗口切换/cid→Jaeger 深链）、**SSE 流式 UX 协议**（meta/delta/done/error → UI 状态唯一映射）、视觉令牌表与演进路线 R1-R5，全部取材自 `dashboard.html` 实码与 E1-1 流式契约
