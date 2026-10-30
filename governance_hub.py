@@ -16,6 +16,7 @@ v1.0.0 | 2026-07-28
 import hmac
 import json
 import logging
+import memory_semantic
 import os
 import sqlite3
 import threading
@@ -1097,6 +1098,60 @@ def memory_stats():
         return jsonify({"status": "ok", "collections": stats, "total": len(stats)})
     except Exception as e:
         return jsonify({"status": "error", "detail": str(e)}), 500
+
+# --- E2-3: 分层记忆 · Semantic 层（自包含 SQLite；增/改/删全量入审计链） ---
+
+@app.route("/memory/semantic/store", methods=["POST"])
+def mem_sem_store():
+    d = request.get_json(force=True)
+    if not d.get("text"):
+        return jsonify({"status": "error", "detail": "text is required"}), 400
+    agent = normalize_agent(d.get("agent", ""))
+    conn = connect_db()
+    try:
+        results = memory_semantic.store(conn, agent, d["text"],
+                                        source=d.get("source", "rule"),
+                                        correlation_id=d.get("correlation_id", ""),
+                                        audit_cb=auditor.record)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", "agent": agent, "results": results})
+
+@app.route("/memory/semantic/recall", methods=["GET"])
+def mem_sem_recall():
+    agent = normalize_agent(request.args.get("agent", "tianshu"))
+    query = request.args.get("query", "")
+    conn = connect_db()
+    try:
+        results = memory_semantic.recall(conn, agent, query,
+                                         top_k=int(request.args.get("top_k", 5)))
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", "agent": agent, "query": query, "memories": results})
+
+@app.route("/memory/semantic/forget", methods=["POST"])
+def mem_sem_forget():
+    d = request.get_json(force=True)
+    conn = connect_db()
+    try:
+        result = memory_semantic.forget(conn, normalize_agent(d.get("agent", "")),
+                                        d.get("fact_id", 0),
+                                        correlation_id=d.get("correlation_id", ""),
+                                        audit_cb=auditor.record)
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", **result})
+
+@app.route("/memory/semantic/list", methods=["GET"])
+def mem_sem_list():
+    agent = normalize_agent(request.args.get("agent", "tianshu"))
+    conn = connect_db()
+    try:
+        items = memory_semantic.list_active(conn, agent,
+                                            limit=int(request.args.get("limit", 100)))
+    finally:
+        conn.close()
+    return jsonify({"status": "ok", "agent": agent, "facts": items})
 
 # --- Agent SOUL 端点 ---
 
