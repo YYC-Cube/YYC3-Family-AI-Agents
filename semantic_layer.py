@@ -61,6 +61,11 @@ def _scalar(v: str):
     v = v.strip()
     if len(v) >= 2 and v[0] == v[-1] and v[0] in ("'", '"'):
         return v[1:-1]
+    if v.startswith("[") and v.endswith("]"):
+        inner = v[1:-1].strip()
+        if not inner:
+            return []
+        return [_scalar(part) for part in inner.split(",")]
     if re.fullmatch(r"-?\d+", v):
         return int(v)
     if v.lower() in ("true", "false"):
@@ -174,6 +179,83 @@ class SemanticLayer:
         self.mdl = mdl
         self.row_limit = int(mdl.get("row_limit", ROW_LIMIT))
         self.tables = {t["name"]: t for t in mdl.get("tables", [])}
+        self._validate_permissions(mdl.get("permissions", {}))
+
+    def _validate_permissions(self, permissions: dict) -> None:
+        """E3-2 行列权限建模校验：列引用必须存在于对应表。"""
+        for agent, tables in (permissions.get("agents", {}) or {}).items():
+            for table, grant in tables.items():
+                if table not in self.tables:
+                    raise ValueError(f"权限引用未知表: {agent}.{table}")
+                known = {c["name"] for c in self.tables[table]["columns"]}
+                for col in grant.get("columns", []):
+                    if col not in known:
+                        raise ValueError(f"权限列未知: {agent}.{table}.{col}")
+                row_filter = grant.get("row_filter", {})
+                if row_filter and set(row_filter) - known:
+                    raise ValueError(f"行过滤列未知: {agent}.{table}")
+
+    def _grant_for(self, agent: str, table: str) -> dict:
+        """列授权：agent 显式条目优先，未列出者继承 default_columns 全列；
+        row_filter 为等值行过滤（语义层内存态强制，不进提示词）。"""
+        perms = self.mdl.get("permissions", {}) or {}
+        default = (perms.get("default_columns", {}) or {}).get(table) or \
+            [c["name"] for c in self.tables[table]["columns"]]
+        agent_grant = (perms.get("agents", {}) or {}).get(agent, {}) or {}
+        cols = agent_grant.get(table, {}).get("columns") or default
+        return {"columns": list(cols),
+                "row_filter": agent_grant.get(table, {}).get("row_filter") or {}}
+
+    def detail_query(self, conn, agent: str, spec: dict) -> dict:
+        """E3-2 明细兜底查询（结构化 DSL，非自由 NL→SQL）：
+        零动态 SQL 形态——按表单行字面量取数（LIMIT 参数化），列裁剪/行过滤/投影
+        全部在语义层模块内存态强制（MVP 数据量 ≤ 行数上限；SQL 级谓词下推列入后续）。
+        spec: {table, columns?(默认授权列), filters?(授权列=值), limit?}"""
+        table = spec.get("table", "")
+        if table not in self.tables:
+            raise SemanticGuardError("TABLE_NOT_ALLOWED", f"表不在语义层: {table}",
+                                     "可用表: " + ", ".join(sorted(self.tables)))
+        grant = self._grant_for(agent, table)
+        allowed = set(grant["columns"])
+        requested = list(spec.get("columns") or grant["columns"])
+        denied = [c for c in requested if c not in allowed]
+        if denied:
+            raise SemanticGuardError("COLUMN_DENIED",
+                                     f"列未被授权: {', '.join(denied)}",
+                                     f"授权列: {', '.join(grant['columns'])}")
+        unknown = [c for c in requested
+                   if c not in {c["name"] for c in self.tables[table]["columns"]}]
+        if unknown:
+            raise SemanticGuardError("COLUMN_UNKNOWN", f"未知列: {', '.join(unknown)}",
+                                     "可用列: " + ", ".join(sorted(allowed)))
+        filters = spec.get("filters", {}) or {}
+        bad_filters = [k for k in filters if k not in allowed]
+        if bad_filters:
+            raise SemanticGuardError("FILTER_COLUMN_DENIED",
+                                     f"过滤列未被授权: {', '.join(bad_filters)}",
+                                     f"授权列: {', '.join(grant['columns'])}")
+        limit = min(int(spec.get("limit", self.row_limit)), self.row_limit)
+        if table == "users":
+            cursor = conn.execute("SELECT * FROM users LIMIT ?", (limit + 1,))
+        elif table == "events":
+            cursor = conn.execute("SELECT * FROM events LIMIT ?", (limit + 1,))
+        else:
+            raise SemanticGuardError("TABLE_NOT_ALLOWED", f"表不在语义层: {table}", "")
+        cols_all = [d[0] for d in cursor.description] if cursor.description else []
+        records = [dict(zip(cols_all, r)) for r in cursor.fetchmany(limit + 1)]
+        effective_filters = dict(filters)
+        effective_filters.update(grant.get("row_filter", {}))
+        rows = [rec for rec in records
+                if all(rec.get(k) == v for k, v in effective_filters.items())]
+        if len(rows) > limit:
+            raise SemanticGuardError("ROW_LIMIT_EXCEEDED",
+                                     f"过滤后结果超过行数上限 {limit}",
+                                     "收窄过滤条件或降低 limit")
+        projected = [{c: rec.get(c) for c in requested} for rec in rows]
+        return {"agent": agent, "table": table, "columns": requested,
+                "rows": projected, "row_count": len(projected),
+                "row_filter_applied": bool(grant.get("row_filter", {})),
+                "filters_applied": dict(filters)}
 
     @classmethod
     def load(cls, path) -> "SemanticLayer":
