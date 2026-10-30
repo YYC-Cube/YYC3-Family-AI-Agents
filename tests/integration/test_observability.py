@@ -92,3 +92,37 @@ class TestChatTelemetryWiring:
         assert r.status_code == 200
         body = r.get_json()
         assert body["status"] == "ok" and "counters" in body and "otel" in body
+
+
+class TestGenAISemanticConventions:
+    """E1-4 OTel GenAI 语义约定（gen_ai.* 属性组，降级模式断言日志负载）"""
+
+    def test_genai_attrs_shape(self):
+        attrs = telemetry.genai_attrs(model="Qwen/Qwen3.6-27B-FP8", agent="tianshu",
+                                      **{"gen_ai.usage.prompt_tokens": 10})
+        assert attrs["gen_ai.system"] == "vllm"
+        assert attrs["gen_ai.operation.name"] == "chat"
+        assert attrs["gen_ai.request.model"] == "Qwen/Qwen3.6-27B-FP8"
+        assert attrs["gen_ai.agent.name"] == "tianshu"
+        assert attrs["gen_ai.usage.prompt_tokens"] == 10
+
+    def test_trace_span_accepts_attrs_dict(self, caplog):
+        import json as _json
+        with caplog.at_level("INFO", logger="yyc3.telemetry"):
+            with telemetry.trace_span("genai_probe", correlation_id="c-g1",
+                                      attrs=telemetry.genai_attrs(model="m1", agent="tianshu")):
+                pass
+        payload = _json.loads(caplog.records[-1].message)
+        assert payload["gen_ai.request.model"] == "m1"
+        assert payload["gen_ai.agent.name"] == "tianshu"
+
+    def test_chat_response_event_carries_genai_usage(self, agent_client, caplog):
+        import json as _json
+        with caplog.at_level("INFO", logger="yyc3.telemetry"):
+            r = agent_client.post("/chat", json={"message": "你好", "correlation_id": "genai-1"})
+        assert r.status_code == 200
+        genai_rows = [_json.loads(rec.message) for rec in caplog.records
+                      if "gen_ai.usage.prompt_tokens" in rec.getMessage()]
+        assert genai_rows, "chat_response 降级日志应携带 gen_ai.usage.*"
+        assert genai_rows[-1]["gen_ai.agent.name"] == "yuanqi_tianshu"
+        assert genai_rows[-1]["gen_ai.operation.name"] == "chat"

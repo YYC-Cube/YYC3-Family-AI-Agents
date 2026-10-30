@@ -248,7 +248,8 @@ def chat():
     messages.extend(history)
     messages.append({"role": "user", "content": user_message})
 
-    with telemetry.trace_span("llm_inference", correlation_id, agent=AGENT_NAME, model=VLLM_MODEL):
+    with telemetry.trace_span("llm_inference", correlation_id, agent=AGENT_NAME, model=VLLM_MODEL,
+                              attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME)):
         start = time.time()
         response, usage = call_vllm(messages, temperature=temperature, max_tokens=max_tokens)
         latency = round((time.time() - start) * 1000, 1)
@@ -268,7 +269,10 @@ def chat():
 
     telemetry.record_event("chat_response", correlation_id, agent=AGENT_NAME,
                            latency_ms=latency,
-                           tokens=prompt_tokens + completion_tokens)
+                           tokens=prompt_tokens + completion_tokens,
+                           attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME,
+                                                       **{"gen_ai.usage.prompt_tokens": prompt_tokens,
+                                                          "gen_ai.usage.completion_tokens": completion_tokens}))
 
     return jsonify({
         "agent": AGENT_NAME, "label": AGENT_LABEL, "role": AGENT_ROLE,
@@ -329,7 +333,9 @@ def chat_stream():
                         "role": AGENT_ROLE, "correlation_id": correlation_id,
                         "model": VLLM_MODEL})
             with telemetry.trace_span("llm_inference_stream", correlation_id,
-                                      agent=AGENT_NAME, model=VLLM_MODEL):
+                                      agent=AGENT_NAME, model=VLLM_MODEL,
+                                      attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME,
+                                                                  operation="chat.stream")):
                 for line in _iter_vllm_stream(messages, temperature, max_tokens):
                     if not line.startswith("data:"):
                         continue
@@ -369,7 +375,11 @@ def chat_stream():
             telemetry.record_event("chat_stream_response", correlation_id, agent=AGENT_NAME,
                                    latency_ms=latency,
                                    tokens=prompt_tokens + completion_tokens,
-                                   completed=completed)
+                                   completed=completed,
+                                   attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME,
+                                                               operation="chat.stream",
+                                                               **{"gen_ai.usage.prompt_tokens": prompt_tokens,
+                                                                  "gen_ai.usage.completion_tokens": completion_tokens}))
             if completed:
                 yield _sse({"type": "done", "correlation_id": correlation_id,
                             "usage": usage, "latency_ms": latency,
