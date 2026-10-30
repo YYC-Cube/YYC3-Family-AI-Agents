@@ -7,6 +7,16 @@ name: yyc3-demo
 description: YYC³ 语义层演示业务域（用户与事件）
 dialect: sqlite
 row_limit: 500
+# E3-2 行列权限（在语义层裁决，不进提示词）：未列出的家人继承 default_columns 全列；
+# agents 内显式条目做列裁剪与行过滤（row_filter 为等值谓词，应用内存态强制）
+permissions:
+  default_columns:
+    users: [user_id, name, city, created_at]
+    events: [event_id, user_id, event_type, created_at]
+  agents:
+    bole:
+      users:
+        columns: [user_id, city]
 tables:
   - name: users
     description: 注册用户表
