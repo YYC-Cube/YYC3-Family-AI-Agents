@@ -10,7 +10,7 @@ import governance_hub
 
 @pytest.fixture(scope="module")
 def hub_live():
-    """真实 HTTP 回环：werkzeug 起在 127.0.0.1 随机端口，携带测试密钥"""
+    """真实 HTTP 回环：werkzeug 起在 127.0.0.1:25710 固定端口（与家人 25600-25607 / hub 25700 错开）"""
     KEY = "loop-mcp-key"
     old = governance_hub.GOVERNANCE_API_KEY
     governance_hub.GOVERNANCE_API_KEY = KEY
@@ -19,10 +19,10 @@ def hub_live():
     except Exception:
         pass
     from werkzeug.serving import make_server
-    srv = make_server("127.0.0.1", 0, governance_hub.app)
+    srv = make_server("127.0.0.1", 25710, governance_hub.app)
     t = threading.Thread(target=srv.serve_forever, daemon=True)
     t.start()
-    yield f"http://127.0.0.1:{srv.server_port}/mcp", KEY
+    yield "http://127.0.0.1:25710/mcp", KEY
     srv.shutdown()
     governance_hub.GOVERNANCE_API_KEY = old
 

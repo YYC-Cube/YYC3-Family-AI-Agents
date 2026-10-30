@@ -124,12 +124,14 @@ def store(conn: sqlite3.Connection, agent: str, text: str, *,
 
 def recall(conn: sqlite3.Connection, agent: str, query: str, top_k: int = 5,
            min_confidence: float = MIN_CONFIDENCE) -> list:
-    """召回：关键词覆盖度 × 时间衰减置信度排序；低于阈值沉睡（不删，可追溯）。"""
+    """召回：关键词覆盖度 × 时间衰减置信度排序；数字不匹配重罚（近重复事实精度）；
+    低于阈值沉睡（不删，可追溯）。"""
     ensure_table(conn)
     rows = conn.execute(
         "SELECT id, fact, confidence, hits, created_at, updated_at FROM semantic_memory WHERE agent=? AND forgotten=0",
         (agent,)).fetchall()
     now = datetime.now(timezone.utc)
+    query_digits = set(re.findall(r"\d+", query or ""))
     scored = []
     for fid, fact, conf, hits, created, updated in rows:
         ts = datetime.fromisoformat(updated)
@@ -140,6 +142,10 @@ def recall(conn: sqlite3.Connection, agent: str, query: str, top_k: int = 5,
         overlap = keyword_overlap(query, fact)
         if overlap <= 0:
             continue
+        # 数字不匹配重罚：查询中的编号在事实中缺失 → 近重复事实降权（精度）
+        fact_digits = set(re.findall(r"\d+", fact))
+        if query_digits and not query_digits.issubset(fact_digits):
+            overlap *= 0.2
         scored.append({"id": fid, "fact": fact, "hits": hits,
                        "confidence": conf, "effective_confidence": round(effective, 4),
                        "score": round(overlap * effective, 4)})

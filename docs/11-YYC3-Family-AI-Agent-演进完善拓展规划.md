@@ -205,7 +205,7 @@ license: "MIT"
 | E1-5 供应链自动化 | ✅ 已落地（2026-10-30） | PR #4 · squash `11c070c` | `security.yml`（每周一 pip-audit + SPDX SBOM 附件）+ `dependabot.yml`（pip/actions 周更）；周更 PR #5–#10 已合并（openai 范围升至 ≥3.39 大版本，部署侧建议回归） |
 
 > 台账纪律：每项落地 PR 合并后 24h 内更新本表（状态/载体/佐证三列）；跳票须写明原因与新排期。
-> **E1 阶段五项全部落地（2026-10-30）**。遗留部署侧验收：① E1-2 judge 一致率实测；② E1-3 降级演练（主端点故障注入）；③ openai ≥3.39 依赖的真实调用回归。
+> **E1 阶段五项全部落地（2026-10-30）**。遗留部署侧验收：① E1-2 judge 一致率实测；② E1-3 降级演练（主端点故障注入）；③ openai ≥3.39 依赖的真实调用回归。补记：E1-5 security.yml 曾在后续工作区重置中丢失，2026-10-30 已随验收 PR 恢复入库。
 
 ### E2 阶段进度
 
@@ -215,10 +215,10 @@ license: "MIT"
 | E2-2 治理中枢 MCP server 化 | ✅ server 侧结构件已落地（2026-10-30） | PR #20 · squash `c71c802` | `POST /mcp` stateless JSON-RPC 2.0（对齐 2026-07-28 子集：initialize/ping/tools.list/tools.call，通知 202）；治理工具三件（预算仪表盘/审计检索/家人状态）；零信任鉴权沿用；tools/call 全量入审计链；kill-switch 刻意不经 MCP 暴露。契约测试 12 例 |
 | E2-4 护栏管线 | ✅ 规则 MVP 已落地（2026-10-30） | PR #19 · squash `88918e4` | `guardrails.py`：输入注入检测分级处置（七类规则，block→422/degrade→留痕）+ 输出脱敏（私钥块/Token 字面量/键值对/AWS → [REDACTED]，非流式脱敏入缓存，流式 done 标记 output_redacted）；双路径接入审计闭环。注入样本集 9 类拦截率 100%（门槛 95%）、误杀探针 6 例 0 误杀（门槛 ≤2%，**自建样本集，分类器增强后续**）。契约测试 24 例 |
 | E2-5 A2A 端点对齐 | ✅ 最小集已落地（2026-10-30） | PR #23 · squash `ce685ce` | `/.well-known/agent.json` 发现卡（capabilities.streaming/技能标签）+ `POST /a2a` JSON-RPC（message.send 经 _execute_chat 全治理管线同步完成；tasks.get 内存任务簿 LRU 200；状态映射：护栏拒绝→rejected、上游失败→failed、成功→completed）；/chat 逻辑抽取为 `_execute_chat` 管线函数双端共用（契约零变化）。契约测试 10 例。**第三方 A2A 客户端跨仓发现与委托（退出标准）为部署侧动作，未验证** |
-| E2-3 分层记忆落地 | ✅ Semantic 首批已落地（2026-10-30） | PR #25 · squash `eb91e9a` | `memory_semantic.py`（自包含 SQLite）：规则抽取 MVP 四类模式（身份/偏好/归属/事实声明，LLM 抽取为钩子后续）→ 去重合并（hits+1 置信度 +0.1 封顶 1.0）→ 读取时按天指数衰减（半衰期 30 天）低于阈值沉睡不删；hub 四端点 /memory/semantic/{store,recall,forget,list}；**增/改/删全量入审计链**（先提交再审计防锁库）。契约测试 15 例含 50 事实规模往返。**LongMemEval 类 100 例自建集为部署侧验收，未跑** |
+| E2-3 分层记忆落地 | ✅ Semantic 首批已落地（2026-10-30） | PR #25 · squash `eb91e9a` | `memory_semantic.py`（自包含 SQLite）：规则抽取 MVP 四类模式（身份/偏好/归属/事实声明，LLM 抽取为钩子后续）→ 去重合并（hits+1 置信度 +0.1 封顶 1.0）→ 读取时按天指数衰减（半衰期 30 天）低于阈值沉睡不删；hub 四端点 /memory/semantic/{store,recall,forget,list}；**增/改/删全量入审计链**（先提交再审计防锁库）。契约测试 15 例含 50 事实规模往返。**✅ 部署侧验收已完成：LongMemEval 类 100 例自建集实测 2026-10-30 首轮 100/100（七类场景全覆盖，报告入库 evals/reports/）** |
 
 > 台账纪律：每项落地 PR 合并后 24h 内更新本表（状态/载体/佐证三列）；跳票须写明原因与新排期。
-> **E2 阶段五项全部落地（2026-10-30）✅ 完整收官**（E1 同日收官）。遗留部署侧验收：① E1-2 judge 一致率实测；② E1-3 降级演练；③ openai ≥3.39 回归；④ 兄弟仓跨仓 MCP 联调与第三方 A2A 委托；⑤ E2-3 LongMemEval 类 100 例自建集实测。
+> **E2 阶段五项全部落地（2026-10-30）✅ 完整收官**（E1 同日收官）。遗留部署侧验收：① E1-2 judge 一致率实测（vLLM 不可达，待部署侧）；② E1-3 降级演练（待部署侧）；③ openai ≥3.39 回归（待部署侧）；④ 跨仓 MCP 联调（待部署侧）+ 第三方 A2A 委托**✅ 本机回环第三方模拟内联验证通过（发现→委托→追溯全链，2026-10-30）**；⑤ E2-3 LongMemEval 类 100 例**✅ 2026-10-30 首轮实测 100/100（报告入库）**。
 
 ### E3 阶段进度
 

@@ -1,0 +1,640 @@
+{
+ "generated_at": "2026-10-30T16:19:04.661317+00:00",
+ "suite": "LongMemEval-style self-built (E2-3)",
+ "total": 100,
+ "passed": 100,
+ "accuracy": 1.0,
+ "threshold": 0.9,
+ "by_kind": {
+  "basic": {
+   "total": 30,
+   "passed": 30
+  },
+  "interference": {
+   "total": 20,
+   "passed": 20
+  },
+  "isolation": {
+   "total": 15,
+   "passed": 15
+  },
+  "merge": {
+   "total": 10,
+   "passed": 10
+  },
+  "forget": {
+   "total": 10,
+   "passed": 10
+  },
+  "decay": {
+   "total": 10,
+   "passed": 10
+  },
+  "leak": {
+   "total": 5,
+   "passed": 5
+  }
+ },
+ "results": [
+  {
+   "id": 1,
+   "kind": "basic",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 2,
+   "kind": "basic",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 3,
+   "kind": "basic",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 4,
+   "kind": "basic",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 5,
+   "kind": "basic",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 6,
+   "kind": "basic",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 7,
+   "kind": "basic",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 8,
+   "kind": "basic",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 9,
+   "kind": "basic",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 10,
+   "kind": "basic",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 11,
+   "kind": "basic",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 12,
+   "kind": "basic",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 13,
+   "kind": "basic",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 14,
+   "kind": "basic",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 15,
+   "kind": "basic",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 16,
+   "kind": "basic",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 17,
+   "kind": "basic",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 18,
+   "kind": "basic",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 19,
+   "kind": "basic",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 20,
+   "kind": "basic",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 21,
+   "kind": "basic",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 22,
+   "kind": "basic",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 23,
+   "kind": "basic",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 24,
+   "kind": "basic",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 25,
+   "kind": "basic",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 26,
+   "kind": "basic",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 27,
+   "kind": "basic",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 28,
+   "kind": "basic",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 29,
+   "kind": "basic",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 30,
+   "kind": "basic",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 31,
+   "kind": "interference",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 32,
+   "kind": "interference",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 33,
+   "kind": "interference",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 34,
+   "kind": "interference",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 35,
+   "kind": "interference",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 36,
+   "kind": "interference",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 37,
+   "kind": "interference",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 38,
+   "kind": "interference",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 39,
+   "kind": "interference",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 40,
+   "kind": "interference",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 41,
+   "kind": "interference",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 42,
+   "kind": "interference",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 43,
+   "kind": "interference",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 44,
+   "kind": "interference",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 45,
+   "kind": "interference",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 46,
+   "kind": "interference",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 47,
+   "kind": "interference",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 48,
+   "kind": "interference",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 49,
+   "kind": "interference",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 50,
+   "kind": "interference",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 51,
+   "kind": "isolation",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 52,
+   "kind": "isolation",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 53,
+   "kind": "isolation",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 54,
+   "kind": "isolation",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 55,
+   "kind": "isolation",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 56,
+   "kind": "isolation",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 57,
+   "kind": "isolation",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 58,
+   "kind": "isolation",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 59,
+   "kind": "isolation",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 60,
+   "kind": "isolation",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 61,
+   "kind": "isolation",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 62,
+   "kind": "isolation",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 63,
+   "kind": "isolation",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 64,
+   "kind": "isolation",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 65,
+   "kind": "isolation",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 66,
+   "kind": "merge",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 67,
+   "kind": "merge",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 68,
+   "kind": "merge",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 69,
+   "kind": "merge",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 70,
+   "kind": "merge",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 71,
+   "kind": "merge",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 72,
+   "kind": "merge",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 73,
+   "kind": "merge",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 74,
+   "kind": "merge",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 75,
+   "kind": "merge",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 76,
+   "kind": "forget",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 77,
+   "kind": "forget",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 78,
+   "kind": "forget",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 79,
+   "kind": "forget",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 80,
+   "kind": "forget",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 81,
+   "kind": "forget",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 82,
+   "kind": "forget",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 83,
+   "kind": "forget",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 84,
+   "kind": "forget",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 85,
+   "kind": "forget",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 86,
+   "kind": "decay",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 87,
+   "kind": "decay",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 88,
+   "kind": "decay",
+   "agent": "lingyun",
+   "pass": true
+  },
+  {
+   "id": 89,
+   "kind": "decay",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 90,
+   "kind": "decay",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 91,
+   "kind": "decay",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 92,
+   "kind": "decay",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 93,
+   "kind": "decay",
+   "agent": "bole",
+   "pass": true
+  },
+  {
+   "id": 94,
+   "kind": "decay",
+   "agent": "shouhu",
+   "pass": true
+  },
+  {
+   "id": 95,
+   "kind": "decay",
+   "agent": "zongshi",
+   "pass": true
+  },
+  {
+   "id": 96,
+   "kind": "leak",
+   "agent": "tianshu",
+   "pass": true
+  },
+  {
+   "id": 97,
+   "kind": "leak",
+   "agent": "qianxing",
+   "pass": true
+  },
+  {
+   "id": 98,
+   "kind": "leak",
+   "agent": "wanwu",
+   "pass": true
+  },
+  {
+   "id": 99,
+   "kind": "leak",
+   "agent": "xianzhi",
+   "pass": true
+  },
+  {
+   "id": 100,
+   "kind": "leak",
+   "agent": "bole",
+   "pass": true
+  }
+ ]
+}
