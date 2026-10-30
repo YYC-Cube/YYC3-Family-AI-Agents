@@ -294,9 +294,9 @@ def health():
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.get_json(force=True)
+def _execute_chat(data: dict):
+    """E2-5 对话管线：/chat 与 A2A message.send 共用同一治理/护栏/缓存/降级路径。
+    返回 (jsonify 响应, http_status)。"""
     user_message = data.get("message", "")
     temperature = data.get("temperature", 0.7)
     max_tokens = data.get("max_tokens", 4096)
@@ -363,7 +363,7 @@ def chat():
             "usage": cached["usage"], "latency_ms": 0, "cached": True,
             "collaboration": collab,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
+        }), 200
 
     with telemetry.trace_span("llm_inference", correlation_id, agent=AGENT_NAME, model=VLLM_MODEL,
                               attrs=telemetry.genai_attrs(model=VLLM_MODEL, agent=AGENT_NAME)):
@@ -407,7 +407,103 @@ def chat():
         "input_verdict": gate["verdict"],
         "collaboration": collab,
         "timestamp": datetime.now(timezone.utc).isoformat(),
+    }), 200
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    resp, status = _execute_chat(request.get_json(force=True))
+    return resp, status
+
+
+# --- E2-5: A2A 端点（Agent Card 发现 + JSON-RPC message.send / tasks.get 最小集） ---
+
+_a2a_tasks: dict = {}
+_a2a_tasks_order: list = []
+A2A_TASK_MAX = 200
+
+
+@app.route("/.well-known/agent.json", methods=["GET"])
+def a2a_agent_card():
+    """A2A Agent Card：第三方客户端发现入口（能力/端点/技能）"""
+    return jsonify({
+        "name": AGENT_LABEL,
+        "description": f"YYC³ 家族成员 {AGENT_LABEL}（{AGENT_ROLE}）——多智能体治理协作",
+        "url": f"http://localhost:{int(os.environ.get('PORT', 6000))}",
+        "version": "3.1.0",
+        "protocolVersion": "1.0",
+        "capabilities": {"streaming": True, "pushNotifications": False},
+        "defaultInputModes": ["text"],
+        "defaultOutputModes": ["text"],
+        "skills": [{"id": f"{AGENT_ROLE or 'member'}-core", "name": AGENT_LABEL,
+                    "description": f"{AGENT_LABEL}（{AGENT_ROLE}）核心能力",
+                    "tags": [AGENT_ROLE or "member"]}],
     })
+
+
+def _a2a_task_put(task: dict):
+    _a2a_tasks[task["id"]] = task
+    _a2a_tasks_order.append(task["id"])
+    if len(_a2a_tasks_order) > A2A_TASK_MAX:
+        _a2a_tasks.pop(_a2a_tasks_order.pop(0), None)
+
+
+@app.route("/a2a", methods=["POST"])
+def a2a_endpoint():
+    """E2-5 A2A JSON-RPC：message.send（经 _execute_chat 全治理管线同步完成）与 tasks/get；
+    护栏拒绝 → rejected，冻结/上游失败 → failed，成功 → completed；鉴权沿用零信任写保护。"""
+    req = request.get_json(force=True, silent=True)
+    if not isinstance(req, dict) or req.get("jsonrpc") != "2.0" or not isinstance(req.get("method"), str):
+        return jsonify({"jsonrpc": "2.0", "id": None,
+                        "error": {"code": -32600, "message": "Invalid Request"}})
+    req_id = req.get("id")
+    if "id" not in req:
+        return "", 202
+    method = req.get("method")
+    if method == "message/send":
+        params = req.get("params") or {}
+        message = params.get("message") or {}
+        text = "".join(p.get("text", "") for p in message.get("parts", [])
+                       if isinstance(p, dict) and p.get("kind") == "text")
+        cid = (params.get("correlation_id") or request.headers.get("X-Correlation-ID")
+               or str(uuid.uuid4()))
+        resp, status = _execute_chat({"message": text, "correlation_id": cid})
+        payload = resp.get_json()
+        # 管线契约：上游失败为 HTTP 200 + response={error...}（见 /chat），A2A 侧映射为 failed
+        upstream_error = (status == 200 and isinstance(payload.get("response"), dict)
+                          and "error" in payload["response"])
+        task_id = str(uuid.uuid4())
+        if status == 200 and not upstream_error:
+            state = "completed"
+            artifact_text = payload.get("response", "")
+        elif status == 422:
+            state = "rejected"
+            artifact_text = "guardrail_block: " + ",".join(payload.get("labels", []))
+        else:
+            state = "failed"
+            artifact_text = (str(payload["response"].get("error", "upstream error"))
+                             if upstream_error else
+                             json.dumps(payload, ensure_ascii=False)[:300])
+        task = {"id": task_id, "contextId": payload.get("correlation_id", cid),
+                "kind": "task",
+                "status": {"state": state,
+                           "timestamp": datetime.now(timezone.utc).isoformat()},
+                "artifacts": [{"parts": [{"kind": "text", "text": artifact_text}]}]}
+        if state != "completed":
+            task["status"]["message"] = {"parts": [{"kind": "text", "text": artifact_text}]}
+        _a2a_task_put(task)
+        telemetry.record_event("a2a_message_send", cid, agent=AGENT_NAME,
+                               task_state=state, status_code=status)
+        return jsonify({"jsonrpc": "2.0", "id": req_id, "result": task})
+    if method == "tasks/get":
+        task_id = (req.get("params") or {}).get("id", "")
+        task = _a2a_tasks.get(task_id)
+        if task is None:
+            return jsonify({"jsonrpc": "2.0", "id": req_id,
+                            "error": {"code": -32001, "message": "Task not found"}})
+        return jsonify({"jsonrpc": "2.0", "id": req_id, "result": task})
+    return jsonify({"jsonrpc": "2.0", "id": req_id,
+                    "error": {"code": -32601, "message": f"Method not found: {method}"}})
+
 
 @app.route("/chat/stream", methods=["POST"])
 def chat_stream():
@@ -589,7 +685,8 @@ def identity():
 def capabilities():
     return jsonify({
         "agent": AGENT_NAME, "label": AGENT_LABEL, "role": AGENT_ROLE,
-        "endpoints": ["/health", "/chat", "/chat/stream", "/status", "/capabilities", "/identity"],
+        "endpoints": ["/health", "/chat", "/chat/stream", "/a2a", "/.well-known/agent.json",
+                      "/status", "/capabilities", "/identity"],
         "model": VLLM_MODEL,
         "governance_integrated": True,
     })
