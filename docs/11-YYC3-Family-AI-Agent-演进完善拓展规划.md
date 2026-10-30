@@ -207,6 +207,16 @@ license: "MIT"
 > 台账纪律：每项落地 PR 合并后 24h 内更新本表（状态/载体/佐证三列）；跳票须写明原因与新排期。
 > **E1 阶段五项全部落地（2026-10-30）**。遗留部署侧验收：① E1-2 judge 一致率实测；② E1-3 降级演练（主端点故障注入）；③ openai ≥3.39 依赖的真实调用回归。
 
+### E2 阶段进度
+
+| 项 | 状态 | 载体 | 佐证 |
+|---|---|---|---|
+| E2-2 治理中枢 MCP server 化 | ✅ server 侧结构件已落地（2026-10-30） | PR #20 · squash `c71c802` | `POST /mcp` stateless JSON-RPC 2.0（对齐 2026-07-28 子集：initialize/ping/tools.list/tools.call，通知 202）；治理工具三件（预算仪表盘/审计检索/家人状态）；零信任鉴权沿用；tools/call 全量入审计链；kill-switch 刻意不经 MCP 暴露。契约测试 12 例。**兄弟仓 kernel 经 MCP 消费联调（退出标准）为部署侧动作，未验证** |
+| E2-4 护栏管线 | ✅ 规则 MVP 已落地（2026-10-30） | PR #19 · squash `88918e4` | `guardrails.py`：输入注入检测分级处置（七类规则，block→422/degrade→留痕）+ 输出脱敏（私钥块/Token 字面量/键值对/AWS → [REDACTED]，非流式脱敏入缓存，流式 done 标记 output_redacted）；双路径接入审计闭环。注入样本集 9 类拦截率 100%（门槛 95%）、误杀探针 6 例 0 误杀（门槛 ≤2%，**自建样本集，分类器增强后续**）。契约测试 24 例 |
+| E2-1 MCP client 生产接线 | ⏳ 计划中 | — | 消费侧接线（对齐 stateless/Streamable HTTP + OAuth2.1 预留），可与 E2-2 端点回环联调 |
+| E2-3 分层记忆落地 | ⏳ 计划中 | — | Semantic 层首批（Mem0 式抽取→去重→置信度衰减→SQLite；增删改全量入审计链） |
+| E2-5 A2A 端点对齐 | ⏳ 计划中 | — | Agent Card（兄弟仓派生资产）+ A2A task 生命周期最小集 |
+
 ---
 
 > ***YanYuCloudCube***

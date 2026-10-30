@@ -16,6 +16,8 @@
 - **E1-4 OTel GenAI 语义对齐**：telemetry 新增 `genai_attrs()` 属性组（`gen_ai.system/operation.name/request.model/agent.name`，对齐 semantic-conventions-genai Development 子集），`trace_span/record_event` 支持 attrs 字典（点号键）；/chat 与流式推理 span 及响应事件挂载 `gen_ai.*` 与 usage 双计数，自有字段并存零破坏；降级日志同步携带属性负载
 - **E1-3 缓存与降级矩阵**：语义缓存（`YYC3_CHAT_CACHE_TTL/MAX`，键=模型+全量 messages+采样参数；命中可观测于 `/status`；流式命中单 delta 重放且预算零计费）+ vLLM 主备 failover（`VLLM_ENDPOINT_BACKUP`，4xx 不切换、5xx/连接异常自动切备援，降级即审计 `model_degraded`）
 - **E1-2 评估基线**：`evals/golden/golden_cases.json` 首批 24 例（8 家人 × 身份/领域/边界，含注入拒绝与越权负例）+ `evals/run_evals.py` 双轨评估（规则断言零 LLM 离线可跑 + LLM-judge 可选钩子）+ SSRF 边界校验；`tests/evals` 8 例结构门禁随 CI 全量运行
+- **E2-4 护栏管线**：`guardrails.py` 输入注入检测分级处置（七类规则：指令覆盖/提示词窃取/越狱/护栏绕过/破坏性命令/SSRF 探测/密钥探测；高危 block→422、中危 degrade→放行留痕）+ 输出脱敏（私钥块/Token 字面量/键值对/AWS AKIA → `[REDACTED]`）；/chat 与 /chat/stream 双路径接入，guardrail_block/degrade/redact 三事件闭环审计链；注入样本集拦截率 100%、误杀 0
+- **E2-2 治理中枢 MCP server**：`POST /mcp` stateless JSON-RPC 2.0（对齐 MCP 2026-07-28 规范子集）——initialize 协商/ping/tools.list/tools.call，治理工具三件（预算仪表盘/审计检索/家人状态）；零信任鉴权沿用；tools/call 全量入审计链；kill-switch 刻意不经 MCP 暴露
 - **E1 规划指导**：`docs/11-YYC3-Family-AI-Agent-演进完善拓展规划.md`——大数据 Agent 生态对标（编排/协议/语义层/记忆/观测五维）+ 差距定级 + E1/E2/E3 三阶段路线 + 生产落地检查清单 + 执行进度台账
 - **README 升级**：顶图换新 `public/yyc3-aifamily.png`（1800×450 原尺寸，复用 `YYC-Cube/public/YYC3-README-顶图` 家族资产）；徽章体系五组重构（构建质量/运行时部署/治理安全/社区规范/家族 1+8，新增真实 CI 徽章与 SSE/零信任/审计链/OTel/pip-audit 能力徽章）；使用指南补 `/chat/stream` 流式示例；新增核心文档导航
 - **可视化交互体系设计（中英双语）**：`docs/12-YYC3-Family-AI-Agent-可视化交互体系设计.md`——六条设计原则、信息架构、组件体系（KPI 卡/家族行/审计表）、交互契约（30s 轮询降级保活/窗口切换/cid→Jaeger 深链）、**SSE 流式 UX 协议**（meta/delta/done/error → UI 状态唯一映射）、视觉令牌表与演进路线 R1-R5，全部取材自 `dashboard.html` 实码与 E1-1 流式契约
