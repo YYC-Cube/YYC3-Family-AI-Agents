@@ -23,7 +23,7 @@ import uuid
 from datetime import datetime, timezone
 
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 
 import telemetry
 
@@ -166,6 +166,28 @@ def call_vllm(messages, temperature=0.7, max_tokens=4096):
     except Exception as e:
         return {"error": str(e)}, {}
 
+
+def _iter_vllm_stream(messages, temperature=0.7, max_tokens=4096):
+    """E1-1 vLLM OpenAI 兼容流式调用：yield SSE 原始 data 行；连接/HTTP 失败抛异常由调用方转 error 事件"""
+    payload = {"model": VLLM_MODEL, "messages": messages,
+               "temperature": temperature, "max_tokens": max_tokens,
+               "stream": True, "stream_options": {"include_usage": True},
+               "chat_template_kwargs": {"enable_thinking": False}}
+    resp = requests.post(f"{VLLM_ENDPOINT}/chat/completions",
+                         headers={"Content-Type": "application/json"},
+                         json=payload, timeout=(5, 120), stream=True)
+    resp.raise_for_status()
+    try:
+        for line in resp.iter_lines(decode_unicode=True):
+            if line:
+                yield line
+    finally:
+        resp.close()
+
+
+def _sse(data: dict) -> str:
+    return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+
 @app.route("/health", methods=["GET"])
 def health():
     uptime = (datetime.now(timezone.utc) - START_TIME).total_seconds()
@@ -257,6 +279,111 @@ def chat():
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
 
+@app.route("/chat/stream", methods=["POST"])
+def chat_stream():
+    """E1-1 SSE 流式对话：预检与治理上报与 /chat 同构；逐 delta 转发 vLLM 流，
+    断连/上游异常经 finally 兜底治理上报（partial 语义），预算与审计不因流式而旁路"""
+    data = request.get_json(force=True)
+    user_message = data.get("message", "")
+    temperature = data.get("temperature", 0.7)
+    max_tokens = data.get("max_tokens", 4096)
+    history = data.get("history", [])
+    risk = data.get("risk", "low")
+    complexity = data.get("complexity", 0.5)
+
+    if not user_message:
+        return jsonify({"error": "message field is required"}), 400
+
+    correlation_id = data.get("correlation_id") or str(uuid.uuid4())
+    telemetry.record_event("chat_stream_request", correlation_id, agent=AGENT_NAME,
+                           message_len=len(user_message), risk=risk)
+
+    with telemetry.trace_span("frozen_check", correlation_id, agent=AGENT_NAME):
+        frozen, reason = _check_frozen()
+    if frozen:
+        telemetry.record_event("frozen_block", correlation_id, level="warning", agent=AGENT_NAME)
+        _governance_report("frozen_block", {"reason": reason, "message": user_message[:100]},
+                           correlation_id=correlation_id)
+        return jsonify({"error": "Agent is frozen", "reason": reason, "agent": AGENT_NAME}), 403
+
+    _governance_report("chat_request", {"message_len": len(user_message), "risk": risk,
+                                        "stream": True}, correlation_id=correlation_id)
+
+    with telemetry.trace_span("context_injection", correlation_id, agent=AGENT_NAME):
+        system_prompt = load_system_prompt()
+        context_injection = _inject_context(user_message, correlation_id=correlation_id)
+        if context_injection:
+            system_prompt += context_injection
+
+    messages = [{"role": "system", "content": system_prompt}]
+    messages.extend(history)
+    messages.append({"role": "user", "content": user_message})
+
+    def generate():
+        start = time.time()
+        usage = {}
+        pieces = []
+        completed = False
+        try:
+            yield _sse({"type": "meta", "agent": AGENT_NAME, "label": AGENT_LABEL,
+                        "role": AGENT_ROLE, "correlation_id": correlation_id,
+                        "model": VLLM_MODEL})
+            with telemetry.trace_span("llm_inference_stream", correlation_id,
+                                      agent=AGENT_NAME, model=VLLM_MODEL):
+                for line in _iter_vllm_stream(messages, temperature, max_tokens):
+                    if not line.startswith("data:"):
+                        continue
+                    payload_text = line[len("data:"):].strip()
+                    if payload_text == "[DONE]":
+                        break
+                    try:
+                        chunk = json.loads(payload_text)
+                    except ValueError:
+                        continue
+                    if chunk.get("usage"):
+                        usage = chunk["usage"]
+                    choices = chunk.get("choices") or []
+                    delta = (choices[0].get("delta") or {}) if choices else {}
+                    piece = delta.get("content")
+                    if piece:
+                        pieces.append(piece)
+                        yield _sse({"type": "delta", "content": piece,
+                                    "correlation_id": correlation_id})
+            completed = True
+        except Exception as e:
+            yield _sse({"type": "error", "error": str(e)[:200],
+                        "correlation_id": correlation_id})
+        finally:
+            latency = round((time.time() - start) * 1000, 1)
+            prompt_tokens = usage.get("prompt_tokens", 0)
+            completion_tokens = usage.get("completion_tokens", 0)
+            _governance_token(prompt_tokens, completion_tokens, latency, VLLM_MODEL,
+                              correlation_id=correlation_id)
+            _governance_report("chat_response", {"latency_ms": latency,
+                                                 "tokens": prompt_tokens + completion_tokens,
+                                                 "stream": True, "completed": completed,
+                                                 "partial": not completed},
+                               correlation_id=correlation_id)
+            collab = _check_collaboration(user_message, confidence=0.85, complexity=complexity,
+                                          risk=risk, correlation_id=correlation_id)
+            telemetry.record_event("chat_stream_response", correlation_id, agent=AGENT_NAME,
+                                   latency_ms=latency,
+                                   tokens=prompt_tokens + completion_tokens,
+                                   completed=completed)
+            if completed:
+                yield _sse({"type": "done", "correlation_id": correlation_id,
+                            "usage": usage, "latency_ms": latency,
+                            "collaboration": collab,
+                            "timestamp": datetime.now(timezone.utc).isoformat()})
+
+    # 生成器仅使用局部变量与模块级函数（不触 flask.request），无需 stream_with_context——
+    # 该包装在 werkzeug 3.1 的 request_ctx ContextVar 下提前 close 会触发上下文弹栈错乱
+    resp = Response(generate(), mimetype="text/event-stream")
+    resp.headers["Cache-Control"] = "no-cache"
+    resp.headers["X-Accel-Buffering"] = "no"
+    resp.headers["X-Correlation-ID"] = correlation_id
+    return resp
+
 @app.route("/status", methods=["GET"])
 def status():
     return jsonify({
@@ -286,7 +413,7 @@ def identity():
 def capabilities():
     return jsonify({
         "agent": AGENT_NAME, "label": AGENT_LABEL, "role": AGENT_ROLE,
-        "endpoints": ["/health", "/chat", "/status", "/capabilities", "/identity"],
+        "endpoints": ["/health", "/chat", "/chat/stream", "/status", "/capabilities", "/identity"],
         "model": VLLM_MODEL,
         "governance_integrated": True,
     })
