@@ -1,0 +1,38 @@
+name: Security
+
+on:
+  schedule:
+    - cron: "17 3 * * 1" # 每周一 03:17 UTC（E1-5 供应链周扫）
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "requirements*.txt"
+
+jobs:
+  pip-audit:
+    name: 依赖漏洞扫描 (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安装 pip-audit
+        run: pip install pip-audit
+      - name: 审计运行时与测试依赖
+        run: pip-audit -r requirements.txt -r requirements-dev.txt --progress-off
+
+  sbom:
+    name: SBOM 生成（SPDX）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 生成 SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          format: spdx-json
+          artifact-name: yyc3-family-ai-agents-sbom.spdx.json
+      - name: 上传 SBOM 产物
+        uses: anchore/sbom-action/upload-sbom-artifact@v0
+        with:
+          artifact-name: yyc3-family-ai-agents-sbom.spdx.json
