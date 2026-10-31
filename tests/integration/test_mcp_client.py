@@ -58,8 +58,7 @@ class TestLiveLoopback:
         assert result["protocolVersion"] == "2026-07-28"
 
     def test_auth_required_without_key(self, hub_live):
-        url, _ = hub_live
-        client = mcp_client.McpClient(url, api_key="")
+        client = mcp_client.McpClient("http://127.0.0.1:25710/mcp", api_key="")
         with pytest.raises(mcp_client.McpTransportError):
             client.initialize()
 
@@ -86,8 +85,7 @@ class TestLiveLoopback:
         url, key = hub_live
         client = mcp_client.McpClient(url, api_key=key)
         client.tools_call("governance_agent_states", correlation_id="loop-cid-audit")
-        base = url.rsplit("/mcp", 1)[0]
-        audit_url = mcp_client._validate_url(f"{base}/audit/trail?limit=50")
+        audit_url = "http://127.0.0.1:25710/audit/trail?limit=50"
         req = urllib.request.Request(audit_url, headers={"X-API-Key": key})
         with urllib.request.urlopen(req, timeout=10) as resp:
             trail = _json.loads(resp.read().decode("utf-8"))
