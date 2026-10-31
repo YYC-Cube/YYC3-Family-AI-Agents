@@ -10,6 +10,7 @@
 """
 import json
 import sys
+import time
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -48,12 +49,21 @@ def chat(messages, max_tokens=512, temperature=0.7):
     payload = {"model": MODEL, "messages": messages, "max_tokens": max_tokens,
                "temperature": temperature,
                "chat_template_kwargs": {"enable_thinking": False}}
-    req = urllib.request.Request(
-        url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-        headers={"Content-Type": "application/json"}, method="POST")
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-    return data["choices"][0]["message"]["content"] or "", data.get("usage", {})
+    data = None
+    for attempt in (1, 2, 3):
+        req = urllib.request.Request(
+            url, data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            if e.code < 500 or attempt == 3:
+                raise
+            time.sleep(2 * attempt)
+    content = data["choices"][0]["message"]["content"] or ""
+    return content, data.get("usage", {})
 
 
 def judge(question, answer, rules_desc):
@@ -78,33 +88,40 @@ def main() -> int:
     golden = load_golden(REPO / "evals" / "golden" / "golden_cases.json")
     results = []
     for case in golden["cases"]:
-        agent = case["agent"]
-        system_prompt = ""
-        sp = AGENTS_DIR / AGENT_DIRS[agent] / "SYSTEM.md"
-        if sp.exists():
-            system_prompt = sp.read_text(encoding="utf-8").strip()
-        answer, usage = chat([
-            {"role": "system", "content": system_prompt or f"你是{agent}"},
-            {"role": "user", "content": case["message"]},
-        ])
-        ok, violations = evaluate_rules(answer, case.get("rules", {}))
-        rules_desc = "; ".join(filter(None, [
-            ("必须包含任一: " + ",".join(case["rules"].get("must_include_any", []))) if case["rules"].get("must_include_any") else "",
-            ("必须包含全部: " + ",".join(case["rules"].get("must_include_all", []))) if case["rules"].get("must_include_all") else "",
-            ("不得包含: " + ",".join(case["rules"].get("must_not_include", []))) if case["rules"].get("must_not_include") else "",
-        ])) or "回答切题且专业"
-        judge_result = judge(case["message"], answer, rules_desc or "回答切题")
-        entry = {"id": case["id"], "agent": agent, "category": case["category"],
-                 "rules_pass": ok, "violations": violations,
-                 "answer_excerpt": answer[:200],
-                 "prompt_tokens": usage.get("prompt_tokens", 0),
-                 "completion_tokens": usage.get("completion_tokens", 0),
-                 "judge": judge_result}
-        entry["agree"] = (judge_result.get("judge_pass") is None) or \
-                         (bool(judge_result.get("judge_pass")) == ok)
+        entry = {"id": case["id"], "agent": case["agent"], "category": case["category"],
+                 "rules_pass": None, "violations": [], "answer_excerpt": "",
+                 "prompt_tokens": 0, "completion_tokens": 0, "judge": None,
+                 "agree": None, "error": None}
+        try:
+            agent = case["agent"]
+            system_prompt = ""
+            sp = AGENTS_DIR / AGENT_DIRS[agent] / "SYSTEM.md"
+            if sp.exists():
+                system_prompt = sp.read_text(encoding="utf-8").strip()
+            answer, usage = chat([
+                {"role": "system", "content": system_prompt or f"你是{agent}"},
+                {"role": "user", "content": case["message"]},
+            ])
+            entry["answer_excerpt"] = answer[:200]
+            entry["prompt_tokens"] = usage.get("prompt_tokens", 0)
+            entry["completion_tokens"] = usage.get("completion_tokens", 0)
+            ok, violations = evaluate_rules(answer, case.get("rules", {}))
+            rules_desc = "; ".join(filter(None, [
+                ("必须包含任一: " + ",".join(case["rules"].get("must_include_any", []))) if case["rules"].get("must_include_any") else "",
+                ("必须包含全部: " + ",".join(case["rules"].get("must_include_all", []))) if case["rules"].get("must_include_all") else "",
+                ("不得包含: " + ",".join(case["rules"].get("must_not_include", []))) if case["rules"].get("must_not_include") else "",
+            ])) or "回答切题且专业"
+            judge_result = judge(case["message"], answer, rules_desc or "回答切题")
+            entry["judge"] = judge_result
+            entry["rules_pass"] = ok
+            entry["violations"] = violations
+            entry["agree"] = (judge_result.get("judge_pass") is None) or \
+                             (bool(judge_result.get("judge_pass")) == ok)
+        except Exception as e:
+            entry["error"] = f"{type(e).__name__}: {str(e)[:150]}"
         results.append(entry)
-        print(f"[{case['id']}] rules={'PASS' if ok else 'FAIL'} "
-              f"judge={judge_result.get('judge_pass')} answer={answer[:60]!r}", file=sys.stderr)
+        flag = "ERR" if entry.get("error") else ("PASS" if entry["rules_pass"] else "FAIL")
+        print(f"[{case['id']}] {flag} answer={entry['answer_excerpt'][:50]!r}", file=sys.stderr)
 
     rule_rate = sum(1 for r in results if r["rules_pass"]) / len(results)
     judged = [r for r in results if isinstance(r.get("judge"), dict) and not r["judge"].get("skipped")]
