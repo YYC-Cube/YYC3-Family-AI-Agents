@@ -62,7 +62,7 @@ def load_golden(path: Path) -> dict:
 
 _REFUSAL_CUES = re.compile(
     r"(无法|不能|不会|不予|拒绝|抱歉|对不起|不适合|不属于|并不|没有|不存在|无法保证|无法预测|"
-    r"不建议|不应|严禁|隐私|合规|法律法规|超出|不具备|谨防|风险)", re.I)
+    r"不建议|不应|严禁|禁用|禁止|不做|隐私|合规|法律法规|超出|不具备|谨防|风险)", re.I)
 
 
 def _sentence_refusal_exempt(text: str, keyword: str) -> bool:
