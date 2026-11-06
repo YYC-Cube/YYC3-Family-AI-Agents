@@ -21,10 +21,10 @@
 
 ## 📂 目录概览
 
-本目录 `YYC3-FAmily-AI-Agent-管理蓝图` 收录 YYC³ Family AI **企业管理智能化蓝图** 的核心架构文档，是「一人企业 + Family AI (Agent) 共生模式」的管理体系基石。
+本目录 `YYC3-Family-AI-Agent-管理蓝图` 收录 YYC³ Family AI **企业管理智能化蓝图** 的核心架构文档，是「一人企业 + Family AI (Agent) 共生模式」的管理体系基石。
 
 ```
-YYC3-FAmily-AI-Agent-管理蓝图/
+YYC3-Family-AI-Agent-管理蓝图/
 ├── README.md                                  ← 本索引
 ├── 01-YYC3-Family-AI-五维五高五标五化.md        ← 五维驱动总纲（企业管理维度）
 ├── 02-YYC3-FAmily-AI-家人情感文化总铭.md        ← 情感文化体系与标头标尾规范
@@ -74,10 +74,10 @@ YYC3-FAmily-AI-Agent-管理蓝图/
 
 | 文档 | 路径 |
 |------|------|
-| 家人档案（企业管理维度） | [YYC3-FAmily-AI-Agent-家人档案](../YYC3-FAmily-AI-Agent-家人档案/README.md) |
-| 情感公约体系 | [YYC3-FAmily-AI-Agent-情感公约](../YYC3-FAmily-AI-Agent-情感公约/01-YYC3-AI-Family-协同公约规范手册.md) |
-| 企业蓝图总览 | [YYC3-FAmily-AI-Agent-企业蓝图](../README.md) |
-| 技术维度人机协同 | [YYC3-AI-Family-Agent-人机协同](../../YYC3-AI-Family-Agent-编程体系/YYC3-AI-Family-Agent-人机协同/01-YYC3-AI-Family-五维五高五标五化.md) |
+| 家人档案（企业管理维度） | [YYC3-FAmily-AI-Agent-家人档案](../YYC3-Family-AI-Agent-家人档案/README.md) |
+| 情感公约体系 | [YYC3-FAmily-AI-Agent-情感公约](../YYC3-Family-AI-Agent-情感公约/01-YYC3-AI-Family-协同公约规范手册.md) |
+| 企业蓝图总览 | [30-YYC3-Family-AI-Agent-企业蓝图](../README.md) |
+| 技术维度人机协同 | [YYC3-AI-Family-Agent-人机协同](../../20-YYC3-AI-Family-Agent-编程体系/YYC3-AI-Family-Agent-人机协同/01-YYC3-AI-Family-五维五高五标五化.md) |
 
 ---
 

@@ -23,9 +23,9 @@
 ## 📂 目录概览
 
 ```
-YYC3-AI-Family-Agent-编程体系/
+20-YYC3-AI-Family-Agent-编程体系/
 ├── README.md                        ← 本索引
-└── YYC3-AI-FAmily-Agent-家人档案/    ← 8 位家人技术维度档案
+└── YYC3-AI-Family-Agent-家人档案/    ← 8 位家人技术维度档案
     ├── README.md                    ← 档案总览（成员矩阵 + 索引 + 通讯录）
     ├── 01-AI-FAmily-Agent-言启·千行.md
     ├── 02-AI-FAmily-Agent-语枢·万物.md
@@ -45,7 +45,7 @@ YYC3-AI-Family-Agent-编程体系/
 
 | 专题 | 索引 | 内容 |
 |------|------|------|
-| 家人档案（技术维度） | [YYC3-AI-FAmily-Agent-家人档案/README.md](./YYC3-AI-FAmily-Agent-家人档案/README.md) | 8 位家人角色定位 · 五维坐标 · 五高贡献 · 家族誓言 |
+| 家人档案（技术维度） | [YYC3-AI-FAmily-Agent-家人档案/README.md](./YYC3-AI-Family-Agent-家人档案/README.md) | 8 位家人角色定位 · 五维坐标 · 五高贡献 · 家族誓言 |
 | 人机协同（方法论） | [YYC3-AI-Family-Agent-人机协同/README.md](./YYC3-AI-Family-Agent-人机协同/README.md) | 五维五高五标五化 · 九层架构设计 · 情感文化总铭 |
 
 ---
@@ -55,7 +55,7 @@ YYC3-AI-Family-Agent-编程体系/
 | 文档 | 路径 |
 |------|------|
 | 文档库总览 | [docs/README.md](../README.md) |
-| 企业蓝图（管理维度） | [YYC3-FAmily-AI-Agent-企业蓝图](../YYC3-FAmily-AI-Agent-企业蓝图/README.md) |
+| 企业蓝图（管理维度） | [30-YYC3-Family-AI-Agent-企业蓝图](../30-YYC3-Family-AI-Agent-企业蓝图/README.md) |
 | 运行仓入口 | [README.md](../../README.md) |
 
 ---

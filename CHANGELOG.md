@@ -11,6 +11,7 @@
 
 ### Added
 
+- **文档架构规范化**：`docs/` 统一为编号分区（`10-` 提示词工程 / `20-` 技术维度 / `30-` 管理维度 / `90-` 归档）—— 目录名统一 `YYC3-Family-AI-Agent` 正式名；编号冲突修复（`1211-工程实现参考手册` → `1214`，与既有 1211 方案文档区分）；会话工作目录迁入 `90-归档-20260914-会话工作目录/`（只读历史）；`docs/README.md` 重写为唯一导航入口并新增文档规范（目录编号/文件命名/front matter/链接/归档/维护）；归档文档绝对本机路径与外链归一为仓库相对路径；`.github/README.md` 去重为指针页（原为根 README 全量副本且顶图相对路径失效）
 - **E1-1 SSE 流式对话**：`POST /chat/stream` 以 `text/event-stream` 逐 delta 转发 vLLM 流（`stream_options.include_usage` 获取真实用量）——`meta/delta/done/error` 四类事件、`X-Correlation-ID` 响应头；frozen 检查/审计/预算/协同/telemetry 上报与 `/chat` 完全同构，客户端断连经生成器 `finally` 兜底 `partial` 上报（审计链不因流式而缺口）；生成器不触请求上下文（规避 werkzeug 3.1 `request_ctx` 弹栈错乱）；契约测试 6 例（`tests/integration/test_streaming.py`）
 - **E1-5 供应链自动化**：`security.yml`——每周一 pip-audit 审计运行时与测试依赖（高危即红）+ anchore/sbom-action 产出 SPDX JSON SBOM 附件；`dependabot.yml`——pip 与 github-actions 双生态周更
 - **E1-4 OTel GenAI 语义对齐**：telemetry 新增 `genai_attrs()` 属性组（`gen_ai.system/operation.name/request.model/agent.name`，对齐 semantic-conventions-genai Development 子集），`trace_span/record_event` 支持 attrs 字典（点号键）；/chat 与流式推理 span 及响应事件挂载 `gen_ai.*` 与 usage 双计数，自有字段并存零破坏；降级日志同步携带属性负载
