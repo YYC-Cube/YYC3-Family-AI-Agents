@@ -116,7 +116,7 @@
 | ------ | ------ |
 | 情感文化总铭 | [02-YYC3-AI-FAmily-情感文化总铭.md](../YYC3-AI-Family-Agent-人机协同/02-YYC3-AI-FAmily-情感文化总铭.md) |
 | 九层家人档案 | [03-YYC3-AI-Family-九层家人档案.md](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/03-YYC3-AI-Family-九层家人档案.md) |
-| 协同公约规范手册 | [01-YYC3-AI-Family-协同公约规范手册.md](../../YYC3-FAmily-AI-Agent-企业蓝图/YYC3-FAmily-AI-Agent-情感公约/01-YYC3-AI-Family-协同公约规范手册.md) |
+| 协同公约规范手册 | [01-YYC3-AI-Family-协同公约规范手册.md](../../30-YYC3-Family-AI-Agent-企业蓝图/YYC3-Family-AI-Agent-情感公约/01-YYC3-AI-Family-协同公约规范手册.md) |
 | 九层架构设计 | [04-YYC3-AI-FAmily-九层架构设计.md](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/04-YYC3-AI-FAmily-九层架构设计.md) |
 | 五维五高五标五化 | [01-YYC3-AI-Family-五维五高五标五化.md](../YYC3-AI-Family-Agent-人机协同/01-YYC3-AI-Family-五维五高五标五化.md) |
 | 九层规划设计 | [01-YYC3-AI-Family-九层规划设计.md](../YYC3-AI-Family-Agent-人机协同/AI-FAmily-Agent-智能协同架构/01-YYC3-AI-Family-九层规划设计.md) |

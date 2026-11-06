@@ -18,6 +18,12 @@ data/
 # 系统
 .DS_Store
 
+# 工具与本地缓存
+.mimosa/
+.v2c/
+.video_agent/
+.pytest_cache/
+
 # IDE
 .vscode/
 .idea/

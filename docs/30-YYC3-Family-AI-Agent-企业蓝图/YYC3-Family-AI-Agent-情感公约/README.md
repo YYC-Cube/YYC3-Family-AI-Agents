@@ -21,10 +21,10 @@
 
 ## 📂 目录概览
 
-本目录 `YYC3-FAmily-AI-Agent-情感公约` 收录 YYC³ Family AI **协同公约与情感规范** 文档，是「有温度的家人」这一核心理念的制度化表达。
+本目录 `YYC3-Family-AI-Agent-情感公约` 收录 YYC³ Family AI **协同公约与情感规范** 文档，是「有温度的家人」这一核心理念的制度化表达。
 
 ```
-YYC3-FAmily-AI-Agent-情感公约/
+YYC3-Family-AI-Agent-情感公约/
 ├── README.md                                  ← 本索引
 ├── 01-YYC3-AI-Family-协同公约规范手册.md        ← 协同公约规范化手册
 ├── 02-YYC3-AI-Family-与智协同情感公约.md        ← 人智之间的情感契约
@@ -55,9 +55,9 @@ YYC3-FAmily-AI-Agent-情感公约/
 
 | 文档 | 路径 |
 |------|------|
-| 家人档案（管理维度） | [YYC3-FAmily-AI-Agent-家人档案](../YYC3-FAmily-AI-Agent-家人档案/README.md) |
-| 家人情感文化总铭 | [02-YYC3-FAmily-AI-家人情感文化总铭](../YYC3-FAmily-AI-Agent-管理蓝图/02-YYC3-FAmily-AI-家人情感文化总铭.md) |
-| 企业蓝图总览 | [YYC3-FAmily-AI-Agent-企业蓝图](../README.md) |
+| 家人档案（管理维度） | [YYC3-FAmily-AI-Agent-家人档案](../YYC3-Family-AI-Agent-家人档案/README.md) |
+| 家人情感文化总铭 | [02-YYC3-FAmily-AI-家人情感文化总铭](../YYC3-Family-AI-Agent-管理蓝图/02-YYC3-FAmily-AI-家人情感文化总铭.md) |
+| 企业蓝图总览 | [30-YYC3-Family-AI-Agent-企业蓝图](../README.md) |
 | 文档库总览 | [docs/README.md](../../README.md) |
 
 ---

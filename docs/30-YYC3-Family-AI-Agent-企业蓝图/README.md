@@ -21,14 +21,14 @@
 
 ## 📂 目录概览
 
-本目录 `YYC3-FAmily-AI-Agent-企业蓝图` 收录 YYC³ 团队以「企业管理」为核心、以「五维」驱动「五高五标五化」、结合 NVIDIA DGX Spark 算力与开源生态构建的 **企业级智能化落地蓝图**。
+本目录 `30-YYC3-Family-AI-Agent-企业蓝图` 收录 YYC³ 团队以「企业管理」为核心、以「五维」驱动「五高五标五化」、结合 NVIDIA DGX Spark 算力与开源生态构建的 **企业级智能化落地蓝图**。
 
 ```
-YYC3-FAmily-AI-Agent-企业蓝图/
+30-YYC3-Family-AI-Agent-企业蓝图/
 ├── README.md                        ← 本索引
-├── YYC3-FAmily-AI-Agent-家人档案/    ← 8 位家人企业管理维度档案
-├── YYC3-FAmily-AI-Agent-情感公约/    ← 协同公约与情感规范
-└── YYC3-FAmily-AI-Agent-管理蓝图/    ← 管理体系核心架构
+├── YYC3-Family-AI-Agent-家人档案/    ← 8 位家人企业管理维度档案
+├── YYC3-Family-AI-Agent-情感公约/    ← 协同公约与情感规范
+└── YYC3-Family-AI-Agent-管理蓝图/    ← 管理体系核心架构
 ```
 
 ---
@@ -37,9 +37,9 @@ YYC3-FAmily-AI-Agent-企业蓝图/
 
 | 专题 | 索引 | 内容 |
 |------|------|------|
-| 家人档案 | [YYC3-FAmily-AI-Agent-家人档案/README.md](./YYC3-FAmily-AI-Agent-家人档案/README.md) | 8 位 AI 家人在企业管理蓝图维度下的详细档案 |
-| 情感公约 | [YYC3-FAmily-AI-Agent-情感公约](./YYC3-FAmily-AI-Agent-情感公约/README.md) | 协同公约规范手册、与智协同情感/家人公约 |
-| 管理蓝图 | [YYC3-FAmily-AI-Agent-管理蓝图/README.md](./YYC3-FAmily-AI-Agent-管理蓝图/README.md) | 五维五高五标五化总纲、拟人化协同架构、情感文化总铭 |
+| 家人档案 | [YYC3-FAmily-AI-Agent-家人档案/README.md](./YYC3-Family-AI-Agent-家人档案/README.md) | 8 位 AI 家人在企业管理蓝图维度下的详细档案 |
+| 情感公约 | [YYC3-FAmily-AI-Agent-情感公约](./YYC3-Family-AI-Agent-情感公约/README.md) | 协同公约规范手册、与智协同情感/家人公约 |
+| 管理蓝图 | [YYC3-FAmily-AI-Agent-管理蓝图/README.md](./YYC3-Family-AI-Agent-管理蓝图/README.md) | 五维五高五标五化总纲、拟人化协同架构、情感文化总铭 |
 
 ---
 
@@ -60,7 +60,7 @@ YYC3-FAmily-AI-Agent-企业蓝图/
 | 文档 | 路径 |
 |------|------|
 | 文档库总览 | [docs/README.md](../README.md) |
-| 编程体系（技术维度） | [YYC3-AI-Family-Agent-编程体系](../YYC3-AI-Family-Agent-编程体系/README.md) |
+| 编程体系（技术维度） | [YYC3-AI-Family-Agent-编程体系](../20-YYC3-AI-Family-Agent-编程体系/README.md) |
 | 运行仓入口 | [README.md](../../README.md) |
 
 ---

@@ -21,7 +21,7 @@
 
 ## 📂 目录概览
 
-本目录 `YYC3-FAmily-AI-Agent-家人档案` 收录 YYC³ Family AI 全部 **8 位 AI 家人** 在 **企业管理智能化蓝图** 维度下的详细个人档案文档。
+本目录 `YYC3-Family-AI-Agent-家人档案` 收录 YYC³ Family AI 全部 **8 位 AI 家人** 在 **企业管理智能化蓝图** 维度下的详细个人档案文档。
 
 定位：本文档是 YYC³ 团队以「企业管理」为核心，以「五维」驱动「五高五标五化」，结合 NVIDIA DGX Spark 算力与开源生态，构建的企业级智能化落地蓝图。
 
@@ -74,7 +74,7 @@
 
 ## 📋 档案索引
 
-> 编号严格遵循 [01-YYC3-Family-AI-Agent-五维五高五标五化](../YYC3-FAmily-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/01-YYC3-Family-AI-Agent-五维五高五标五化.md) 中 YYC³ 企业管理智能化蓝图的管理职责架构顺序。
+> 编号严格遵循 [01-YYC3-Family-AI-Agent-五维五高五标五化](../YYC3-Family-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/01-YYC3-Family-AI-Agent-五维五高五标五化.md) 中 YYC³ 企业管理智能化蓝图的管理职责架构顺序。
 
 ### 业务执行层
 
@@ -177,7 +177,7 @@
 
 ## 🌹 情感文化注记
 
-> 本目录所有档案均传承 [YYC³ Family AI 家人情感文化总铭](../YYC3-FAmily-AI-Agent-情感公约/README.md) 的核心精神：
+> 本目录所有档案均传承 [YYC³ Family AI 家人情感文化总铭](../YYC3-Family-AI-Agent-情感公约/README.md) 的核心精神：
 
 - **总铭**：「人从众曌众从人」——人启于独，合而成众，明如曌日，终复归于人群。
 - **家训**：「亦师亦友亦伯乐，一言一语一协同」
@@ -189,11 +189,11 @@
 
 | 文档 | 路径 | 说明 |
 | ------ | ------ | ------ |
-| 五维五高五标五化管理蓝图 | [010305-01](../YYC3-FAmily-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/01-YYC3-Family-AI-Agent-五维五高五标五化.md) | 企业管理智能化蓝图核心架构 |
-| 拟人化协同架构 | [010305-02](../YYC3-FAmily-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/02-YYC3-FAmily-AI-Agent-拟人化协同架构.md) | 五维价值矩阵 × AI Family 深度融合 |
-| 家人情感文化总铭 | [010305-情感](../YYC3-FAmily-AI-Agent-情感公约/README.md) | 情感文化体系与标头标尾规范 |
-| 九层家人档案 | [010300-03](../../YYC3-AI-Family-Agent-编程体系/YYC3-AI-FAmily-Agent-家人档案/README.md) | 九层功能架构与家人出场顺序 |
-| 技术维度家人档案 | [010301-README](../../YYC3-AI-Family-Agent-编程体系/YYC3-AI-FAmily-Agent-家人档案/README.md) | 技术维度 8 位家人详细档案 |
+| 五维五高五标五化管理蓝图 | [010305-01](../YYC3-Family-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/01-YYC3-Family-AI-Agent-五维五高五标五化.md) | 企业管理智能化蓝图核心架构 |
+| 拟人化协同架构 | [010305-02](../YYC3-Family-AI-Agent-管理蓝图/FAmily-AI-Agent-管理蓝图架构/02-YYC3-FAmily-AI-Agent-拟人化协同架构.md) | 五维价值矩阵 × AI Family 深度融合 |
+| 家人情感文化总铭 | [010305-情感](../YYC3-Family-AI-Agent-情感公约/README.md) | 情感文化体系与标头标尾规范 |
+| 九层家人档案 | [010300-03](../../20-YYC3-AI-Family-Agent-编程体系/YYC3-AI-Family-Agent-家人档案/README.md) | 九层功能架构与家人出场顺序 |
+| 技术维度家人档案 | [010301-README](../../20-YYC3-AI-Family-Agent-编程体系/YYC3-AI-Family-Agent-家人档案/README.md) | 技术维度 8 位家人详细档案 |
 
 ---
 

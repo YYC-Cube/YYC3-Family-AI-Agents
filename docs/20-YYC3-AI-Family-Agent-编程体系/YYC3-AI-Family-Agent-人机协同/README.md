@@ -63,9 +63,9 @@ YYC3-AI-Family-Agent-人机协同/
 
 | 文档 | 路径 |
 |------|------|
-| 家人档案（技术维度） | [YYC3-AI-FAmily-Agent-家人档案](../YYC3-AI-FAmily-Agent-家人档案/README.md) |
+| 家人档案（技术维度） | [YYC3-AI-FAmily-Agent-家人档案](../YYC3-AI-Family-Agent-家人档案/README.md) |
 | 编程体系总览 | [YYC3-AI-Family-Agent-编程体系](../README.md) |
-| 企业蓝图（管理维度） | [YYC3-FAmily-AI-Agent-企业蓝图](../../YYC3-FAmily-AI-Agent-企业蓝图/README.md) |
+| 企业蓝图（管理维度） | [30-YYC3-Family-AI-Agent-企业蓝图](../../30-YYC3-Family-AI-Agent-企业蓝图/README.md) |
 | 文档库总览 | [docs/README.md](../../README.md) |
 
 ---
