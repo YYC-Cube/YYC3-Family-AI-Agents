@@ -24,6 +24,7 @@ docs/                                        ← 85 篇 Markdown · 6 个一级�
 │
 ├── 11-YYC3-Family-AI-Agent-演进完善拓展规划.md   ← 大数据 Agent 对标 · E1/E2/E3 路线 + 执行台账
 ├── 12-YYC3-Family-AI-Agent-可视化交互体系设计.md ← 治理中枢 Dashboard 可视化/交互/SSE-UX（中英双语）
+├── 13-YYC3-Family-AI-Agent-插件化封装方案.md     ← 插件化封装三路径 × 五步落地 × 生产检查清单
 │
 ├── 20-YYC3-AI-Family-Agent-编程体系/         ← 技术维度 · 18 篇
 │   ├── README.md                            ← 编程体系索引
