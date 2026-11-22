@@ -1,0 +1,70 @@
+{
+  "drill": "E1-3 降级矩阵演练 · 真机版（部署侧验收 ②）",
+  "date": "2026-11-23",
+  "environment": {
+    "agent": "yushu_wanwu (语枢·万物)",
+    "model": "nemotron-3.5-super-vl",
+    "backup_endpoint": "http://100.126.132.112:10086/v1 (Tailscale ECS #33)",
+    "governance_hub": "http://127.0.0.1:25700（独立 scratch DB，审计全量留痕）",
+    "cache": "TTL=0（排除缓存命中干扰）",
+    "code_version": "main + E1-3 流式兜底补丁（本演练产出）"
+  },
+  "scenarios": [
+    {
+      "id": "A",
+      "name": "主端点连接拒绝 → 备援切换（非流式）",
+      "config": "primary=127.0.0.1:19998(无监听) backup=nemotron",
+      "result": "2.31s 返回真实回答（经营分析核心原则）；/health vllm_reachable=false 与 degraded 状态一致",
+      "verdict": "PASS"
+    },
+    {
+      "id": "B",
+      "name": "流式请求 → 备援不支持 SSE → 非流式兜底合成",
+      "config": "primary=19998(死) backup=nemotron(代理无 SSE：'streaming is not supported on this proxy yet')",
+      "result": "首跑暴露缺陷（SSE error 事件）；打补丁后 meta→delta(degraded=nonstream_fallback)→done，回答完整，usage 702/83 照常入预算",
+      "verdict": "PASS（补丁后）"
+    },
+    {
+      "id": "C",
+      "name": "主端点 HTTP 500 → 备援切换",
+      "config": "primary=127.0.0.1:19997(恒 500 stub) backup=nemotron",
+      "result": "33.0s 返回真实回答（置信区间必要性分析）；5xx 按矩阵切换",
+      "verdict": "PASS"
+    },
+    {
+      "id": "D",
+      "name": "主端点 HTTP 4xx → 不降级",
+      "config": "primary=hub /chat/completions(404) backup=不可达 Tailscale 地址",
+      "result": "0.02s 直接返回错误对象，未尝试备援（4xx=请求问题，切端点无意义）",
+      "verdict": "PASS"
+    },
+    {
+      "id": "E",
+      "name": "全端点故障 → 结构化报错",
+      "config": "primary=19998(死) backup=19995(死)",
+      "result": "非流式：response 为 {error: all endpoints failed}；流式：meta→error（兜底也败透传），无假成功",
+      "verdict": "PASS"
+    }
+  ],
+  "defects_found_and_fixed": [
+    {
+      "defect": "流式请求遇不支持 SSE 的备援端点时整链失败（建流阶段 4xx 即 error，服务中断）",
+      "discovery": "场景 B 首跑：nemotron 代理返回 400 'streaming is not supported on this proxy yet'",
+      "fix": "agent_server.py /chat/stream generate()：建流阶段全败且未产出 delta 时，回退 call_vllm 非流式降级路径，SSE 合成 meta→单 delta(degraded=nonstream_fallback)→done；delta 流已开始则保持 partial 语义透传 error；兜底成功/失败均留 model_degraded 审计 + model_failover 遥测",
+      "tests": "tests/integration/test_streaming.py 新增 2 条契约测试（兜底成功序列+degraded 标记+usage 入账；全败透传 error+审计留痕），8/8 通过"
+    }
+  ],
+  "audit_evidence": {
+    "model_degraded_entries": 4,
+    "detail": [
+      "cid 559e1326: {primary: 127.0.0.1:19998/v1, fallback: nonstream_synth, stream_fallback: true}（B 外层流式兜底）",
+      "cid 559e1326: {primary: 127.0.0.1:19998/v1, backup: nemotron}（B 内层 call_vllm 备援切换——双层降级双层留痕）",
+      "场景 C: {primary: 127.0.0.1:19997/v1, backup: nemotron}",
+      "场景 A: {primary: 127.0.0.1:19998/v1, backup: nemotron}"
+    ],
+    "no_false_positive": "场景 D（4xx）与场景 E（全故障）均未产生 model_degraded——降级审计零误报",
+    "telemetry": "model_failover 事件 3 类（backup 切换 ×2 + nonstream_synth ×1），correlation_id 全链贯穿"
+  },
+  "verdict": "PASS",
+  "deployment_note": "生产建议备援端点原生支持 SSE（真流式粒度）；当前兜底保证服务连续性但退化为单 delta。correlation_id 贯穿双层降级，审计链零断链。"
+}
