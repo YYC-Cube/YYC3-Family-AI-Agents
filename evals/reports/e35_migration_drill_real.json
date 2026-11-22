@@ -1,0 +1,58 @@
+{
+ "summary": {
+  "generated_at": "2026-11-22T19:27:57.532873+00:00",
+  "sqlite_source": "/tmp/yyc3-e13/governance.db",
+  "create_schema": true,
+  "reconcile_all_match": true,
+  "audit_parity": {
+   "match": true,
+   "rows_compared": 20,
+   "correlation_ids": 10
+  },
+  "verdict": "PASS"
+ },
+ "tables": [
+  {
+   "table": "behavior_events",
+   "sqlite_rows": 20,
+   "pg_rows": 20,
+   "count_match": true,
+   "checksum_match": true
+  },
+  {
+   "table": "token_usage",
+   "sqlite_rows": 8,
+   "pg_rows": 8,
+   "count_match": true,
+   "checksum_match": true
+  },
+  {
+   "table": "agent_state",
+   "sqlite_rows": 8,
+   "pg_rows": 8,
+   "count_match": true,
+   "checksum_match": true
+  },
+  {
+   "table": "collaboration_log",
+   "sqlite_rows": 0,
+   "pg_rows": 0,
+   "count_match": true,
+   "checksum_match": true
+  },
+  {
+   "table": "context_entities",
+   "sqlite_rows": 0,
+   "pg_rows": 0,
+   "count_match": true,
+   "checksum_match": true
+  },
+  {
+   "table": "context_relations",
+   "sqlite_rows": 0,
+   "pg_rows": 0,
+   "count_match": true,
+   "checksum_match": true
+  }
+ ]
+}
