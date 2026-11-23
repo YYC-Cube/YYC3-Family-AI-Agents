@@ -585,11 +585,26 @@ def chat_stream():
     _governance_report("chat_request", {"message_len": len(user_message), "risk": risk,
                                         "stream": True}, correlation_id=correlation_id)
 
-    with telemetry.trace_span("context_injection", correlation_id, agent=AGENT_NAME):
-        system_prompt = load_system_prompt()
-        context_injection = _inject_context(user_message, correlation_id=correlation_id)
-        if context_injection:
-            system_prompt += context_injection
+    # E3-3 持久化执行（流式）：步骤级 checkpoint 与 /chat 同构——指纹公式一致，同 cid 跨路径可复用
+    durable_fp = durable.fingerprint({"message": user_message, "history": history,
+                                      "temperature": temperature, "max_tokens": max_tokens,
+                                      "model": VLLM_MODEL})
+    durable_conn = durable.connect()
+    resumed_steps = []
+    ctx_step = durable.get_step(durable_conn, correlation_id, durable_fp, "context_injection")
+    if ctx_step:
+        system_prompt = ctx_step["system_prompt"]
+        resumed_steps.append("context_injection")
+        telemetry.record_event("durable_resume", correlation_id, agent=AGENT_NAME,
+                               step="context_injection")
+    else:
+        with telemetry.trace_span("context_injection", correlation_id, agent=AGENT_NAME):
+            system_prompt = load_system_prompt()
+            context_injection = _inject_context(user_message, correlation_id=correlation_id)
+            if context_injection:
+                system_prompt += context_injection
+        durable.record_step(durable_conn, correlation_id, durable_fp,
+                            "context_injection", "done", {"system_prompt": system_prompt})
 
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(history)
@@ -605,6 +620,7 @@ def chat_stream():
         pieces = []
         completed = False
         cached_hit = cached is not None
+        resumed_llm = False
         try:
             yield _sse({"type": "meta", "agent": AGENT_NAME, "label": AGENT_LABEL,
                         "role": AGENT_ROLE, "correlation_id": correlation_id,
@@ -616,6 +632,17 @@ def chat_stream():
                 usage = cached.get("usage") or {}
                 pieces.append(text)
                 yield _sse({"type": "delta", "content": text,
+                            "correlation_id": correlation_id})
+            elif (llm_step := durable.get_step(durable_conn, correlation_id,
+                                               durable_fp, "llm_inference")) is not None:
+                # E3-3 断点恢复（流式）：LLM 步骤产物复用，单 delta 回放（预算零计费）
+                telemetry.record_event("durable_resume", correlation_id, agent=AGENT_NAME,
+                                       step="llm_inference", stream=True)
+                text = llm_step["response"]
+                usage = llm_step.get("usage") or {}
+                pieces.append(text)
+                resumed_llm = True
+                yield _sse({"type": "delta", "content": text, "resumed": "llm_inference",
                             "correlation_id": correlation_id})
             else:
                 with telemetry.trace_span("llm_inference_stream", correlation_id,
@@ -644,8 +671,33 @@ def chat_stream():
                                         "correlation_id": correlation_id})
             completed = True
         except Exception as e:
-            yield _sse({"type": "error", "error": str(e)[:200],
-                        "correlation_id": correlation_id})
+            if pieces or cached_hit:
+                # 流已开始：partial 语义不可重放，错误透传
+                yield _sse({"type": "error", "error": str(e)[:200],
+                            "correlation_id": correlation_id})
+            else:
+                # E1-3 降级矩阵（流式兜底）：建流阶段全端点失败（含备援不支持流式——
+                # 2026-11-23 真机演练发现 nemotron 代理无 SSE）时回退非流式降级路径，
+                # 以 SSE 形态合成输出（meta→单 delta→done），服务连续性优先于流式粒度
+                content, fb_usage = call_vllm(messages, temperature, max_tokens,
+                                              correlation_id=correlation_id)
+                if isinstance(content, dict):
+                    yield _sse({"type": "error", "error": str(content.get("error", ""))[:200],
+                                "correlation_id": correlation_id})
+                else:
+                    telemetry.record_event("model_failover", correlation_id, level="warning",
+                                           agent=AGENT_NAME, primary=VLLM_ENDPOINT,
+                                           fallback="nonstream_synth", stream=True)
+                    _governance_report("model_degraded",
+                                       {"primary": VLLM_ENDPOINT, "fallback": "nonstream_synth",
+                                        "stream_fallback": True, "reason": str(e)[:120]},
+                                       correlation_id=correlation_id)
+                    usage = fb_usage or {}
+                    pieces.append(content)
+                    yield _sse({"type": "delta", "content": content,
+                                "degraded": "nonstream_fallback",
+                                "correlation_id": correlation_id})
+                    completed = True
         finally:
             latency = round((time.time() - start) * 1000, 1)
             if cached_hit:
@@ -656,6 +708,15 @@ def chat_stream():
                 completion_tokens = usage.get("completion_tokens", 0)
                 if completed and pieces:
                     _cache_put(cache_key, "".join(pieces), usage)
+                if resumed_llm:
+                    # E3-3 断点恢复：产物复用无新增推理花费，预算零计费（usage 随 done 供参考）
+                    prompt_tokens, completion_tokens = 0, 0
+            if completed and pieces and not resumed_llm and not cached_hit:
+                # E3-3：LLM 步骤产物落 checkpoint（finally 兜底——实况流与非流式兜底产物同入，
+                # 异常路径经 except 亦不漏；同 cid+指纹重入零推理恢复）
+                durable.record_step(durable_conn, correlation_id, durable_fp,
+                                    "llm_inference", "done",
+                                    {"response": "".join(pieces), "usage": usage})
             _governance_token(prompt_tokens, completion_tokens, latency, VLLM_MODEL,
                               correlation_id=correlation_id)
             _governance_report("chat_response", {"latency_ms": latency,
@@ -678,6 +739,7 @@ def chat_stream():
                 yield _sse({"type": "done", "correlation_id": correlation_id,
                             "usage": usage, "latency_ms": latency,
                             "cached": cached_hit,
+                            "resumed": resumed_llm,
                             "collaboration": collab,
                             "timestamp": datetime.now(timezone.utc).isoformat()})
 
