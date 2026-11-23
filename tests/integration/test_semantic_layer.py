@@ -117,6 +117,29 @@ class TestMetricExecution:
             conn.close()
         assert ei.value.code == "METRIC_NOT_FOUND"
 
+    def test_matcher_v2_strong_evidence_passes(self, layer):
+        """P2 匹配器 v2：强证据（≥4 gram）不设意图门，行为与 v1 一致"""
+        assert layer.match_metric("近30天活跃用户有多少") == "active_users"
+        assert layer.match_metric("注册用户总数是多少") == "total_users"
+
+    def test_matcher_v2_weak_with_count_cue_passes(self, layer):
+        """弱证据但带计数线索且无分组维度 → 正确匹配（v1 行为保持，防回退）"""
+        assert layer.match_metric("现在一共有多少用户") == "total_users"
+        assert layer.match_metric("目前累计记录了多少条事件") == "events_total"
+
+    def test_matcher_v2_weak_without_count_cue_refuses(self, layer):
+        """弱证据且无计数线索（明细/列举意图）→ 结构化拒绝，不再误答最近指标"""
+        assert layer.match_metric("列出前10个用户") is None
+        assert layer.match_metric("最早的8条事件") is None
+
+    def test_matcher_v2_groupby_cue_refuses(self, layer):
+        """计数线索存在但带分组维度（各/分别）→ 未建模聚合，结构化拒绝（golden 候选入口）"""
+        assert layer.match_metric("各城市分别有多少注册用户") is None
+
+    def test_matcher_v2_weak_low_ratio_refuses(self, layer):
+        """弱证据+计数线索但覆盖率过低（<0.09）→ 拒绝"""
+        assert layer.match_metric("每位用户的平均购买次数是多少") is None
+
     def test_context_prompt_contains_schema(self, layer):
         prompt = layer.context_prompt("有多少用户？")
         assert "users" in prompt and "events" in prompt and "total_users" in prompt
