@@ -335,8 +335,19 @@ class SemanticLayer:
 
     # ---- 确定性指标执行（单行字面量 SQL 逐指标派发，零污点链） ----
 
+    # P2 匹配器 v2（2026-11-23，E3-1 对照实验发现的治理面外误匹配修复）：
+    # 强证据（≥4 gram 命中）直过；弱证据须同时满足 ①计数意图线索 ②无分组维度线索
+    # ③覆盖率下限——缺失任一即结构化拒绝（NO_METRIC_MATCHED → 学习闭环 golden 候选）。
+    # 常量由 30 题对照套件（evals/run_semantic_accuracy.py）校准；长尾意图的彻底
+    # 解决属意图分类器范畴（指标治理 + golden 采纳迭代扩展覆盖面）。
+    MATCH_STRONG = 4
+    MATCH_MIN_RATIO = 0.09
+    COUNT_CUE_RE = re.compile(r"(多少|几|总量|总数|总计|合计|数量|统计|规模)")
+    GROUPBY_CUE_RE = re.compile(r"(各|分别|每个|每日|每月|按|分布|趋势|占比)")
+
     def match_metric(self, question: str) -> str:
-        """问题关键词 ↔ 指标匹配：问题 2-gram 对「指标名+描述」的覆盖率（中文零分词确定性方案）。"""
+        """问题关键词 ↔ 指标匹配：问题 2-gram 对「指标名+描述」的覆盖率（中文零分词确定性方案）。
+        v2：强证据直过；弱证据加计数意图门（修复长尾问题被误答为最近指标的缺陷）。"""
         q = re.sub(r"[\s，。？?！!、/（）()]+", "", question or "")
         if len(q) < 2:
             return None
@@ -347,7 +358,14 @@ class SemanticLayer:
             score = sum(1 for g in grams if g in hay)
             if score > best_score:
                 best, best_score = name, score
-        return best if best_score > 0 else None
+        if best_score <= 0:
+            return None
+        if best_score < self.MATCH_STRONG:
+            ratio = best_score / len(grams)
+            if (not self.COUNT_CUE_RE.search(q) or self.GROUPBY_CUE_RE.search(q)
+                    or ratio < self.MATCH_MIN_RATIO):
+                return None
+        return best
 
     @staticmethod
     def _collect(cursor, metric_name: str, row_limit: int) -> dict:
