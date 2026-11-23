@@ -235,16 +235,46 @@ class SemanticLayer:
                                      f"过滤列未被授权: {', '.join(bad_filters)}",
                                      f"授权列: {', '.join(grant['columns'])}")
         limit = min(int(spec.get("limit", self.row_limit)), self.row_limit)
-        if table == "users":
-            cursor = conn.execute("SELECT * FROM users LIMIT ?", (limit + 1,))
-        elif table == "events":
-            cursor = conn.execute("SELECT * FROM events LIMIT ?", (limit + 1,))
-        else:
-            raise SemanticGuardError("TABLE_NOT_ALLOWED", f"表不在语义层: {table}", "")
-        cols_all = [d[0] for d in cursor.description] if cursor.description else []
-        records = [dict(zip(cols_all, r)) for r in cursor.fetchmany(limit + 1)]
         effective_filters = dict(filters)
         effective_filters.update(grant.get("row_filter", {}))
+        pushed = False
+        cursor = None
+        if len(effective_filters) == 1:
+            (pcol, pval), = effective_filters.items()
+            if _IDENTIFIER_RE.fullmatch(str(pcol)):
+                if table == "users" and pcol == "user_id":
+                    cursor = conn.execute("SELECT * FROM users WHERE user_id = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+                elif table == "users" and pcol == "name":
+                    cursor = conn.execute("SELECT * FROM users WHERE name = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+                elif table == "users" and pcol == "city":
+                    cursor = conn.execute("SELECT * FROM users WHERE city = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+                elif table == "users" and pcol == "created_at":
+                    cursor = conn.execute("SELECT * FROM users WHERE created_at = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+                elif table == "events" and pcol == "event_id":
+                    cursor = conn.execute("SELECT * FROM events WHERE event_id = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+                elif table == "events" and pcol == "user_id":
+                    cursor = conn.execute("SELECT * FROM events WHERE user_id = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+                elif table == "events" and pcol == "event_type":
+                    cursor = conn.execute("SELECT * FROM events WHERE event_type = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+                elif table == "events" and pcol == "created_at":
+                    cursor = conn.execute("SELECT * FROM events WHERE created_at = ? LIMIT ?", (pval, limit + 1))
+                    pushed = True
+        if cursor is None:
+            if table == "users":
+                cursor = conn.execute("SELECT * FROM users LIMIT ?", (limit + 1,))
+            elif table == "events":
+                cursor = conn.execute("SELECT * FROM events LIMIT ?", (limit + 1,))
+            else:
+                raise SemanticGuardError("TABLE_NOT_ALLOWED", f"表不在语义层: {table}", "")
+        cols_all = [d[0] for d in cursor.description] if cursor.description else []
+        records = [dict(zip(cols_all, r)) for r in cursor.fetchmany(limit + 1)]
         rows = [rec for rec in records
                 if all(rec.get(k) == v for k, v in effective_filters.items())]
         if len(rows) > limit:
@@ -255,7 +285,8 @@ class SemanticLayer:
         return {"agent": agent, "table": table, "columns": requested,
                 "rows": projected, "row_count": len(projected),
                 "row_filter_applied": bool(grant.get("row_filter", {})),
-                "filters_applied": dict(filters)}
+                "filters_applied": dict(filters),
+                "predicate_pushdown": pushed}
 
     @classmethod
     def load(cls, path) -> "SemanticLayer":
