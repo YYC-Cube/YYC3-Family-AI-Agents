@@ -116,3 +116,142 @@ class TestChatStreamContract:
 
     def test_capabilities_lists_stream_endpoint(self, agent_client):
         assert "/chat/stream" in agent_client.get("/capabilities").get_json()["endpoints"]
+
+    def test_stream_fallback_to_nonstream_when_no_sse_backup(self, agent_client, monkeypatch):
+        """E1-3 降级矩阵流式兜底：建流全败（备援代理无 SSE）→ 回退非流式路径，
+        SSE 合成 meta→delta(degraded 标记)→done，用量照常入预算"""
+        monkeypatch.setattr(agent_server, "VLLM_ENDPOINT", "http://127.0.0.1:29991/v1")
+        monkeypatch.setattr(agent_server, "VLLM_ENDPOINT_BACKUP", "http://127.0.0.1:29992/v1")
+        real_post = agent_server.requests.post
+
+        class _FakeNonStreamResp:
+            status_code = 200
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"choices": [{"message": {"content": "备援合成回答"}}],
+                        "usage": {"prompt_tokens": 7, "completion_tokens": 3}}
+
+        def fake_post(url, **kwargs):
+            if url.endswith("/chat/completions"):
+                if kwargs.get("json", {}).get("stream") is True:
+                    raise agent_server.requests.exceptions.ConnectionError("proxy 无 SSE")
+                return _FakeNonStreamResp()
+            return real_post(url, **kwargs)
+
+        monkeypatch.setattr(agent_server.requests, "post", fake_post)
+        r = agent_client.post("/chat/stream", json={"message": "你好"})
+        assert r.status_code == 200
+        events = _events(r)
+        assert [e["type"] for e in events] == ["meta", "delta", "done"]
+        assert events[1]["content"] == "备援合成回答"
+        assert events[1].get("degraded") == "nonstream_fallback"
+        assert events[2]["usage"]["prompt_tokens"] == 7
+
+    def test_stream_fallback_reports_degraded_audit(self, agent_client, monkeypatch):
+        """流式兜底必留痕：model_degraded 审计 + model_failover 遥测（correlation_id 贯穿）"""
+        monkeypatch.setattr(agent_server, "VLLM_ENDPOINT", "http://127.0.0.1:29991/v1")
+        monkeypatch.setattr(agent_server, "VLLM_ENDPOINT_BACKUP", "http://127.0.0.1:29992/v1")
+        records = []
+        monkeypatch.setattr(agent_server, "_governance_report",
+                            lambda action, details, correlation_id="": records.append((action, details)))
+        real_post = agent_server.requests.post
+
+        class _FakeNonStreamResp:
+            status_code = 200
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"choices": [{"message": {"content": "ok"}}],
+                        "usage": {"prompt_tokens": 1, "completion_tokens": 1}}
+
+        def fake_post(url, **kwargs):
+            if url.endswith("/chat/completions"):
+                if kwargs.get("json", {}).get("stream") is True:
+                    raise agent_server.requests.exceptions.ConnectionError("no sse")
+                return _FakeNonStreamResp()
+            return real_post(url, **kwargs)
+
+        monkeypatch.setattr(agent_server.requests, "post", fake_post)
+        r = agent_client.post("/chat/stream", json={"message": "你好"})
+        assert [e["type"] for e in _events(r)] == ["meta", "delta", "done"]
+        degraded = [d for a, d in records if a == "model_degraded"]
+        assert degraded and degraded[0]["stream_fallback"] is True
+        assert degraded[0]["fallback"] == "nonstream_synth"
+
+    def test_stream_checkpoints_and_resumes_llm_step(self, agent_client, monkeypatch, mock_vllm_stream):
+        """E3-3 流式 checkpoint：首请求落 context_injection+llm_inference 两步；
+        同 cid+指纹重入单 delta 回放（resumed 标记 + done.resumed=true + 预算零计费）。
+        禁用语义缓存（生产语义：缓存为更廉价层先命中；此处单测 durable 层）"""
+        monkeypatch.setattr(agent_server, "CHAT_CACHE_TTL", 0)
+        import durable
+        payload = {"message": "你好", "correlation_id": "cid-durable-stream-1"}
+        r1 = agent_client.post("/chat/stream", json=payload)
+        assert r1.status_code == 200
+        ev1 = _events(r1)
+        assert ev1[0]["type"] == "meta" and ev1[-1]["type"] == "done"
+        assert "".join(e["content"] for e in ev1 if e["type"] == "delta") == "你好"
+        assert ev1[-1]["resumed"] is False
+        fp = durable.fingerprint({"message": "你好", "history": [],
+                                  "temperature": 0.7, "max_tokens": 4096,
+                                  "model": agent_server.VLLM_MODEL})
+        conn = durable.connect()
+        try:
+            assert durable.get_step(conn, "cid-durable-stream-1", fp, "context_injection")
+            assert durable.get_step(conn, "cid-durable-stream-1", fp, "llm_inference")
+        finally:
+            conn.close()
+        r2 = agent_client.post("/chat/stream", json=payload)
+        assert r2.status_code == 200
+        ev2 = _events(r2)
+        deltas = [e for e in ev2 if e["type"] == "delta"]
+        assert len(deltas) == 1 and deltas[0].get("resumed") == "llm_inference"
+        assert deltas[0]["content"] == "你好"
+        assert ev2[-1]["type"] == "done" and ev2[-1]["resumed"] is True
+        # done.usage 展示原始用量供参考；预算零计费验证：governance_token 收到 0/0
+        token_calls = []
+        monkeypatch.setattr(agent_server, "_governance_token",
+                            lambda p, c, l, m, correlation_id="": token_calls.append((p, c)))
+        _events(agent_client.post("/chat/stream", json=payload))  # 消费响应体驱动 finally
+        assert token_calls and token_calls[-1] == (0, 0)
+
+    def test_stream_fallback_output_also_checkpoints(self, agent_client, monkeypatch):
+        """E3-3：非流式兜底产物同样落 checkpoint（跨路径可复用）"""
+        monkeypatch.setattr(agent_server, "VLLM_ENDPOINT", "http://127.0.0.1:29991/v1")
+        monkeypatch.setattr(agent_server, "VLLM_ENDPOINT_BACKUP", "http://127.0.0.1:29992/v1")
+        import durable
+        real_post = agent_server.requests.post
+
+        class _FakeNonStreamResp:
+            status_code = 200
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"choices": [{"message": {"content": "兜底产物"}}],
+                        "usage": {"prompt_tokens": 2, "completion_tokens": 1}}
+
+        def fake_post(url, **kwargs):
+            if url.endswith("/chat/completions"):
+                if kwargs.get("json", {}).get("stream") is True:
+                    raise agent_server.requests.exceptions.ConnectionError("no sse")
+                return _FakeNonStreamResp()
+            return real_post(url, **kwargs)
+
+        monkeypatch.setattr(agent_server.requests, "post", fake_post)
+        r = agent_client.post("/chat/stream", json={"message": "hi", "correlation_id": "cid-durable-fb"})
+        assert [e["type"] for e in _events(r)] == ["meta", "delta", "done"]
+        fp = durable.fingerprint({"message": "hi", "history": [],
+                                  "temperature": 0.7, "max_tokens": 4096,
+                                  "model": agent_server.VLLM_MODEL})
+        conn = durable.connect()
+        try:
+            step = durable.get_step(conn, "cid-durable-fb", fp, "llm_inference")
+        finally:
+            conn.close()
+        assert step and step["response"] == "兜底产物"
