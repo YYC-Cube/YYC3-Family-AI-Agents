@@ -93,6 +93,55 @@ class TestDetailQuery:
         assert result["row_count"] == 2
         assert all(row["city"] == "上海" for row in result["rows"])
 
+    def test_predicate_pushdown_single_column(self, layer, target_db):
+        """E3-2 谓词下推：单列等值过滤在引擎级 WHERE 执行（predicate_pushdown=True），
+        结果集与内存过滤语义等价"""
+        conn = sqlite3.connect(target_db)
+        try:
+            result = layer.detail_query(conn, "tianshu", {
+                "table": "users", "filters": {"city": "上海"}, "limit": 10})
+        finally:
+            conn.close()
+        assert result["predicate_pushdown"] is True
+        assert result["row_count"] == 2
+        assert all(row["city"] == "上海" for row in result["rows"])
+
+    def test_predicate_pushdown_events_column(self, layer, target_db):
+        conn = sqlite3.connect(target_db)
+        try:
+            result = layer.detail_query(conn, "tianshu", {
+                "table": "events", "filters": {"event_type": "purchase"}, "limit": 100})
+        finally:
+            conn.close()
+        assert result["predicate_pushdown"] is True
+        assert all(row["event_type"] == "purchase" for row in result["rows"])
+
+    def test_multi_column_filter_falls_back_in_memory(self, layer, target_db):
+        """多列组合超出下推 MVP 面 → 回退内存过滤（语义不变，pushed=False）"""
+        conn = sqlite3.connect(target_db)
+        try:
+            result = layer.detail_query(conn, "tianshu", {
+                "table": "users", "filters": {"city": "上海", "name": "张三"}, "limit": 10})
+        finally:
+            conn.close()
+        assert result["predicate_pushdown"] is False
+        assert result["row_count"] == 1
+
+    def test_pushdown_respects_column_grant(self, layer, target_db):
+        """下推与行列权限联动：bole 授权列裁剪下仍正确下推；未授权过滤列前置拦截"""
+        conn = sqlite3.connect(target_db)
+        try:
+            result = layer.detail_query(conn, "bole", {
+                "table": "users", "columns": ["user_id", "city"], "filters": {"city": "北京"}})
+            with pytest.raises(SemanticGuardError) as ei:
+                layer.detail_query(conn, "bole", {
+                    "table": "users", "columns": ["user_id", "city"], "filters": {"name": "x"}})
+        finally:
+            conn.close()
+        assert result["predicate_pushdown"] is True
+        assert set(result["columns"]) == {"user_id", "city"}
+        assert ei.value.code == "FILTER_COLUMN_DENIED"
+
     def test_unknown_table_rejected(self, layer, target_db):
         conn = sqlite3.connect(target_db)
         try:
