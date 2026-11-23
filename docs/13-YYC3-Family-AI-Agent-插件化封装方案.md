@@ -198,7 +198,7 @@ plugin.json 结构（对齐 Claude Code Plugin spec）：
 }
 ```
 
-### Step 3：pip 包提取（`pyproject.toml` + src/ 布局）
+### Step 3：pip 包提取（`pyproject.toml` + src/ 布局）——✅ 骨架已落地（2026-11-24，flat py-modules 形态；src/ 命名空间迁移列后续）
 
 **核心模块**（零强制依赖，全部 stdlib）：
 - `yyc3_family.guardrails` — 注入检测 + 输出脱敏（复用 `guardrails.py`）
@@ -265,7 +265,7 @@ yyc3-mdl = "yyc3_family.cli:mdl_validate"
 
 | 周 | 交付 |
 |---|---|
-| W1 | 路径 A：MCP server 工具面扩展（8 个工具）**✅ 2026-11-24 落地**（tools/list 8 工具 + 每工具契约测试，20 passed；guardrails/semantic/durable 复用 hub 同构函数全链入审计）+ pip 包 pyproject.toml + src/ 布局（进行中） |
+| W1 | 路径 A：MCP server 工具面扩展（8 个工具）**✅ 2026-11-24 落地**（PR #58：tools/list 8 工具 + 每工具契约测试 20 passed；guardrails/semantic/durable 复用 hub 同构函数全链入审计）· 路径 C：pip 包骨架 **✅ 2026-11-24 落地**（`pyproject.toml` + `cli.py`：yyc3-family-ai 3.1.0 零依赖 flat py-modules 打包 5 模块，wheel 真机构建验证 METADATA/entry_points 三入口；yyc3-chat/audit/mdl 可用；`yyc3_family` src/ 命名空间迁移与 PyPI 发布列后续——避免动根模块导入面） |
 | W2 | 路径 B：Claude Code Plugin 封装（.claude-plugin/）+ npm 发布 |
 | W3 | 路径 C：pip 包 PyPI 发布 + Docker 镜像 + 文档 |
 | W4 | 集成测试 + 部署侧验收（PyPI 安装即用验证 / Claude Code 安装验证 / Docker 拉起验证） |

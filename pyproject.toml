@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yyc3-family-ai"
+version = "3.1.0"
+description = "YYC³ FAmily-AI 零依赖治理模块包：护栏/语义层/语义记忆/持久化执行 + CLI"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "YanYuCloudCube Team", email = "admin@0379.email"}]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.scripts]
+yyc3-chat = "cli:chat"
+yyc3-audit = "cli:audit"
+yyc3-mdl = "cli:mdl_validate"
+
+[tool.setuptools]
+py-modules = ["guardrails", "semantic_layer", "memory_semantic", "durable", "cli"]
