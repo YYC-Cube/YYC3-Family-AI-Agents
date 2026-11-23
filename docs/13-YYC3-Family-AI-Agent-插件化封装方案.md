@@ -160,9 +160,9 @@ result = guard.inspect_input("用户问题")
 
 ## 4. 五步落地路线 | 5-Step Implementation
 
-### Step 1：MCP Server 工具面扩展（已有 /mcp，补全工具清单）
+### Step 1：MCP Server 工具面扩展——✅ 已落地（2026-11-24）
 
-当前：3 个工具（预算/审计/状态）。目标：扩展到 8 个核心工具，覆盖全部治理能力。
+已落地 8 个工具（tools/list 与下表对齐；契约测试 20 passed，全量 318+8 全绿）：
 
 | 工具名 | 功能 | 输入参数 |
 |---|---|---|
@@ -265,7 +265,7 @@ yyc3-mdl = "yyc3_family.cli:mdl_validate"
 
 | 周 | 交付 |
 |---|---|
-| W1 | 路径 A：MCP server 工具面扩展（8 个工具）+ pip 包 pyproject.toml + src/ 布局 |
+| W1 | 路径 A：MCP server 工具面扩展（8 个工具）**✅ 2026-11-24 落地**（tools/list 8 工具 + 每工具契约测试，20 passed；guardrails/semantic/durable 复用 hub 同构函数全链入审计）+ pip 包 pyproject.toml + src/ 布局（进行中） |
 | W2 | 路径 B：Claude Code Plugin 封装（.claude-plugin/）+ npm 发布 |
 | W3 | 路径 C：pip 包 PyPI 发布 + Docker 镜像 + 文档 |
 | W4 | 集成测试 + 部署侧验收（PyPI 安装即用验证 / Claude Code 安装验证 / Docker 拉起验证） |
