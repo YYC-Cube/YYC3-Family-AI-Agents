@@ -17,6 +17,8 @@ import hmac
 import json
 import learning_loop
 import logging
+import durable
+import guardrails
 import memory_semantic
 import os
 import semantic_layer
@@ -825,6 +827,36 @@ MCP_TOOLS = [
     {"name": "governance_agent_states",
      "description": "八位家人运行状态（active/frozen 与冻结原因）",
      "inputSchema": {"type": "object", "properties": {}, "required": []}},
+    {"name": "memory_semantic_recall",
+     "description": "语义记忆召回（按家人短名与查询词，关键词重叠 top_k）",
+     "inputSchema": {"type": "object", "properties": {
+         "agent": {"type": "string", "description": "家人短名", "default": "tianshu"},
+         "query": {"type": "string", "description": "查询词"},
+         "top_k": {"type": "integer", "default": 5, "maximum": 50}},
+         "required": ["query"]}},
+    {"name": "memory_semantic_store",
+     "description": "语义事实写入（规则抽取 + 去重合并，全量入审计链）",
+     "inputSchema": {"type": "object", "properties": {
+         "agent": {"type": "string", "description": "家人短名"},
+         "text": {"type": "string", "description": "事实文本"},
+         "source": {"type": "string", "description": "来源标签", "default": "mcp"},
+         "correlation_id": {"type": "string", "description": "关联 ID（可选）"}},
+         "required": ["text"]}},
+    {"name": "guardrails_inspect",
+     "description": "输入护栏检测（注入模式识别：block / degrade / pass）",
+     "inputSchema": {"type": "object", "properties": {
+         "text": {"type": "string", "description": "待检文本"}},
+         "required": ["text"]}},
+    {"name": "semantic_query",
+     "description": "语义层指标问答（确定性匹配已治理指标并执行，行数硬上限）",
+     "inputSchema": {"type": "object", "properties": {
+         "question": {"type": "string", "description": "自然语言指标问题"}},
+         "required": ["question"]}},
+    {"name": "durable_resume",
+     "description": "持久化执行断点查询（按 correlation_id 列出已完成步骤与可恢复指纹）",
+     "inputSchema": {"type": "object", "properties": {
+         "correlation_id": {"type": "string", "description": "关联 ID"}},
+         "required": ["correlation_id"]}},
 ]
 
 
@@ -841,6 +873,84 @@ def _mcp_tool_call(name: str, args: dict):
         conn.close()
         cols = ["agent", "state", "frozen_reason", "frozen_at", "updated_at"]
         return {"states": [dict(zip(cols, r)) for r in rows]}
+    if name == "memory_semantic_recall":
+        agent = normalize_agent(args.get("agent", "tianshu"))
+        query = str(args.get("query", "")).strip()
+        if not query:
+            raise ValueError("query is required")
+        conn = connect_db()
+        try:
+            memories = memory_semantic.recall(conn, agent, query,
+                                              top_k=max(1, min(int(args.get("top_k", 5)), 50)))
+        finally:
+            conn.close()
+        return {"agent": agent, "query": query, "memories": memories}
+    if name == "memory_semantic_store":
+        text = str(args.get("text", "")).strip()
+        if not text:
+            raise ValueError("text is required")
+        agent = normalize_agent(args.get("agent", ""))
+        conn = connect_db()
+        try:
+            results = memory_semantic.store(conn, agent, text,
+                                            source=str(args.get("source", "mcp")),
+                                            correlation_id=str(args.get("correlation_id", "")),
+                                            audit_cb=auditor.record)
+        finally:
+            conn.close()
+        return {"agent": agent, "results": results}
+    if name == "guardrails_inspect":
+        text = str(args.get("text", ""))
+        if not text:
+            raise ValueError("text is required")
+        gate = guardrails.inspect_input(text)
+        return {"verdict": gate["verdict"], "labels": gate.get("labels", [])}
+    if name == "semantic_query":
+        question = str(args.get("question", "")).strip()
+        if not question:
+            raise ValueError("question is required")
+        layer = _semantic_layer()
+        metric_name = layer.match_metric(question)
+        if not metric_name:
+            try:
+                auditor.record("governance_hub", "semantic_query_no_match",
+                               {"question": question[:100], "via": "mcp"})
+            except Exception:
+                pass
+            return {"status": "error", "code": "NO_METRIC_MATCHED",
+                    "detail": "未能匹配到已治理指标",
+                    "hint": "可用指标: " + ", ".join(sorted(semantic_layer.METRIC_REGISTRY))}
+        target = os.environ.get("YYC3_SEMANTIC_TARGET_DB", "")
+        if not target:
+            return {"status": "error", "code": "TARGET_DB_UNCONFIGURED",
+                    "detail": "目标库未配置（YYC3_SEMANTIC_TARGET_DB）"}
+        conn = sqlite3.connect(target)
+        try:
+            result = layer.execute_metric(conn, metric_name)
+        except semantic_layer.SemanticGuardError as e:
+            return {"status": "error", "code": e.code, "detail": e.detail, "hint": e.hint}
+        finally:
+            conn.close()
+        try:
+            auditor.record("governance_hub", "semantic_query",
+                           {"question": question[:100], "metric": result["metric"],
+                            "rows": result["row_count"], "via": "mcp"})
+        except Exception:
+            pass
+        return {"status": "ok", **result}
+    if name == "durable_resume":
+        cid = str(args.get("correlation_id", "")).strip()
+        if not cid:
+            raise ValueError("correlation_id is required")
+        dconn = durable.connect()
+        try:
+            rows = dconn.execute("SELECT fingerprint, step, status, created_at, updated_at FROM durable_steps WHERE correlation_id = ? ORDER BY updated_at", (cid,)).fetchall()
+        finally:
+            dconn.close()
+        steps = [dict(zip(["fingerprint", "step", "status", "created_at", "updated_at"], r))
+                 for r in rows]
+        return {"correlation_id": cid, "steps": steps,
+                "resumable": sorted({r["fingerprint"] for r in steps if r["status"] == "done"})}
     raise KeyError(name)
 
 
