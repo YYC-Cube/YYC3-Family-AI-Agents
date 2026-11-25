@@ -1,0 +1,231 @@
+# =============================================================================
+# YYC³ AI Family Agent 全Agent Docker Compose v3.0
+# 对齐蓝图: 1200-AI Family Agent v2.1.0
+# 五高架构: 高可用 | 高性能 | 高安全 | 高扩展 | 高智能
+# 
+# 8个Agent服务端口规划 (遵循5位结构 25XXY):
+#   元启·天枢 25600  言启·千行 25601  语枢·万物 25602
+#   预见·先知 25603  千里·伯乐 25604  智云·守护 25605
+#   格物·宗师 25606  创想·灵韵 25607
+# =============================================================================
+
+version: "3.8"
+
+networks:
+  agent-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16
+
+services:
+  # ========================================================================
+  # 元启·天枢 (总指挥) - 全局编排与战略决策 | 端口 25600
+  # ========================================================================
+  yuanqi_tianshu:
+    image: python:3.12-slim
+    container_name: agent-yuanqi-tianshu
+    ports:
+      - "25600:6000"
+    volumes:
+      - ./元启-天枢总指挥:/workspace
+      - ../06-协议栈:/workspace/protocols
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yuanqi_tianshu
+      - AGENT_ROLE=coordinator
+      - PORT=6000
+      - LOG_LEVEL=INFO
+      - MCP_ENDPOINT=http://mcp_gateway:8800
+      - A2A_ENDPOINT=http://a2a_gateway:8801
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python ytianshu_agent.py --port 6000"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================================================
+  # 言启·千行 (导航员) - 意图识别与任务路由 | 端口 25601
+  # ========================================================================
+  yanqi_qianhang:
+    image: python:3.12-slim
+    container_name: agent-yanqi-qianhang
+    ports:
+      - "25601:6001"
+    volumes:
+      - ./言启-千行导航员:/workspace
+      - ../06-协议栈:/workspace/protocols
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yanqi_qianhang
+      - AGENT_ROLE=navigator
+      - PORT=6001
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python yanqi_agent.py --port 6001"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================================================
+  # 语枢·万物 (思考者) - 数据分析与统计建模 | 端口 25602
+  # ========================================================================
+  yushu_wanwu:
+    image: python:3.12-slim
+    container_name: agent-yushu-wanwu
+    ports:
+      - "25602:6002"
+    volumes:
+      - ./语枢-万物思考者:/workspace
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yushu_wanwu
+      - AGENT_ROLE=thinker
+      - PORT=6002
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python yushu_agent.py --port 6002"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================================================
+  # 预见·先知 (预言家) - 趋势预测与风险预警 | 端口 25603
+  # ========================================================================
+  yujian_xianzhi:
+    image: python:3.12-slim
+    container_name: agent-yujian-xianzhi
+    ports:
+      - "25603:6003"
+    volumes:
+      - ./预见-先知预言家:/workspace
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=yujian_xianzhi
+      - AGENT_ROLE=prophet
+      - PORT=6003
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python yujian_agent.py --port 6003"
+    networks:
+      - agent-network
+    restart: unless-stopped
+
+  # ========================================================================
+  # 千里·伯乐 (推荐官) - 个性化推荐与用户画像 | 端口 25604
+  # ========================================================================
+  qianli_bole:
+    image: python:3.12-slim
+    container_name: agent-qianli-bole
+    ports:
+      - "25604:6004"
+    volumes:
+      - ./千里-伯乐推荐官:/workspace
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=qianli_bole
+      - AGENT_ROLE=recommender
+      - PORT=6004
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python zhiyu_agent.py --port 6004"
+    networks:
+      - agent-network
+    restart: unless-stopped
+
+  # ========================================================================
+  # 智云·守护 (安全官) - 安全审计与行为监控 | 端口 25605
+  # ========================================================================
+  zhiyun_shouhu:
+    image: python:3.12-slim
+    container_name: agent-zhiyun-shouhu
+    ports:
+      - "25605:6005"
+    volumes:
+      - ./智云-守护安全官:/workspace
+      - ../07-安全合规:/workspace/security
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=zhiyun_shouhu
+      - AGENT_ROLE=security_officer
+      - PORT=6005
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python zhiyun_agent.py --port 6005"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================================================
+  # 格物·宗师 (质量官) - 代码审查与质量保障 | 端口 25606
+  # ========================================================================
+  gewu_zongshi:
+    image: python:3.12-slim
+    container_name: agent-gewu-zongshi
+    ports:
+      - "25606:6006"
+    volumes:
+      - ./格物-宗师质量官:/workspace
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=gewu_zongshi
+      - AGENT_ROLE=quality_officer
+      - PORT=6006
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python gewu_agent.py --port 6006"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================================================
+  # 创想·灵韵 (创意官) - 内容创作与创新孵化 | 端口 25607
+  # ========================================================================
+  chuangxiang_lingyun:
+    image: python:3.12-slim
+    container_name: agent-chuangxiang-lingyun
+    ports:
+      - "25607:6007"
+    volumes:
+      - ./创想-灵韵创意官:/workspace
+      - ../08-可观测性:/workspace/telemetry
+    environment:
+      - AGENT_NAME=chuangxiang_lingyun
+      - AGENT_ROLE=creative_director
+      - PORT=6007
+      - LOG_LEVEL=INFO
+    working_dir: /workspace
+    command: sh -c "pip install flask requests && python chuangxiang_agent.py --port 6007"
+    networks:
+      - agent-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

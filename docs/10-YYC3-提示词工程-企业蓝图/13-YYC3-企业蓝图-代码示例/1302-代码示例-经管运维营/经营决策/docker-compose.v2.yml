@@ -1,0 +1,187 @@
+version: "3.8"
+
+services:
+  # ========================================
+  # 经营决策智能化 v2.0 (核心服务)
+  # 基于 Five S 模型 + AI Family Agent 协同
+  # ========================================
+  business_decision_ai_v2:
+    image: nvcr.io/nvidia/nemo:latest
+    container_name: yyc3-business-decision-v2
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 32G
+          cpus: "8.0"
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 2
+              capabilities: [gpu]
+    volumes:
+      - ./data:/workspace/data
+      - ./models:/workspace/models
+      - ./prompt-templates:/workspace/prompt-templates
+      - ./config:/workspace/config
+      - business_decision_logs:/workspace/logs
+    environment:
+      - SERVICE_NAME=business_decision_ai_v2
+      - SERVICE_VERSION=2.0.0
+      - PORT=5010
+      - DEBUG=False
+      - DATA_DIR=/workspace/data
+      - MODEL_PATH=/workspace/models/qwen3.5-122b
+      - PROMPT_ENGINE_CONFIG=/workspace/config/prompt_engine_config.json
+      - ENABLE_AGENT_COORDINATION=true
+      - FIVE_S_MODEL_ENABLED=true
+      - LOG_LEVEL=INFO
+      - TZ=Asia/Shanghai
+    networks:
+      - dgx-net
+      - ai-family-network
+    runtime: nvidia
+    command: >
+      python /workspace/scripts/business_decision_api_v2.py
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5010/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+    labels:
+      - "yyc3.service=business-intelligence"
+      - "yyc3.version=v2.0"
+      - "yyc3.capabilities=five-s-model,ai-family-agents,prompt-engine"
+
+  # ========================================
+  # 提示词引擎微服务 (可选)
+  # 用于集中管理提示词模板
+  # ========================================
+  prompt_engine_service:
+    image: python:3.10-slim
+    container_name: yyc3-prompt-engine
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+    volumes:
+      - ./prompt-templates:/workspace/prompt-templates
+      - prompt_engine_cache:/workspace/cache
+    environment:
+      - SERVICE_NAME=prompt_engine
+      - TEMPLATE_DIR=/workspace/prompt-templates
+      - CACHE_DIR=/workspace/cache
+      - MAX_PROMPT_LENGTH=8192
+      - ENABLE_CACHING=true
+    networks:
+      - dgx-net
+    command: python -m http.server 8080 --directory /workspace/prompt-templates
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - prompt-engine
+
+  # ========================================
+  # Redis 缓存层 (用于会话管理和结果缓存)
+  # ========================================
+  redis_cache:
+    image: redis:7-alpine
+    container_name: yyc3-business-redis
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-yyc3_redis_2026}
+    networks:
+      - dgx-net
+    command: redis-server --requirepass ${REDIS_PASSWORD:-yyc3_redis_2026} --maxmemory 1gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-yyc3_redis_2026}", "ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - caching
+
+  # ========================================
+  # 监控服务 (Prometheus + Grafana)
+  # ========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: yyc3-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    networks:
+      - monitoring-net
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: yyc3-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-yyc3_admin_2026}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - monitoring-net
+      - dgx-net
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+networks:
+  dgx-net:
+    driver: bridge
+    name: yyc3-business-dgx-network
+  ai-family-network:
+    driver: bridge
+    name: yyc3-ai-family-network
+  monitoring-net:
+    driver: bridge
+    name: yyc3-monitoring-network
+
+volumes:
+  business_decision_logs:
+    driver: local
+  prompt_engine_cache:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  inventory_ai:
+    image: nvcr.io/nvidia/nemo:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - /mnt/nas/inventory_data:/workspace/data
+      - /mnt/nas/inventory_models:/workspace/models
+    environment:
+      - SERVICE_TYPE=inventory
+      - DATA_DIR=/workspace/data
+      - MODEL_PATH=/workspace/models/inventory_model.pt
+    networks:
+      - dgxnet
+    runtime: nvidia
+    command: ["python", "/workspace/scripts/inventory_inference.py", "--data_dir", "/workspace/data"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  dgxnet:
+    driver: bridge
