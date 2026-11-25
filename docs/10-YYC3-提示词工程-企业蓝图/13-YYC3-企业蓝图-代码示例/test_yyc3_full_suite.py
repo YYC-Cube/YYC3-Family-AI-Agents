@@ -22,17 +22,17 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, BASE_DIR)
-sys.path.insert(0, os.path.join(BASE_DIR, '00-核心基础设施', 'prompt-engine'))
-sys.path.insert(0, os.path.join(BASE_DIR, '04-能力建设智能化', '标准化体系'))
-sys.path.insert(0, os.path.join(BASE_DIR, '04-能力建设智能化', '规范化管理'))
-sys.path.insert(0, os.path.join(BASE_DIR, '04-能力建设智能化', '数据化治理'))
-sys.path.insert(0, os.path.join(BASE_DIR, '04-能力建设智能化', '智能化升级'))
-sys.path.insert(0, os.path.join(BASE_DIR, '04-能力建设智能化', '协同化办公'))
-sys.path.insert(0, os.path.join(BASE_DIR, '05-价值创造智能化', '市场洞察'))
-sys.path.insert(0, os.path.join(BASE_DIR, '05-价值创造智能化', '创新孵化'))
-sys.path.insert(0, os.path.join(BASE_DIR, '05-价值创造智能化', '薪酬激励'))
-sys.path.insert(0, os.path.join(BASE_DIR, '05-价值创造智能化', '高效运营'))
-sys.path.insert(0, os.path.join(BASE_DIR, '05-价值创造智能化', '度势成长'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1300-代码示例-核心基础设施', 'prompt-engine'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '标准化体系'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '规范化管理'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '数据化治理'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '智能化升级'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '协同化办公'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '市场洞察'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '创新孵化'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '薪酬激励'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '高效运营'))
+sys.path.insert(0, os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '度势成长'))
 
 
 class TestStandardizationIntelligence(unittest.TestCase):

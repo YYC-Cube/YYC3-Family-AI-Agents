@@ -34,12 +34,12 @@ complexity: intermediate
 | 1307 | [安全合规](./1307-代码示例-安全合规/) | 零信任网关 zero_trust_gateway | 2 py |
 | 1308 | [可观测性](./1308-代码示例-可观测性/) | telemetry 示例 | 1 py |
 
-顶层文件：[API_DOCUMENTATION_V3.md](./API_DOCUMENTATION_V3.md) · docker-compose（单机/全栈）· `test_yyc3_*` 业务验证套件（**教学验收用，不在仓库 CI 范围**；历史运行有失败项，以文档演示为准）。
+顶层文件：[API_DOCUMENTATION_V3.md](./API_DOCUMENTATION_V3.md) · docker-compose（单机/全栈）· `test_yyc3_*` 业务验证套件（**教学验收用，不在仓库 CI 范围**。2026-11-26 修复：三套件 sys.path 旧目录名与 smart 套件 2 处脚本 bug 已修——business 验证器全通（"生产就绪"）、smart 全程跑通、full_suite 导入全通；full_suite 尚余 31 例**内容性脱节**（断言键名/方法签名与 v2 实现漂移，如 audit_result→compliance_results、maturity_assessment 已不存在），修复属内容层裁决，以文档演示为准）。
 
 ## 📌 说明
 
 - 编号沿用 examples 时期历史体系（1304 双模块为历史既成，遵循「编号不复用不重排」保留原样）。
-- 本族与仓库根 `examples/13-YYC3-企业蓝图-代码示例/` 为**同源镜像**（2026-11-26 同步自归一后版本）；后续以本目录为文档库权威副本，examples 目录去留见仓库文档评估记录。
+- 本族原存于仓库根 `examples/13-YYC3-企业蓝图-代码示例/`，2026-11-26 迁入文档库并删除根目录（移动语义完成，本目录为唯一权威副本；git 历史可溯 examples 时期）。
 
 ---
 

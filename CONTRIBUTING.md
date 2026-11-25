@@ -41,8 +41,7 @@ docker compose up -d
 | `agent_server.py` / `governance_hub.py` | 生产运行时（Flask） | 需通过语法检查 + 冒烟测试 |
 | `agents/<name>/` | 家人身份/灵魂/系统提示 | 名称变更需跨层同步（README + docs + deploy） |
 | `deploy/` | 生产部署与 systemd | 未经生产验证不得合并 |
-| `docs/` | 全部文档（编号体系见下） | 遵循文档规范 |
-| `examples/` | 示例代码（蓝图原型） | 不接入生产，仅作实现参考 |
+| `docs/` | 全部文档（编号体系见下；示例代码已入 `docs/10-/13-` 代码族） | 遵循文档规范 |
 | `public/` | 品牌素材 | 需与品牌规范一致 |
 
 ### docs/ 编号体系
