@@ -16,61 +16,61 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODULES = [
     {
         "name": "标准化体系",
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '标准化体系', 'standardization_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '标准化体系', 'standardization_inference_v2.py'),
         "expected_tests": 4,
         "category": "Q3-能力建设"
     },
     {
         "name": "规范化管理",
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '规范化管理', 'process_management_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '规范化管理', 'process_management_inference_v2.py'),
         "expected_tests": 4,
         "category": "Q3-能力建设"
     },
     {
         "name": "数据化治理",
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '数据化治理', 'data_governance_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '数据化治理', 'data_governance_inference_v2.py'),
         "expected_tests": 4,
         "category": "Q3-能力建设"
     },
     {
         "name": "智能化升级",
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '智能化升级', 'ai_upgrade_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '智能化升级', 'ai_upgrade_inference_v2.py'),
         "expected_tests": 3,
         "category": "Q3-能力建设"
     },
     {
         "name": "协同化办公",
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '协同化办公', 'collaboration_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '协同化办公', 'collaboration_inference_v2.py'),
         "expected_tests": 1,
         "category": "Q3-能力建设"
     },
     {
         "name": "市场洞察",
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '市场洞察', 'market_intelligence_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '市场洞察', 'market_intelligence_inference_v2.py'),
         "expected_tests": 4,
         "category": "Q4-价值创造"
     },
     {
         "name": "创新孵化",
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '创新孵化', 'innovation_incubator_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '创新孵化', 'innovation_incubator_v2.py'),
         "expected_tests": 3,
         "category": "Q4-价值创造"
     },
     {
         "name": "薪酬激励",
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '薪酬激励', 'compensation_intelligence_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '薪酬激励', 'compensation_intelligence_v2.py'),
         "expected_tests": 4,
         "category": "Q4-价值创造"
     },
     {
         "name": "高效运营",
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '高效运营', 'operations_intelligence_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '高效运营', 'operations_intelligence_v2.py'),
         "expected_tests": 4,
         "category": "Q4-价值创造"
     },
     {
         "name": "度势成长",
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '度势成长', 'growth_intelligence_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '度势成长', 'growth_intelligence_v2.py'),
         "expected_tests": 5,
         "category": "Q4-价值创造"
     }

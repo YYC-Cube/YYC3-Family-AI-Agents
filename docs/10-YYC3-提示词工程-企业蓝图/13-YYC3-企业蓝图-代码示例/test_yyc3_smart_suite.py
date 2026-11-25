@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODULES = {
     "标准化体系": {
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '标准化体系', 'standardization_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '标准化体系', 'standardization_inference_v2.py'),
         "class": "StandardizationIntelligenceV2",
         "methods_to_test": [
             ("create_standard", {"type": "管理标准", "title": "测试标准"}),
@@ -27,7 +27,7 @@ MODULES = {
         ]
     },
     "规范化管理": {
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '规范化管理', 'process_management_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '规范化管理', 'process_management_inference_v2.py'),
         "class": "ProcessManagementIntelligenceV2",
         "methods_to_test": [
             ("optimize_process", {"name": "订单处理流程", "current_efficiency": 65.0}),
@@ -36,7 +36,7 @@ MODULES = {
         ]
     },
     "数据化治理": {
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '数据化治理', 'data_governance_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '数据化治理', 'data_governance_inference_v2.py'),
         "class": "DataGovernanceIntelligenceV2",
         "methods_to_test": [
             ("build_data_asset_map", {"scope": "全公司"}),
@@ -46,7 +46,7 @@ MODULES = {
         ]
     },
     "智能化升级": {
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '智能化升级', 'ai_upgrade_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '智能化升级', 'ai_upgrade_inference_v2.py'),
         "class": "AIUpgradeIntelligenceV2",
         "methods_to_test": [
             ("assess_ai_maturity", {"name": "YYC³科技"}),
@@ -55,14 +55,14 @@ MODULES = {
         ]
     },
     "协同化办公": {
-        "path": os.path.join(BASE_DIR, '04-能力建设智能化', '协同化办公', 'collaboration_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1304-代码示例-能力建设智能化', '协同化办公', 'collaboration_inference_v2.py'),
         "class": "CollaborationIntelligenceV2",
         "methods_to_test": [
             ("team_collaboration_optimization", {"team": "研发团队A"})
         ]
     },
     "市场洞察": {
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '市场洞察', 'market_intelligence_inference_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '市场洞察', 'market_intelligence_inference_v2.py'),
         "class": "MarketIntelligenceV2",
         "methods_to_test": [
             ("deep_competitor_analysis", ["竞品A公司"]),
@@ -72,7 +72,7 @@ MODULES = {
         ]
     },
     "创新孵化": {
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '创新孵化', 'innovation_incubator_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '创新孵化', 'innovation_incubator_v2.py'),
         "class": "InnovationIncubatorV2",
         "methods_to_test": [
             ("evaluate_innovation_idea", {"title": "测试创意", "submitter": "张三", "department": "技术部"}),
@@ -81,7 +81,7 @@ MODULES = {
         ]
     },
     "薪酬激励": {
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '薪酬激励', 'compensation_intelligence_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '薪酬激励', 'compensation_intelligence_v2.py'),
         "class": "CompensationIntelligenceV2",
         "methods_to_test": [
             ("intelligent_compensation_design", {"position": "高级工程师", "level": "P7", "department": "技术研发"}),
@@ -89,7 +89,7 @@ MODULES = {
         ]
     },
     "高效运营": {
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '高效运营', 'operations_intelligence_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '高效运营', 'operations_intelligence_v2.py'),
         "class": "OperationsIntelligenceV2",
         "methods_to_test": [
             ("automate_business_processes", {"scope": "财务流程"}),
@@ -99,7 +99,7 @@ MODULES = {
         ]
     },
     "度势成长": {
-        "path": os.path.join(BASE_DIR, '05-价值创造智能化', '度势成长', 'growth_intelligence_v2.py'),
+        "path": os.path.join(BASE_DIR, '1305-代码示例-价值创造智能化', '度势成长', 'growth_intelligence_v2.py'),
         "class": "GrowthIntelligenceV2",
         "methods_to_test": [
             ("build_talent_pipeline", "技术研发"),
@@ -215,14 +215,14 @@ def run_module_tests(module_name: str, config: Dict) -> Dict:
                     print(status_msg)
                     results["details"].append({"method": method_name, "status": "FAIL", "msg": status_msg})
             except Exception as e2:
-                results["errors"] += 1
+                results["errors"].append(f"{method_name}: {str(e2)[:100]}")
                 error_msg = f"⚠️ {method_name}() - 错误: {str(e2)[:100]}"
                 print(error_msg)
                 results["details"].append({"method": method_name, "status": "ERROR", "msg": error_msg})
                 
         except Exception as e:
-            total_errors += 1
             error_msg = f"⚠️ {method_name}() - 异常: {str(e)[:100]}"
+            results["errors"].append(f"{method_name}: {str(e)[:100]}")
             print(error_msg)
             results["details"].append({"method": method_name, "status": "ERROR", "msg": error_msg})
     
