@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  purchase_ai:
+    image: nvcr.io/nvidia/nemo:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - /mnt/nas/purchase_data:/workspace/data
+      - /mnt/nas/purchase_models:/workspace/models
+    environment:
+      - SERVICE_TYPE=purchase
+      - DATA_DIR=/workspace/data
+      - MODEL_PATH=/workspace/models/purchase_model.pt
+    networks:
+      - dgxnet
+    runtime: nvidia
+    command: ["python", "/workspace/scripts/purchase_inference.py", "--data_dir", "/workspace/data"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  dgxnet:
+    driver: bridge
