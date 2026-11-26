@@ -51,7 +51,7 @@ Three packaging tracks: **A. MCP Server** (protocol-first) · **B. Claude Code P
 
 | 资产 | 生态稀缺度 | 封装价值 |
 |---|---|---|
-| 审计链（FNV-1a 链式哈希，防篡改） | **极稀缺**——框架普遍无审计 | 核心卖点 |
+| 审计链（全程上报 + correlation_id 贯穿，SQLite 追加写） | **稀缺**——框架普遍无审计 | 核心卖点（2026-11-26 审核勘误：原表述「FNV-1a 链式哈希防篡改」与本仓代码不符，链式哈希属兄弟仓 kernel 资产待验证，见 docs/14- §8.2④） |
 | Token 预算窗口（日/周/月惰性重置） | 稀缺 | 核心卖点 |
 | Kill Switch（一键冻结） | 稀缺 | 核心卖点 |
 | 护栏管线（注入检测 + 输出脱敏） | 有（NeMo Guardrails 等） | 差异化：零依赖 + 审计闭环 |

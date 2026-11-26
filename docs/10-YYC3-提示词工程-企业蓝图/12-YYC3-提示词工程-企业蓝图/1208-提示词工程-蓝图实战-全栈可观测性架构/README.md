@@ -2,9 +2,9 @@
 file: README.md
 description: YYC³全栈可观测性架构 — Logs/Metrics/Traces + 分布式追踪 + 告警体系 + 可视化大屏
 author: YanYuCloudCube Team <admin@0379.email>
-version: v1.0.0
+version: v1.1.0
 created: 2026-06-03
-updated: 2026-06-03
+updated: 2026-11-26
 status: published
 tags: [可观测性],[分布式追踪],[日志],[指标],[链路],[告警],[可视化]
 category: architecture
@@ -435,18 +435,21 @@ interface YYC3LogEntry {
 
 ---
 
-## 七、与项目代码库对齐
+## 七、与项目代码库对齐（2026-11-26 回写：本仓产线 Python 形态）
 
-| 可观测性组件 | 代码实现 | 状态 |
-|-------------|---------|------|
-| 结构化日志 | `src/app/lib/security-logger.ts` ✅ | 已就绪 |
-| correlationId 追踪 | `security-logger.ts` generateCorrelationId() ✅ | 已就绪 |
-| SSE 流式推送 | `src/app/lib/sse-client.ts` ✅ | 已就绪 |
-| 双存储（localStorage+IndexedDB） | `src/app/lib/yyc3-storage.ts` ✅ | 已就绪 |
-| OpenTelemetry SDK | 待创建 `src/app/lib/telemetry.ts` | 规划中 |
-| Prometheus 指标导出 | 待创建 `src/app/lib/metrics.ts` | 规划中 |
-| 告警引擎 | 待创建 `src/app/lib/alert-engine.ts` | 规划中 |
-| 可视化大屏 | 待创建 `src/app/components/ObservabilityDashboard.tsx` | 规划中 |
+> **回写注记（docs/14- 契约审核）**：v1.0.0 原表面向兄弟仓 Node/TS 形态，2026-11-26 依 docs/14- 审核回写本仓事实；兄弟仓原判保留于表后注记。
+
+| 可观测性组件 | 本仓产线实现（Python） | 状态 |
+|-------------|----------------------|------|
+| 结构化日志 | `telemetry.py` 降级 JSON 结构化日志 + 治理中枢审计链（SQLite 追加写，correlation_id 贯穿） | ✅ 已就绪 |
+| correlationId 追踪 | hub `/audit` 全链路上报贯穿（P1-2），dashboard 点击跳转 Jaeger | ✅ 已就绪 |
+| OpenTelemetry SDK | `telemetry.py`（可选依赖；OTLP 导出 `YYC3_OTLP_ENDPOINT`；`gen_ai.*` 语义属性挂载推理 span） | ✅ 已就绪（E1-4 / P3-2） |
+| SSE 流式推送 | `/chat/stream`（meta/delta/done/error）+ dashboard 30s 轮询 | ✅ 已就绪（E1-1） |
+| Prometheus 指标导出 | 未建（现状：内存指标快照 + hub `/metrics` 只读端点；Prometheus 抓取未接入） | 🔴 规划中 |
+| SLO/延迟预算与告警引擎 | 未建（预算侧有 Token 日/周/月窗口与 degrade/block 阈值；延迟 p95/错误预算告警未建——docs/14- B8，蓝图 §3 指标表为其规格来源） | 🔴 规划中 |
+| 可视化大屏 | `dashboard.html`（hub 单文件仪表盘：6 KPI / 家人状态 / 审计表 / 预算窗口切换） | ✅ 已就绪（形态为自研单文件，非 Grafana） |
+
+> **兄弟仓（Node/TS）原判保留**：security-logger / sse-client / yyc3-storage 已就绪；telemetry / metrics / alert-engine / ObservabilityDashboard 规划中——归属兄弟仓，本回写不改判。
 
 ---
 
@@ -477,6 +480,7 @@ interface YYC3LogEntry {
 | 版本 | 日期 | 变更内容 | 作者 |
 |------|------|---------|------|
 | v1.0.0 | 2026-06-03 | 初始版本，全栈可观测性架构设计 | YanYuCloudCube Team |
+| v1.1.0 | 2026-11-26 | 契约审核回写（docs/14- B11）：§七 对齐表改为本仓产线 Python 事实（Prometheus/SLO 告警如实标未建，并注明蓝图 §3 为 docs/14- B8 规格来源）；原 TS 表保留为兄弟仓注记 | YanYuCloudCube Team |
 
 ---
 
