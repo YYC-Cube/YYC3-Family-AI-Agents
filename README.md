@@ -83,14 +83,15 @@ _万象归元于云枢 · 深栈智启新纪元_
 
 | 特性 | 说明 |
 | ---- | ---- |
-| 🧑‍🤝‍🧑 **8 位家人** | 总指挥 / 导航员 / 思考者 / 预言家 / 推荐官 / 安全官 / 质量官 / 创意官 |
+| 🧑‍🤝‍🧑 **8 位家人** | meta-oracle 总指挥 / navigator 导航员 / thinker 思考者 / prophet 预言家 / bolero 推荐官 / sentinel 安全官 / master 质量官 / creative 创意官 |
 | 🛡️ **统一治理** | 行为审计、Kill Switch 熔断、Token 预算、成本追踪、协同触发、上下文图谱 |
 | 📡 **流式对话** | `POST /chat/stream` SSE 逐 token（meta/delta/done/error 事件，治理上报同构） |
+| 🔗 **跨家人委托** | `POST /delegate` 真实委托（目标白名单 + 深度上限 ≤2 + 护栏/脱敏覆盖 + 审计与预算按链贯穿） |
 | ⚡ **持久化执行** | 步骤级 checkpoint + correlation_id 断点恢复（失败重入不重复推理、预算零计费） |
-| 🧩 **协议互通** | MCP server（2026-07-28 stateless 子集，治理工具八件）+ MCP client + A2A Agent Card / tasks |
+| 🧩 **协议互通** | MCP server（2026-07-28 stateless 子集，治理工具八件）+ MCP client + A2A Agent Card（含 security/SLO 声明）/ tasks |
 | 🛡️ **护栏管线** | 输入注入检测分级处置（block/degrade）+ 输出脱敏，全量入审计链 |
 | 🧬 **分层记忆** | Semantic 语义事实（抽取→去重合并→置信度衰减）+ Chroma 向量记忆，增删改入审计链 |
-| 📊 **评估基线** | golden set 24 例（规则断言离线可跑）+ LLM-judge 钩子，CI 结构门禁 |
+| 📊 **评估基线** | golden set 28 例 × 身份/领域/边界/不可达目标四类（规则断言离线可跑，B4 虚报委派/完成断言）+ LLM-judge 钩子，CI 结构门禁 |
 | 🧠 **本地推理** | Qwen3.6-27B-FP8（vLLM）+ Qwen3-Embedding-8B + Qwen3-Reranker-8B |
 | 📦 **双部署模式** | Docker Compose 容器编排 与 systemd 裸机守护进程（DGX Spark N2 生产验证） |
 

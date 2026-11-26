@@ -11,6 +11,8 @@
 
 ### Added
 
+- **架构完善批（B3 编排真实化 + B4 不可达目标评测，评测先行内嵌）**：`agent_server` 新增 `POST /delegate` 跨家人真实委托——目标白名单（`YYC3_FAMILY_ENDPOINTS` env，英文 id，无用户可控 URL 拼接）+ 深度上限 ≤2（`YYC3_DELEGATE_DEPTH_MAX`）+ 自委托拒绝 + 任务过产线护栏（block→422）+ 返回过输出脱敏 + `delegate_dispatch/delegate_result` 双审计事件与 correlation_id 贯穿（预算按链各自记账）；golden 增 `unreachable_goal` 类目 4 例（虚报委派/虚报路由成功/编造精确数字/虚报批量完成断言，契约锚点③）+ `meta-oracle SYSTEM.md` v3.2 编排协议（任务卡 JSON + 诚实红线：未经 /delegate 严禁声称已委派/已完成）——直接封堵提示词诱导执行幻觉风险；**技能库 v2**：Skills ×8 升级为完整技能（决策框架/输出契约/协作协议/评测锚点）；Agent Card 契约回迁（capabilities.delegation + security + slo，源自 1207/1208/1214）。契约测试 test_delegation.py 9 例（werkzeug stub 真实 HTTP 出站）。pytest **340 passed + 8 skipped** 全绿
+
 - **插件件套 W2 路径 B 落地（.claude-plugin/ 五位一体）**：`plugin.json` 3.1.0 + **Skills ×8**（英文 id 人格入口，含五维价值矩阵主责映射与权威源指针）+ **Agents ×8**（ZCode subagent frontmatter 定义——补齐四件套 Subagent 缺口）+ **Commands ×3**（audit/budget/freeze，高危二次确认）+ **Hooks**（`guardrails_hook.py` PreToolUse 注入检测，与产线 `/chat` 同一规则引擎，block 决策输出）+ **`.mcp.json`**（治理中枢 8 工具，密钥走 `${YYC3_MCP_KEY}` 环境变量）；契约测试 `tests/unit/test_plugin_suite.py` 7 例随 CI（清单有效性/frontmatter/与 agents/ 目录对齐/MCP 指向/禁硬编码密钥）；MCP 件套此前已落地（README 工具面滞后已随 #63 修正）——**四件套状态：Skills ✅ / Plugin ✅ / MCP ✅ / Subagent ✅**（真实跨代理派发执行属 B3 另批）
 - **五维价值矩阵对齐审核（docs/14- §8.9 v1.2.0）**：以正典矩阵（管理职能①→资源管理②→能力建设③→价值创造④→自愈链路⑤）核验 docs/10- 五模块——内部维度声明与五字域覆盖 5/5 全对齐，唯一错位为 1202/1203/1204 目录编号序；**不采用重排**（编号治理规范「不复用不重排」+ 引用刚收口），采用「维度序↔模块号」映射表落分区 README；伪代码语法修复 3 处（120405 百分号字面量/120102 变量截断/120201 self 越界）；Mimosa prompts_overview finding 复核闭环（实有白名单+safe_join 双重防护，判启发式保守标记，新增 traversal 探针契约测试固化）
 

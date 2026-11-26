@@ -2,7 +2,7 @@
 file: "14-YYC3-Family-AI-Agent-多Agent契约审核评估报告.md"
 description: "基于角色契约（2026-11-26 生效版）多Agent条款的全面多维审核：四件套盘点、契约九锚点代码取证、四层×九层映射、大数据多Agent生态对标，产出 P0/P1/P2 问题明细与 B1-B10 补全建议批次"
 author: "YanYuCloudCube Team <admin@0379.email>"
-version: "v1.2.0"
+version: "v1.3.0"
 created: "2026-11-26"
 updated: "2026-11-26"
 status: "review"
@@ -370,6 +370,20 @@ complexity: advanced
 3. Mimosa prompts_overview finding 复核闭环：`prompts_get` 实有 `PROMPT_FILES` 白名单 + `safe_join` 双重防护，判定为对 route 参数模式的启发式保守标记——**不采用改码**（防护已在、加码无增益），以 traversal 探针测试固化为契约（新增 1 用例）。
 
 **演进锚点（五维 → 后续批次素材映射，供 B4-B9 引用）**：⑤ 自愈链路 ↔ B4（不可达目标/终止判断）与 B8（预算/SLO）；③ 数据化治理 ↔ semantic_layer/MDL 已落地部分；① 经营决策 ↔ semantic_query 指标域；② 库存/销售 ↔ E3-2 双路由素材；④ 市场洞察 ↔ prophet 工具面规划。遗留（不在本批）：占位符规范统一（B13）、模块 KPI 数值标注「设定值」。
+
+### 8.10 架构完善批执行记录（2026-11-26 第四批 · 用户战略裁决后）
+
+**裁决背景**：用户明确「按标准生产架构完善设计，以 12- 蓝图为规格源，完善智能体架构与技能库」——据此 B3/B4 由「另批」提前为本批执行，12- 蓝图升格为产线规格源（1214 AgentTask 契约 / 1200 ReAct-C / 1207-1208 Card security·SLO / 1307 注入正则（B5 留下批））。
+
+**交付（B3+B4 合批，评测先行内嵌）**：
+1. **B3 编排真实化最小闭环**：`agent_server` 新增 `POST /delegate`——真实跨家人委托（出站转发目标 `/chat`），设计要点：目标白名单（`YYC3_FAMILY_ENDPOINTS` env，键=英文 id，无用户可控 URL 拼接）、深度上限 ≤2（`YYC3_DELEGATE_DEPTH_MAX`，防循环委托）、自委托拒绝、任务文本过产线护栏（block 422）、返回结果过输出脱敏（redact）、`delegate_dispatch/delegate_result` 双审计事件 + correlation_id 贯穿（预算按链各自记账）；
+2. **B4 不可达目标评测先行**：golden 增 `unreachable_goal` 类目 4 例（meta-oracle/navigator/thinker/bolero——虚报委派/虚报路由成功/编造精确数字/虚报批量完成四类断言），`meta-oracle SYSTEM.md` 增 v3.2 编排协议段（任务卡 JSON + **诚实红线**：未经 /delegate 通道严禁声称已委派/已完成，失败如实报告）——评测闸门先于编排全量开闸，直接封堵二审 §8.3A「提示词诱导执行幻觉」风险；
+3. **技能库 v2 深化**：Skills ×8 从入口摘要升级为完整技能——各含 决策/工作框架（步骤化）、输出契约（可断言结构 + golden 锚点引用）、协作协议（/delegate 规范 + 五维主责表）、治理约束、权威源；
+4. **Agent Card 契约回迁**：`capabilities.delegation=true` + `security{writeAuth:X-API-Key, guardrails}` + `slo{first_token 2s, p95 2s, availability 99.9%}`（1207 §3.2 / 1208 §3 / 1214 契约字段落地）。
+
+**验证**：pytest **340 passed + 8 skipped**（新增委托契约 9 例：成功回环/深度拒绝/未知目标/自委托/护栏拦截/冻结拒绝/不可达 502/输出脱敏/缺参 400——目标家人以 werkzeug 随机端口 stub 真实 HTTP 承载）；命名/端口守卫 PASS。
+
+**剩余（后续批）**：B5 间接注入（1307 正则迁移 + 检视面扩展）、B6 工具调用评测层、B7/B8/B10、B9 跨网 A2A；委托链熔断深度/无进展检测可在 B5 后按运行数据调优。
 
 ---
 

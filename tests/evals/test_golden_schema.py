@@ -31,7 +31,7 @@ class TestGoldenSchema:
         for c in golden["cases"]:
             assert c["agent"] in FAMILY, f"未知 agent: {c['agent']}"
             assert c["message"].strip()
-            assert c["category"] in ("identity", "domain", "boundary")
+            assert c["category"] in ("identity", "domain", "boundary", "unreachable_goal")
 
     def test_rules_wellformed(self, golden):
         for c in golden["cases"]:
