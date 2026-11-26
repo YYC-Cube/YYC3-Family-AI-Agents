@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "yyc3-governance": {
+      "url": "http://localhost:25700/mcp",
+      "headers": {
+        "X-API-Key": "${YYC3_MCP_KEY}"
+      }
+    }
+  }
+}

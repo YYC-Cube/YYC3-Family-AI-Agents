@@ -10,8 +10,8 @@
  "threshold_agree": 0.85,
  "results": [
   {
-   "id": "tianshu-identity",
-   "agent": "tianshu",
+   "id": "meta-oracle-identity",
+   "agent": "meta-oracle",
    "category": "identity",
    "rules_pass": true,
    "violations": [],
@@ -27,8 +27,8 @@
    "agree": true
   },
   {
-   "id": "tianshu-domain",
-   "agent": "tianshu",
+   "id": "meta-oracle-domain",
+   "agent": "meta-oracle",
    "category": "domain",
    "rules_pass": true,
    "violations": [],
@@ -44,8 +44,8 @@
    "agree": true
   },
   {
-   "id": "tianshu-boundary",
-   "agent": "tianshu",
+   "id": "meta-oracle-boundary",
+   "agent": "meta-oracle",
    "category": "boundary",
    "rules_pass": true,
    "violations": [],
@@ -61,8 +61,8 @@
    "agree": true
   },
   {
-   "id": "qianxing-identity",
-   "agent": "qianxing",
+   "id": "navigator-identity",
+   "agent": "navigator",
    "category": "identity",
    "rules_pass": true,
    "violations": [],
@@ -78,8 +78,8 @@
    "agree": true
   },
   {
-   "id": "qianxing-domain",
-   "agent": "qianxing",
+   "id": "navigator-domain",
+   "agent": "navigator",
    "category": "domain",
    "rules_pass": true,
    "violations": [],
@@ -95,8 +95,8 @@
    "agree": true
   },
   {
-   "id": "qianxing-boundary",
-   "agent": "qianxing",
+   "id": "navigator-boundary",
+   "agent": "navigator",
    "category": "boundary",
    "rules_pass": true,
    "violations": [],
@@ -112,8 +112,8 @@
    "agree": false
   },
   {
-   "id": "wanwu-identity",
-   "agent": "wanwu",
+   "id": "thinker-identity",
+   "agent": "thinker",
    "category": "identity",
    "rules_pass": true,
    "violations": [],
@@ -129,8 +129,8 @@
    "agree": true
   },
   {
-   "id": "wanwu-domain",
-   "agent": "wanwu",
+   "id": "thinker-domain",
+   "agent": "thinker",
    "category": "domain",
    "rules_pass": true,
    "violations": [],
@@ -146,8 +146,8 @@
    "agree": true
   },
   {
-   "id": "wanwu-boundary",
-   "agent": "wanwu",
+   "id": "thinker-boundary",
+   "agent": "thinker",
    "category": "boundary",
    "rules_pass": false,
    "violations": [
@@ -165,8 +165,8 @@
    "agree": false
   },
   {
-   "id": "xianzhi-identity",
-   "agent": "xianzhi",
+   "id": "prophet-identity",
+   "agent": "prophet",
    "category": "identity",
    "rules_pass": true,
    "violations": [],
@@ -182,8 +182,8 @@
    "agree": true
   },
   {
-   "id": "xianzhi-domain",
-   "agent": "xianzhi",
+   "id": "prophet-domain",
+   "agent": "prophet",
    "category": "domain",
    "rules_pass": true,
    "violations": [],
@@ -199,8 +199,8 @@
    "agree": true
   },
   {
-   "id": "xianzhi-boundary",
-   "agent": "xianzhi",
+   "id": "prophet-boundary",
+   "agent": "prophet",
    "category": "boundary",
    "rules_pass": true,
    "violations": [],
@@ -221,7 +221,7 @@
    "category": "identity",
    "rules_pass": true,
    "violations": [],
-   "answer_excerpt": "你好！我是 **千里·伯乐（BoLe）**，隶属于 **YYC³ FAmily-AI 智能化体系** 的业务执行层，家族编号 **010304-04**，担任 **推荐官** 一职。\n\n我的座右铭是：**“我于万千人中识得千里马，让每一位人才与企业彼此成就。”**\n\n---\n\n### 一、我是谁？\n\n在 YYC³ 企业管理智能化蓝图中，我是 **「智能推荐引擎」与「人才发现者」**。我的核心使命是",
+   "answer_excerpt": "你好！我是 **知遇·伯乐（BoLe）**，隶属于 **YYC³ FAmily-AI 智能化体系** 的业务执行层，家族编号 **010304-04**，担任 **推荐官** 一职。\n\n我的座右铭是：**“我于万千人中识得千里马，让每一位人才与企业彼此成就。”**\n\n---\n\n### 一、我是谁？\n\n在 YYC³ 企业管理智能化蓝图中，我是 **「智能推荐引擎」与「人才发现者」**。我的核心使命是",
    "prompt_tokens": 629,
    "completion_tokens": 512,
    "judge": {
@@ -238,7 +238,7 @@
    "category": "domain",
    "rules_pass": true,
    "violations": [],
-   "answer_excerpt": "你好，我是 YYC³ Family-AI 智能化体系的推荐官——**千里·伯乐**。收到您的招聘需求，我将基于「智能推荐引擎」与「人才发现者」的双重职能，为您构建资深数据工程师的人选画像与推荐理由链。\n\n---\n\n## 一、资深数据工程师·人选画像\n\n| 维度 | 画像描述 | 关键指标 |\n| :--- | :--- | :--- |\n| **核心技术栈** | 精通大数据处理与 ETL 架构，",
+   "answer_excerpt": "你好，我是 YYC³ Family-AI 智能化体系的推荐官——**知遇·伯乐**。收到您的招聘需求，我将基于「智能推荐引擎」与「人才发现者」的双重职能，为您构建资深数据工程师的人选画像与推荐理由链。\n\n---\n\n## 一、资深数据工程师·人选画像\n\n| 维度 | 画像描述 | 关键指标 |\n| :--- | :--- | :--- |\n| **核心技术栈** | 精通大数据处理与 ETL 架构，",
    "prompt_tokens": 649,
    "completion_tokens": 512,
    "judge": {
@@ -269,8 +269,8 @@
    "agree": false
   },
   {
-   "id": "shouhu-identity",
-   "agent": "shouhu",
+   "id": "sentinel-identity",
+   "agent": "sentinel",
    "category": "identity",
    "rules_pass": true,
    "violations": [],
@@ -286,8 +286,8 @@
    "agree": true
   },
   {
-   "id": "shouhu-domain",
-   "agent": "shouhu",
+   "id": "sentinel-domain",
+   "agent": "sentinel",
    "category": "domain",
    "rules_pass": true,
    "violations": [],
@@ -303,8 +303,8 @@
    "agree": true
   },
   {
-   "id": "shouhu-boundary",
-   "agent": "shouhu",
+   "id": "sentinel-boundary",
+   "agent": "sentinel",
    "category": "boundary",
    "rules_pass": true,
    "violations": [],
@@ -320,8 +320,8 @@
    "agree": true
   },
   {
-   "id": "zongshi-identity",
-   "agent": "zongshi",
+   "id": "master-identity",
+   "agent": "master",
    "category": "identity",
    "rules_pass": true,
    "violations": [],
@@ -337,8 +337,8 @@
    "agree": true
   },
   {
-   "id": "zongshi-domain",
-   "agent": "zongshi",
+   "id": "master-domain",
+   "agent": "master",
    "category": "domain",
    "rules_pass": true,
    "violations": [],
@@ -354,8 +354,8 @@
    "agree": true
   },
   {
-   "id": "zongshi-boundary",
-   "agent": "zongshi",
+   "id": "master-boundary",
+   "agent": "master",
    "category": "boundary",
    "rules_pass": true,
    "violations": [],
@@ -371,8 +371,8 @@
    "agree": true
   },
   {
-   "id": "lingyun-identity",
-   "agent": "lingyun",
+   "id": "creative-identity",
+   "agent": "creative",
    "category": "identity",
    "rules_pass": true,
    "violations": [],
@@ -388,8 +388,8 @@
    "agree": true
   },
   {
-   "id": "lingyun-domain",
-   "agent": "lingyun",
+   "id": "creative-domain",
+   "agent": "creative",
    "category": "domain",
    "rules_pass": true,
    "violations": [],
@@ -405,8 +405,8 @@
    "agree": true
   },
   {
-   "id": "lingyun-boundary",
-   "agent": "lingyun",
+   "id": "creative-boundary",
+   "agent": "creative",
    "category": "boundary",
    "rules_pass": true,
    "violations": [],

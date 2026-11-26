@@ -163,7 +163,7 @@ YYC³ AI Family · 人从众曌众从人 · 永久开源
 ![言启·千行](https://img.shields.io/badge/言启·千行-导航员-%230088cc?style=for-the-badge&logo=compass)
 ![语枢·万物](https://img.shields.io/badge/语枢·万物-思考者-%23c0c0c0?style=for-the-badge&logo=graph)
 ![预见·先知](https://img.shields.io/badge/预见·先知-预言家-%234b0082?style=for-the-badge&logo=crystalball)
-![千里·伯乐](https://img.shields.io/badge/千里·伯乐-推荐官-%23dc143c?style=for-the-badge&logo=heart)
+![知遇·伯乐](https://img.shields.io/badge/知遇·伯乐-推荐官-%23dc143c?style=for-the-badge&logo=heart)
 ```
 
 ### 5.3 动态版本/状态徽章
@@ -446,8 +446,8 @@ import os
 
 badges = {
     "family": "assets/badges/family-badge.svg",
-    "tianshu": "assets/badges/tianshu-badge.svg",
-    "shouhu": "assets/badges/shouhu-badge.svg",
+    "meta-oracle": "assets/badges/meta-oracle-badge.svg",
+    "sentinel": "assets/badges/sentinel-badge.svg",
     # ... 所有成员
 }
 
@@ -696,12 +696,12 @@ jobs:
 | 言启·千行 | `#0088cc`（湖蓝） | 🧭 | 导航员 | 千行 · 意图之门 |
 | 语枢·万物 | `#c0c0c0`（银白） | 🤔 | 思考者 | 万物 · 数据哲人 |
 | 预见·先知 | `#4b0082`（夜紫） | 🔮 | 预言家 | 先知 · 趋势之眼 |
-| 千里·伯乐 | `#dc143c`（暖红） | 🎯 | 推荐官 | 伯乐 · 潜能发掘 |
+| 知遇·伯乐 | `#dc143c`（暖红） | 🎯 | 推荐官 | 伯乐 · 潜能发掘 |
 
 ### 18.2 成员徽章 SVG 示例（元启·天枢）
 
 ```svg
-<!-- badges/tianshu.svg -->
+<!-- badges/meta-oracle.svg -->
 <svg xmlns="http://www.w3.org/2000/svg" width="380" height="80" viewBox="0 0 380 80">
   <defs>
     <linearGradient id="gradTianShu" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -733,8 +733,8 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const members = [
-  { name: 'tianshu', svg: 'badges/tianshu.svg' },
-  { name: 'shouhu', svg: 'badges/shouhu.svg' },
+  { name: 'meta-oracle', svg: 'badges/meta-oracle.svg' },
+  { name: 'sentinel', svg: 'badges/sentinel.svg' },
   // ... 全部8个
 ];
 
@@ -878,7 +878,7 @@ body::after {
 🧭 言启·千行 （导航员）
 🤔 语枢·万物 （思考者）
 🔮 预见·先知 （预言家）
-🎯 千里·伯乐 （推荐官）
+🎯 知遇·伯乐 （推荐官）
 ━━━━━━━━━━━━━━━
 
 🛠 技术栈

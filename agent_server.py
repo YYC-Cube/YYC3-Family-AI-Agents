@@ -452,6 +452,125 @@ def chat():
     return resp, status
 
 
+# --- B3 编排真实化：/delegate 跨家人真实委托（1200 ReAct-C 协同工作流 / 1214 AgentTask 契约回迁） ---
+# 设计要点（docs/14- §8.10）：
+#   目标白名单（env 注入 YYC3_FAMILY_ENDPOINTS，键=英文 id）——无用户可控 URL 拼接；
+#   深度上限 YYC3_DELEGATE_DEPTH_MAX（默认 2）防循环委托；禁止自委托；
+#   correlation_id 贯穿（委托链审计连续、预算按链各自记账）；
+#   委派任务文本过同一护栏引擎（inspect_input），返回结果过输出脱敏（redact_output）；
+#   委派/回传双事件入审计链（delegate_dispatch / delegate_result）。
+
+DELEGATE_DEPTH_MAX = int(os.environ.get("YYC3_DELEGATE_DEPTH_MAX", "2"))
+DELEGATE_TIMEOUT_S = int(os.environ.get("YYC3_DELEGATE_TIMEOUT", "120"))
+_FAMILY_ENDPOINTS: dict = {}
+
+
+def _family_endpoints() -> dict:
+    """懒加载家人端点白名单：YYC3_FAMILY_ENDPOINTS="id=url,id=url"（英文 id，产线 compose/systemd 注入）"""
+    if not _FAMILY_ENDPOINTS:
+        raw = os.environ.get("YYC3_FAMILY_ENDPOINTS", "")
+        for pair in raw.split(","):
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                _FAMILY_ENDPOINTS[k.strip()] = v.strip().rstrip("/")
+    return _FAMILY_ENDPOINTS
+
+
+@app.route("/delegate", methods=["POST"])
+def delegate():
+    data = request.get_json(force=True, silent=True) or {}
+    target = (data.get("target_agent") or "").strip()
+    task = data.get("task", "")
+    depth = int(data.get("depth", 0))
+    cid = data.get("correlation_id") or str(uuid.uuid4())
+
+    if not target or not task:
+        return jsonify({"error": "target_agent and task are required",
+                        "correlation_id": cid}), 400
+    if target == AGENT_NAME:
+        return jsonify({"error": "self_delegation_rejected", "target": target,
+                        "correlation_id": cid}), 422
+    endpoints = _family_endpoints()
+    if target not in endpoints:
+        return jsonify({"error": "unknown_target", "target": target,
+                        "known": sorted(endpoints), "correlation_id": cid}), 422
+    if depth >= DELEGATE_DEPTH_MAX:
+        return jsonify({"error": "depth_exceeded", "depth": depth,
+                        "max": DELEGATE_DEPTH_MAX, "correlation_id": cid}), 422
+
+    gate = guardrails.inspect_input(task)
+    if gate["verdict"] == "block":
+        telemetry.record_event("guardrail_block", cid, level="warning", agent=AGENT_NAME,
+                               labels=",".join(gate["labels"]), delegate_target=target)
+        _governance_report("guardrail_block", {"labels": gate["labels"],
+                                               "delegate_target": target}, correlation_id=cid)
+        return jsonify({"error": "guardrail_block", "labels": gate["labels"],
+                        "correlation_id": cid}), 422
+
+    frozen, reason = _check_frozen()
+    if frozen:
+        _governance_report("frozen_block", {"reason": reason, "delegate_target": target},
+                           correlation_id=cid)
+        return jsonify({"error": "Agent is frozen", "reason": reason,
+                        "correlation_id": cid}), 403
+
+    fwd_headers = _gov_headers()
+    if AGENT_API_KEY:
+        fwd_headers["X-API-Key"] = AGENT_API_KEY
+    fwd_headers["X-Correlation-ID"] = cid
+    fwd_headers["X-Delegation-Depth"] = str(depth + 1)
+
+    telemetry.record_event("delegate_dispatch", cid, agent=AGENT_NAME,
+                           delegate_target=target, depth=depth)
+    _governance_report("delegate_dispatch", {"target": target, "depth": depth,
+                                             "task_len": len(task)}, correlation_id=cid)
+    start = time.time()
+    try:
+        r = requests.post(f"{endpoints[target]}/chat",
+                          headers=fwd_headers,
+                          json={"message": task, "correlation_id": cid,
+                                "delegation_depth": depth + 1},
+                          timeout=DELEGATE_TIMEOUT_S)
+        status_code = r.status_code
+        try:
+            payload = r.json()
+        except ValueError:
+            payload = {"raw": r.text[:500]}
+    except requests.exceptions.RequestException as e:
+        latency = round((time.time() - start) * 1000, 1)
+        telemetry.record_event("delegate_result", cid, agent=AGENT_NAME,
+                               delegate_target=target, ok=False, latency_ms=latency)
+        _governance_report("delegate_result", {"target": target, "ok": False,
+                                               "error": str(e)[:200]}, correlation_id=cid)
+        return jsonify({"error": "delegate_unreachable", "target": target,
+                        "detail": str(e)[:200], "correlation_id": cid}), 502
+    latency = round((time.time() - start) * 1000, 1)
+
+    # 输出脱敏：目标家人响应文本过同一脱敏引擎
+    result = payload
+    if isinstance(result, dict):
+        resp_text = result.get("response")
+        if isinstance(resp_text, str):
+            result["response"], redact_labels = guardrails.redact_output(resp_text)
+            if redact_labels:
+                _governance_report("guardrail_redact", {"labels": redact_labels,
+                                                        "delegate_target": target},
+                                   correlation_id=cid)
+
+    telemetry.record_event("delegate_result", cid, agent=AGENT_NAME,
+                           delegate_target=target, ok=(status_code == 200), latency_ms=latency)
+    _governance_report("delegate_result", {"target": target, "depth": depth,
+                                           "status_code": status_code, "latency_ms": latency},
+                       correlation_id=cid)
+    return jsonify({
+        "delegation": {"from": AGENT_NAME, "to": target, "depth": depth,
+                       "status_code": status_code, "latency_ms": latency},
+        "result": result,
+        "correlation_id": cid,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }), 200
+
+
 # --- E2-5: A2A 端点（Agent Card 发现 + JSON-RPC message.send / tasks.get 最小集） ---
 
 _a2a_tasks: dict = {}
@@ -468,9 +587,13 @@ def a2a_agent_card():
         "url": f"http://localhost:{int(os.environ.get('PORT', 6000))}",
         "version": "3.1.0",
         "protocolVersion": "1.0",
-        "capabilities": {"streaming": True, "pushNotifications": False},
+        "capabilities": {"streaming": True, "pushNotifications": False, "delegation": True},
         "defaultInputModes": ["text"],
         "defaultOutputModes": ["text"],
+        "security": {"writeAuth": "X-API-Key", "api_key_required": bool(AGENT_API_KEY),
+                     "guardrails": "inspect_input+redact_output（产线同源引擎）"},
+        "slo": {"first_token_target_ms": 2000, "latency_p95_target_ms": 2000,
+                "availability_target": "99.9%"},
         "skills": [{"id": f"{AGENT_ROLE or 'member'}-core", "name": AGENT_LABEL,
                     "description": f"{AGENT_LABEL}（{AGENT_ROLE}）核心能力",
                     "tags": [AGENT_ROLE or "member"]}],

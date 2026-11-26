@@ -24,7 +24,7 @@ echo "--- 1. systemd 服务状态 ---"
 for svc in yyc3-governance yyc3-embedding yyc3-reranker yyc3-memory; do
     check "$svc" "systemctl is-active $svc" "active"
 done
-for agent in tianshu qianxing wanwu xianzhi bole shouhu zongshi lingyun; do
+for agent in meta-oracle navigator thinker prophet bolero sentinel master creative; do
     check "yyc3-agent@$agent" "systemctl is-active yyc3-agent@$agent" "active"
 done
 
@@ -50,15 +50,15 @@ check "Memory" "curl -s http://127.0.0.1:8102/health" "healthy"
 echo ""
 echo "--- 4. Agent 端到端 ---"
 check "天枢 health" "curl -s http://127.0.0.1:25600/health" "healthy"
-check "天枢 identity" "curl -s http://127.0.0.1:25600/identity" "tianshu"
+check "天枢 identity" "curl -s http://127.0.0.1:25600/identity" "meta-oracle"
 check "千行 health" "curl -s http://127.0.0.1:25601/health" "healthy"
 check "灵韵 health" "curl -s http://127.0.0.1:25607/health" "healthy"
 
 echo ""
 echo "--- 5. 治理中枢功能 ---"
-check "预算仪表盘" "curl -s http://127.0.0.1:25700/budget/dashboard" "tianshu"
+check "预算仪表盘" "curl -s http://127.0.0.1:25700/budget/dashboard" "meta-oracle"
 check "Agent 状态" "curl -s http://127.0.0.1:25700/agent-states" "active"
-check "协同规则" "curl -s http://127.0.0.1:25700/collaboration/rules" "tianshu"
+check "协同规则" "curl -s http://127.0.0.1:25700/collaboration/rules" "meta-oracle"
 check "综合仪表盘" "curl -s http://127.0.0.1:25700/dashboard" "agents"
 
 echo ""

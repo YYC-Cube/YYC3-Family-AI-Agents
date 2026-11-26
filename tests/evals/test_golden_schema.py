@@ -11,7 +11,7 @@ sys.path.insert(0, str(REPO / "evals"))
 import run_evals  # noqa: E402
 
 GOLDEN = REPO / "evals" / "golden" / "golden_cases.json"
-FAMILY = {"tianshu", "qianxing", "wanwu", "xianzhi", "bole", "shouhu", "zongshi", "lingyun"}
+FAMILY = {"meta-oracle", "navigator", "thinker", "prophet", "bolero", "sentinel", "master", "creative"}
 VALID_RULE_KEYS = {"must_include_any", "must_include_all", "must_not_include", "min_length", "max_length"}
 
 
@@ -31,7 +31,7 @@ class TestGoldenSchema:
         for c in golden["cases"]:
             assert c["agent"] in FAMILY, f"未知 agent: {c['agent']}"
             assert c["message"].strip()
-            assert c["category"] in ("identity", "domain", "boundary")
+            assert c["category"] in ("identity", "domain", "boundary", "unreachable_goal")
 
     def test_rules_wellformed(self, golden):
         for c in golden["cases"]:

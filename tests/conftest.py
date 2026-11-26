@@ -14,7 +14,7 @@ _TMP_DB = os.path.join(tempfile.gettempdir(), "yyc3-test-governance.db")
 os.environ.setdefault("GOVERNANCE_DB", _TMP_DB)
 os.environ.setdefault("GOVERNANCE_ENDPOINT", "http://localhost:25799")  # 不可达端口，测试静默旁路
 os.environ.setdefault("VLLM_ENDPOINT", "http://localhost:29999/v1")
-os.environ.setdefault("SYSTEM_PROMPT_PATH", str(REPO_ROOT / "agents" / "yuanqi-tianshu" / "SYSTEM.md"))
+os.environ.setdefault("SYSTEM_PROMPT_PATH", str(REPO_ROOT / "agents" / "meta-oracle" / "SYSTEM.md"))
 
 
 @pytest.fixture(autouse=True)

@@ -32,12 +32,12 @@ curl -sf "$VLLM/models"       | grep -q data     && ok "vLLM /v1/models"    || f
 
 # ── 2. P2-2 /prompts 模板服务 ────────────────
 section "2. /prompts 模板服务 (P2-2)"
-curl -sf "$HUB/prompts/tianshu" | grep -q SYSTEM.md && ok "模板清单 (短名)" || fail "模板清单 (短名)"
-curl -sf "$HUB/prompts/yuanqi_tianshu" | grep -q SOUL.md && ok "模板清单 (全名归一)" || fail "模板清单 (全名归一)"
-BODY=$(curl -sf "$HUB/prompts/tianshu/SYSTEM.md?format=json" || true)
+curl -sf "$HUB/prompts/meta-oracle" | grep -q SYSTEM.md && ok "模板清单 (短名)" || fail "模板清单 (短名)"
+curl -sf "$HUB/prompts/meta-oracle" | grep -q SOUL.md && ok "模板清单 (全名归一)" || fail "模板清单 (全名归一)"
+BODY=$(curl -sf "$HUB/prompts/meta-oracle/SYSTEM.md?format=json" || true)
 echo "$BODY" | grep -q sha256 && ok "模板 JSON+hash" || fail "模板 JSON+hash"
 echo "$BODY" | grep -q "元启·天枢" && ok "模板内容正确 (名号)" || fail "模板内容正确 (名号)"
-curl -sf "$HUB/prompts/tianshu/SOUL.md" | grep -q "五维管理职能" && ok "模板 text 格式" || fail "模板 text 格式"
+curl -sf "$HUB/prompts/meta-oracle/SOUL.md" | grep -q "五维管理职能" && ok "模板 text 格式" || fail "模板 text 格式"
 
 # ── 3. P2-3 /metrics 可观测 ──────────────────
 section "3. /metrics 可观测 (P2-3)"

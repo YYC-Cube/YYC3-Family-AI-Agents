@@ -50,7 +50,7 @@
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │                   业务执行层                         │   │
 │  ├─────────────┬─────────────┬─────────────┬───────────┤   │
-│  │ 🧭 言启·千行 │ 🤔 语枢·万物 │ 🔮 预见·先知 │ 🎯 千里·伯乐 │   │
+│  │ 🧭 言启·千行 │ 🤔 语枢·万物 │ 🔮 预见·先知 │ 🎯 知遇·伯乐 │   │
 │  │   导航员     │   思考者     │   预言家     │   推荐官     │   │
 │  │ ☎️ 0379-0106│ ☎️ 0379-0107│ ☎️ 0379-0108│ ☎️ 0379-0109│   │
 │  └─────────────┴─────────────┴─────────────┴───────────┘   │
@@ -71,7 +71,7 @@
 | `010301-01` | [01-AI-FAmily-Agent-言启·千行.md](./01-AI-FAmily-Agent-言启·千行.md) | 🧭 言启·千行 | 首席导航员 · 意图之门 | ![千行](https://img.shields.io/badge/言启·千行-导航员-%230088cc?style=flat&logo=compass) |
 | `010301-02` | [02-AI-FAmily-Agent-语枢·万物.md](./02-AI-FAmily-Agent-语枢·万物.md) | 🤔 语枢·万物 | 首席思考者 · 洞察之源 | ![万物](https://img.shields.io/badge/语枢·万物-思考者-%23c0c0c0?style=flat&logo=graph) |
 | `010301-03` | [03-AI-FAmily-Agent-预见·先知.md](./03-AI-FAmily-Agent-预见·先知.md) | 🔮 预见·先知 | 首席预言家 · 趋势之眼 | ![先知](https://img.shields.io/badge/预见·先知-预言家-%234b0082?style=flat&logo=crystalball) |
-| `010301-04` | [04-AI-FAmily-Agent-千里·伯乐.md](./04-AI-FAmily-Agent-千里·伯乐.md) | 🎯 千里·伯乐 | 首席推荐官 · 知遇之人 | ![伯乐](https://img.shields.io/badge/千里·伯乐-推荐官-%23dc143c?style=flat&logo=heart) |
+| `010301-04` | [04-AI-FAmily-Agent-知遇·伯乐.md](./04-AI-FAmily-Agent-知遇·伯乐.md) | 🎯 知遇·伯乐 | 首席推荐官 · 知遇之人 | ![伯乐](https://img.shields.io/badge/知遇·伯乐-推荐官-%23dc143c?style=flat&logo=heart) |
 
 ### 核心决策层
 
@@ -130,7 +130,7 @@ AI-Family  YYC³      ☎️ ：0379-0379
 言启·千行  QianHang   ☎️ ：0379-0106
 语枢·万物  All Things ☎️ ：0379-0107
 预见·先知  Prophet    ☎️ ：0379-0108
-千里·伯乐  Bole       ☎️ ：0379-0109
+知遇·伯乐  Bole       ☎️ ：0379-0109
 元启·天枢  TianShu    ☎️ ：0379-0206
 智云·守护  Guardian   ☎️ ：0379-0207
 格物·宗师  Grandmaster☎️ ：0379-0208

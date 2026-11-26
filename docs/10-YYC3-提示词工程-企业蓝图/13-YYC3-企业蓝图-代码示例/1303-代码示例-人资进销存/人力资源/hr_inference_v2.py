@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '00-核心基础设施', 'prompt-engine'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '1300-代码示例-核心基础设施', 'prompt-engine'))
 
 try:
     from prompt_engine import PromptEngine, PromptType, AgentRole
@@ -79,7 +79,7 @@ class HRAIFamilyCoordinator:
     def __init__(self):
         self.hr_agents = {
             "qianli_bole": {
-                "name": "千里·伯乐",
+                "name": "知遇·伯乐",
                 "role": "推荐官",
                 "hr_specialty": ["人才寻源", "岗位匹配", "职业规划", "导师匹配"],
                 "interaction_style": "亦师亦友亦伯乐",
@@ -172,7 +172,7 @@ class HRAIFamilyCoordinator:
         """
         协调招聘全流程
 
-        Phase 1: 千里伯乐(人才寻源+岗位匹配)
+        Phase 1: 知遇伯乐(人才寻源+岗位匹配)
         Phase 2: 语枢万物(能力评估+背景调查)
         Phase 3: 格物宗师(公平性审核)
         Phase 4: 创想灵韵(面试体验优化)
@@ -245,7 +245,7 @@ class HRAIFamilyCoordinator:
         }
 
     def _qianli_bole_matching(self, candidate: CandidateProfile, job_req: JobRequirement) -> Dict:
-        """千里·伯乐 - 岗位匹配"""
+        """知遇·伯乐 - 岗位匹配"""
         match_details = []
         score = 0
 
@@ -283,7 +283,7 @@ class HRAIFamilyCoordinator:
         score += cultural_fit_score * 0.05
 
         return {
-            "agent_name": "千里·伯乐(推荐官)",
+            "agent_name": "知遇·伯乐(推荐官)",
             "evaluation_focus": "岗位匹配度",
             "score": round(score, 2),
             "details": {
@@ -649,11 +649,11 @@ class HRAIFamilyCoordinator:
         }
 
     def _career_support(self, employee: EmployeeData) -> Dict:
-        """千里·伯乐 - 职业发展支持"""
+        """知遇·伯乐 - 职业发展支持"""
         engagement_score = 72 + len(employee.training_records) * 3
 
         return {
-            "agent_name": "千里·伯乐(推荐官)",
+            "agent_name": "知遇·伯乐(推荐官)",
             "focus": "职业发展与敬业度",
             "engagement_score": min(engagement_score, 95),
             "career_pathway": "技术专家路线" if "技术" in employee.position else "管理发展路线",
