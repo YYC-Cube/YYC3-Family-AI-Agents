@@ -57,19 +57,41 @@ def connect_db() -> sqlite3.Connection:
     return conn
 
 
-AGENTS = ["tianshu", "qianxing", "wanwu", "xianzhi", "bole", "shouhu", "zongshi", "lingyun"]
+AGENTS = ["meta-oracle", "navigator", "thinker", "prophet", "bolero", "sentinel", "master", "creative"]
 
-# P0-1 身份归一：生产容器以全名（AGENT_NAME）上报，hub 内部统一短名存储。
-# 唯一映射源：docker-compose.yml & systemd override 的 AGENT_NAME → AGENTS 短名。
+# P0-1 身份归一：生产容器以 AGENT_NAME 上报，hub 内部统一短名存储。
+# 2026-11-26 全局命名统一（docs/14- §8 决策记录）：canonical id 对齐家族全局注册表
+# meta-oracle / navigator / thinker / prophet / bolero / sentinel / master / creative；
+# 中文全名/短名与旧拼音作 legacy 别名保留（迁移期兼容，行为不变）。
 AGENT_ALIAS_MAP = {
-    "yuanqi_tianshu": "tianshu",
-    "yanqi_qianhang": "qianxing",
-    "yushu_wanwu": "wanwu",
-    "yujian_xianzhi": "xianzhi",
-    "zhiyu_bole": "bole",
-    "zhiyun_shouhu": "shouhu",
-    "gewu_zongshi": "zongshi",
-    "chuangxiang_lingyun": "lingyun",
+    # canonical（英文 id 归一为自身）
+    "meta-oracle": "meta-oracle",
+    "navigator": "navigator",
+    "thinker": "thinker",
+    "prophet": "prophet",
+    "bolero": "bolero",
+    "sentinel": "sentinel",
+    "master": "master",
+    "creative": "creative",
+    # 中文全名 / 短名
+    "元启·天枢": "meta-oracle", "天枢": "meta-oracle",
+    "言启·千行": "navigator", "千行": "navigator",
+    "语枢·万物": "thinker", "万物": "thinker",
+    "预见·先知": "prophet", "先知": "prophet",
+    "知遇·伯乐": "bolero", "伯乐": "bolero",
+    "智云·守护": "sentinel", "守护": "sentinel",
+    "格物·宗师": "master", "宗师": "master",
+    "创想·灵韵": "creative", "灵韵": "creative",
+    # legacy 拼音（迁移兼容）
+    "meta_oracle": "meta-oracle",
+    "yuanqi_tianshu": "meta-oracle", "tianshu": "meta-oracle",
+    "yanqi_qianhang": "navigator", "qianhang": "navigator", "qianxing": "navigator",
+    "yushu_wanwu": "thinker", "wanwu": "thinker",
+    "yujian_xianzhi": "prophet", "xianzhi": "prophet",
+    "zhiyu_bole": "bolero", "bole": "bolero",
+    "zhiyun_shouhu": "sentinel", "shouhu": "sentinel",
+    "gewu_zongshi": "master", "zongshi": "master",
+    "chuangxiang_lingyun": "creative", "lingyun": "creative",
 }
 
 def normalize_agent(name: str) -> str:
@@ -356,14 +378,14 @@ auditor = BehaviorAuditor()
 # ════════════════════════════════════════════════════════════════════════════
 
 DEFAULT_BUDGETS = {
-    "tianshu":    {"daily": 500_000, "weekly": 3_000_000, "monthly": 12_000_000},
-    "qianxing":  {"daily": 200_000, "weekly": 1_000_000, "monthly": 4_000_000},
-    "wanwu":     {"daily": 800_000, "weekly": 5_000_000, "monthly": 20_000_000},
-    "xianzhi":   {"daily": 400_000, "weekly": 2_500_000, "monthly": 10_000_000},
-    "bole":      {"daily": 300_000, "weekly": 1_500_000, "monthly": 6_000_000},
-    "shouhu":    {"daily": 200_000, "weekly": 1_000_000, "monthly": 4_000_000},
-    "zongshi":   {"daily": 600_000, "weekly": 4_000_000, "monthly": 15_000_000},
-    "lingyun":   {"daily": 500_000, "weekly": 3_000_000, "monthly": 12_000_000},
+    "meta-oracle": {"daily": 500_000, "weekly": 3_000_000, "monthly": 12_000_000},
+    "navigator":   {"daily": 200_000, "weekly": 1_000_000, "monthly": 4_000_000},
+    "thinker":     {"daily": 800_000, "weekly": 5_000_000, "monthly": 20_000_000},
+    "prophet":     {"daily": 400_000, "weekly": 2_500_000, "monthly": 10_000_000},
+    "bolero":      {"daily": 300_000, "weekly": 1_500_000, "monthly": 6_000_000},
+    "sentinel":    {"daily": 200_000, "weekly": 1_000_000, "monthly": 4_000_000},
+    "master":      {"daily": 600_000, "weekly": 4_000_000, "monthly": 15_000_000},
+    "creative":    {"daily": 500_000, "weekly": 3_000_000, "monthly": 12_000_000},
 }
 
 # 成本估算 (本地 vLLM, 仅电力+折旧估算, 元/百万token)
@@ -521,21 +543,21 @@ budget_mgr = TokenBudgetManager()
 # ════════════════════════════════════════════════════════════════════════════
 
 COLLABORATION_RULES = [
-    CollaborationRule("tianshu", "wanwu", confidence_threshold=0.75, complexity_threshold=0.6,
+    CollaborationRule("meta-oracle", "thinker", confidence_threshold=0.75, complexity_threshold=0.6,
                       risk_required=["high", "critical"], timeout_ms=5000),
-    CollaborationRule("tianshu", "shouhu", confidence_threshold=0.85, complexity_threshold=0.3,
+    CollaborationRule("meta-oracle", "sentinel", confidence_threshold=0.85, complexity_threshold=0.3,
                       risk_required=["high", "critical"], timeout_ms=3000),
-    CollaborationRule("wanwu", "xianzhi", confidence_threshold=0.70, complexity_threshold=0.7,
+    CollaborationRule("thinker", "prophet", confidence_threshold=0.70, complexity_threshold=0.7,
                       risk_required=["medium", "high"], timeout_ms=8000),
-    CollaborationRule("zongshi", "shouhu", confidence_threshold=0.80, complexity_threshold=0.5,
+    CollaborationRule("master", "sentinel", confidence_threshold=0.80, complexity_threshold=0.5,
                       risk_required=["high"], timeout_ms=5000),
-    CollaborationRule("qianxing", "tianshu", confidence_threshold=0.65, complexity_threshold=0.4,
+    CollaborationRule("navigator", "meta-oracle", confidence_threshold=0.65, complexity_threshold=0.4,
                       risk_required=["low", "medium"], timeout_ms=3000),
-    CollaborationRule("lingyun", "bole", confidence_threshold=0.65, complexity_threshold=0.5,
+    CollaborationRule("creative", "bolero", confidence_threshold=0.65, complexity_threshold=0.5,
                       risk_required=["low", "medium"], timeout_ms=5000),
-    CollaborationRule("shouhu", "zongshi", confidence_threshold=0.80, complexity_threshold=0.6,
+    CollaborationRule("sentinel", "master", confidence_threshold=0.80, complexity_threshold=0.6,
                       risk_required=["high", "critical"], timeout_ms=5000),
-    CollaborationRule("bole", "lingyun", confidence_threshold=0.65, complexity_threshold=0.4,
+    CollaborationRule("bolero", "creative", confidence_threshold=0.65, complexity_threshold=0.4,
                       risk_required=["low", "medium"], timeout_ms=5000),
 ]
 
@@ -543,14 +565,14 @@ class CollaborationEngine:
     """协同决策引擎 — 量化触发规则 + Fallback 链"""
 
     FALLBACK_CHAIN = {
-        "tianshu": ["wanwu", "xianzhi"],
-        "wanwu": ["xianzhi", "tianshu"],
-        "zongshi": ["shouhu", "tianshu"],
-        "qianxing": ["tianshu", "wanwu"],
-        "xianzhi": ["wanwu", "tianshu"],
-        "bole": ["lingyun", "wanwu"],
-        "shouhu": [],
-        "lingyun": ["wanwu", "bole"],
+        "meta-oracle": ["thinker", "prophet"],
+        "thinker": ["prophet", "meta-oracle"],
+        "master": ["sentinel", "meta-oracle"],
+        "navigator": ["meta-oracle", "thinker"],
+        "prophet": ["thinker", "meta-oracle"],
+        "bolero": ["creative", "thinker"],
+        "sentinel": [],
+        "creative": ["thinker", "bolero"],
     }
 
     def should_collaborate(self, primary: str, confidence: float, complexity: float,
@@ -639,7 +661,7 @@ class ACSPolicyMapper:
                       "human_approval_required": []},
         "prophet": {"display_name": "预见·先知", "max_autonomy": "autonomous_predict",
                     "human_approval_required": ["high_impact_forecast"]},
-        "bole": {"display_name": "千里·伯乐", "max_autonomy": "autonomous_recommend",
+        "bolero": {"display_name": "知遇·伯乐", "max_autonomy": "autonomous_recommend",
                  "human_approval_required": ["hiring_decision"]},
         "sentinel": {"display_name": "智云·守护", "max_autonomy": "autonomous_monitor",
                      "human_approval_required": ["block_traffic", "revoke_access"]},
@@ -821,7 +843,7 @@ MCP_TOOLS = [
     {"name": "governance_audit_search",
      "description": "审计追踪检索（可按家人短名过滤，limit 上限 200）",
      "inputSchema": {"type": "object", "properties": {
-         "agent": {"type": "string", "description": "家人短名（可选，如 tianshu）"},
+         "agent": {"type": "string", "description": "家人短名（可选，如 meta-oracle）"},
          "limit": {"type": "integer", "default": 20, "maximum": 200}},
          "required": []}},
     {"name": "governance_agent_states",
@@ -830,7 +852,7 @@ MCP_TOOLS = [
     {"name": "memory_semantic_recall",
      "description": "语义记忆召回（按家人短名与查询词，关键词重叠 top_k）",
      "inputSchema": {"type": "object", "properties": {
-         "agent": {"type": "string", "description": "家人短名", "default": "tianshu"},
+         "agent": {"type": "string", "description": "家人短名", "default": "meta-oracle"},
          "query": {"type": "string", "description": "查询词"},
          "top_k": {"type": "integer", "default": 5, "maximum": 50}},
          "required": ["query"]}},
@@ -874,7 +896,7 @@ def _mcp_tool_call(name: str, args: dict):
         cols = ["agent", "state", "frozen_reason", "frozen_at", "updated_at"]
         return {"states": [dict(zip(cols, r)) for r in rows]}
     if name == "memory_semantic_recall":
-        agent = normalize_agent(args.get("agent", "tianshu"))
+        agent = normalize_agent(args.get("agent", "meta-oracle"))
         query = str(args.get("query", "")).strip()
         if not query:
             raise ValueError("query is required")
@@ -1114,7 +1136,7 @@ def get_profile_router():
 
 @app.route("/memory/recall", methods=["GET"])
 def memory_recall():
-    agent = normalize_agent(request.args.get("agent", "tianshu"))
+    agent = normalize_agent(request.args.get("agent", "meta-oracle"))
     member = request.args.get("member", "default")
     query = request.args.get("query", "")
     top_k = int(request.args.get("top_k", 5))
@@ -1148,7 +1170,7 @@ def memory_recall():
 @app.route("/memory/store", methods=["POST"])
 def memory_store():
     d = request.get_json(force=True)
-    agent = d.get("agent", "tianshu")
+    agent = d.get("agent", "meta-oracle")
     member = d.get("member", "")
     content = d.get("content", "")
     metadata = d.get("metadata", {})
@@ -1193,7 +1215,7 @@ def members_create():
 @app.route("/members/profile-prompt", methods=["GET"])
 def members_profile_prompt():
     member_id = request.args.get("member", "patriarch")
-    agent_id = request.args.get("agent", "tianshu")
+    agent_id = request.args.get("agent", "meta-oracle")
     try:
         router = get_profile_router()
         router.update_active(member_id)
@@ -1237,7 +1259,7 @@ def mem_sem_store():
 
 @app.route("/memory/semantic/recall", methods=["GET"])
 def mem_sem_recall():
-    agent = normalize_agent(request.args.get("agent", "tianshu"))
+    agent = normalize_agent(request.args.get("agent", "meta-oracle"))
     query = request.args.get("query", "")
     conn = connect_db()
     try:
@@ -1262,7 +1284,7 @@ def mem_sem_forget():
 
 @app.route("/memory/semantic/list", methods=["GET"])
 def mem_sem_list():
-    agent = normalize_agent(request.args.get("agent", "tianshu"))
+    agent = normalize_agent(request.args.get("agent", "meta-oracle"))
     conn = connect_db()
     try:
         items = memory_semantic.list_active(conn, agent,

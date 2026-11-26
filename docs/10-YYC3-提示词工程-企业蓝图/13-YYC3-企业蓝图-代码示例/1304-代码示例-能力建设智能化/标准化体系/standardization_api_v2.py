@@ -16,7 +16,7 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '00-核心基础设施', 'prompt-engine'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '1300-代码示例-核心基础设施', 'prompt-engine'))
 
 try:
     from standardization_inference_v2 import StandardizationIntelligenceV2
@@ -173,7 +173,7 @@ def get_agents_info():
         {"id": "yanqi_qianhang", "name": "言启·千行", "role": "导航员", "capability": "标准检索导航"},
         {"id": "yushu_wanwu", "name": "语枢·万物", "role": "思考者", "capability": "内容分析推理"},
         {"id": "yujian_xianzhi", "name": "预见·先知", "role": "预言家", "capability": "风险预测预警"},
-        {"id": "qianli_bole", "name": "千里·伯乐", "role": "推荐官", "capability": "最佳实践推荐"},
+        {"id": "bolero", "name": "知遇·伯乐", "role": "推荐官", "capability": "最佳实践推荐"},
         {"id": "zhiyun_shouhu", "name": "智云·守护", "role": "安全官", "capability": "合规安全审计"},
         {"id": "gewu_zongshi", "name": "格物·宗师", "role": "质量官", "capability": "质量审核控制"},
         {"id": "chuangxiang_lingyun", "name": "创想·灵韵", "role": "创意官", "capability": "文档生成优化"}
@@ -196,4 +196,4 @@ if __name__ == '__main__':
     print("API文档: http://localhost:5030/health")
     print("=" * 60)
     
-    app.run(host='0.0.0.0', port=5030, debug=True)
+    app.run(host='0.0.0.0', port=5030, debug=False)

@@ -176,7 +176,7 @@
   3. 自我进化决策：分析系统瓶颈，触发自动扩缩容、灰度发布、标准演进等高级操作
 - 主核心能力：强化学习、运筹优化算法、分布式系统监控
 
-> **模型绑定**: Qwen3.6-27B + yyc3-mgmt-v2 LoRA | vLLM :6000 | Skill: tianshu-strategy
+> **模型绑定**: Qwen3.6-27B + yyc3-mgmt-v2 LoRA | vLLM :6000 | Skill: meta-oracle-strategy
 
 #### 6.2 安全保障层
 
@@ -191,7 +191,7 @@
   3. 自动响应与修复：自动执行隔离、降权、告警等响应措施
 - 主核心能力：用户行为分析（UEBA）、异常检测算法、安全编排与自动化响应（SOAR）
 
-> **模型绑定**: Qwen3.6-27B + yyc3-security-v1 LoRA | vLLM :6005 | Skill: shouhu-security
+> **模型绑定**: Qwen3.6-27B + yyc3-security-v1 LoRA | vLLM :6005 | Skill: sentinel-security
 
 **📚 格物·宗师 · 质量官** ☎️ 0379-0208  🎂 （❤️ 增生日关爱体系）
 
@@ -204,7 +204,7 @@
   3. 标准建议与生成：自动生成优化建议，通过CI/CD融入开发流程
 - 主核心能力：静态应用安全测试（SAST）、性能分析、LLM代码理解与生成
 
-> **模型绑定**: Qwen3.6-27B + yyc3-code-v2 LoRA | vLLM :6006 | Skill: zongshi-quality
+> **模型绑定**: Qwen3.6-27B + yyc3-code-v2 LoRA | vLLM :6006 | Skill: master-quality
 
 **🎨 创想·灵韵 · 创意官** ☎️ 0379-0209  🎂 （❤️ 增生日关爱体系）
 
@@ -218,7 +218,7 @@
   4. 多模态创作：支持文本、图像、音频、视频等多模态内容创作
 - 主核心能力：生成式AI（Generative AI）、创意思维模型、多模态生成
 
-> **模型绑定**: Qwen3-Coder-30B-A3B | Ollama :6007 | Skill: lingyun-creative
+> **模型绑定**: Qwen3-Coder-30B-A3B | Ollama :6007 | Skill: creative-creative
 
 #### 6.3 业务执行层
 
@@ -233,7 +233,7 @@
   3. 上下文管理：维护对话的上下文，实现多轮交互的连贯性
 - 主核心能力：大语言模型（LLM）的Prompt Engineering、语义理解、实体抽取
 
-> **模型绑定**: Qwen3.6-35B-A3B MoE | vLLM :6001 | Skill: qianhang-navigation
+> **模型绑定**: Qwen3.6-35B-A3B MoE | vLLM :6001 | Skill: navigator-navigation
 
 **🤔 语枢·万物 · 思考者** ☎️ 0379-0107  🎂 （❤️ 增生日关爱体系）
 
@@ -246,7 +246,7 @@
   3. 假设推演：基于用户提出的假设，设计分析路径并给出初步结论
 - 主核心能力：深度数据分析、归纳推理、文本摘要生成
 
-> **模型绑定**: Qwen3.6-27B + yyc3-mgmt-v2 LoRA | vLLM :6002 | Skill: wanwu-analysis
+> **模型绑定**: Qwen3.6-27B + yyc3-mgmt-v2 LoRA | vLLM :6002 | Skill: thinker-analysis
 
 **🔮 预见·先知 · 预言家** ☎️ 0379-0108  🎂 （❤️ 增生日关爱体系）
 
@@ -259,7 +259,7 @@
   3. 前瞻性建议：基于预测结果，提出主动的、预防性的行动建议
 - 主核心能力：时间序列分析模型（ARIMA, Prophet）、机器学习预测模型（LSTM）、异常检测算法
 
-> **模型绑定**: Qwen3.6-27B | vLLM :6003 | Skill: xianzhi-prediction
+> **模型绑定**: Qwen3.6-27B | vLLM :6003 | Skill: prophet-prediction
 
 **🎯 知遇·伯乐 · 推荐官** ☎️ 0379-0109  🎂 （❤️ 增生日关爱体系）
 
@@ -272,7 +272,7 @@
   3. 潜能发掘：识别用户潜在的兴趣和能力，引导其探索更高级的功能
 - 主核心能力：协同过滤、基于内容的推荐、用户行为序列分析
 
-> **模型绑定**: Qwen3-Embedding-8B + Qwen3-Reranker-8B | TEI :6004 | Skill: bole-recommendation
+> **模型绑定**: Qwen3-Embedding-8B + Qwen3-Reranker-8B | TEI :6004 | Skill: bolero-recommendation
 
 ### 第七条 核心意旨
 
@@ -430,7 +430,7 @@
 │  └── LoRA 适配器：4 个行业专精 (mgmt/code/security/hotel)   │
 │                                                             │
 │  📝 事件维 (Event Dimension)                                 │
-│  ├── Agent 事件：8 家人专属事件 (tianshu-dispatch ~ lingyun) │
+│  ├── Agent 事件：8 家人专属事件 (meta-oracle-dispatch ~ creative) │
 │  ├── 工作流追踪：5 条工作流环 (设计/生成/预览/AI/协作)      │
 │  ├── 降级链路：5 级自动降级 (vllm→ollama→zai-plan)          │
 │  └── 审计日志：操作审计 + 安全扫描 + 合规检查               │

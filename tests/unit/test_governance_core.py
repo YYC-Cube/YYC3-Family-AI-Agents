@@ -29,24 +29,24 @@ def collab(gov_db):
 
 class TestBehaviorAuditor:
     def test_record_low_risk_action(self, auditor):
-        result = auditor.record("tianshu", "api_call", {"url": "/internal"})
+        result = auditor.record("meta-oracle", "api_call", {"url": "/internal"})
         assert result["risk"] == "low"
 
     def test_dangerous_action_escalates(self, auditor):
-        result = auditor.record("tianshu", "config_override", {})
+        result = auditor.record("meta-oracle", "config_override", {})
         assert result["risk"] == "critical"
 
     def test_sensitive_keyword_in_details(self, auditor):
         # 契约：敏感数据细节须将风险提升至 HIGH（即使动作本身低危）
-        result = auditor.record("tianshu", "file_read", {"path": "/etc/password"})
+        result = auditor.record("meta-oracle", "file_read", {"path": "/etc/password"})
         assert result["risk"] == "high"
 
     def test_anomaly_critical_triggers_auto_freeze(self, auditor, gov_db):
         result = {"anomaly": {"level": "normal"}}
         for _ in range(55):  # 超过 critical=50 actions/min
-            result = auditor.record("qianxing", "api_call")
+            result = auditor.record("navigator", "api_call")
         assert result["anomaly"]["level"] == "critical"
-        trail = auditor.get_audit_trail("qianxing", limit=5)
+        trail = auditor.get_audit_trail("navigator", limit=5)
         assert trail  # 审计已落库
 
     def test_kill_switch_freezes_all(self, auditor, gov_db):
@@ -56,19 +56,19 @@ class TestBehaviorAuditor:
         states = dict(conn.execute("SELECT agent, state FROM agent_state").fetchall())
         conn.close()
         assert set(states.values()) == {"frozen"}
-        assert auditor.unfreeze("tianshu")["state"] == "active"
+        assert auditor.unfreeze("meta-oracle")["state"] == "active"
 
     def test_audit_trail_ordering(self, auditor):
-        auditor.record("wanwu", "file_read")
-        auditor.record("wanwu", "api_call")
-        trail = auditor.get_audit_trail("wanwu", limit=2)
+        auditor.record("thinker", "file_read")
+        auditor.record("thinker", "api_call")
+        trail = auditor.get_audit_trail("thinker", limit=2)
         assert len(trail) == 2
         assert trail[0]["action"] == "api_call"  # DESC
 
 
 class TestTokenBudget:
     def test_record_usage_increments(self, budget):
-        status = budget.record_usage("tianshu", 1000, 500)
+        status = budget.record_usage("meta-oracle", 1000, 500)
         assert status["daily"]["used"] == 1500
         assert status["daily"]["remaining"] == 500_000 - 1500
 
@@ -76,16 +76,16 @@ class TestTokenBudget:
         assert "error" in budget.record_usage("nonexistent", 1, 1)
 
     def test_should_degrade_at_80pct(self, budget):
-        b = budget._budgets["shouhu"]
+        b = budget._budgets["sentinel"]
         b.used_today = int(200_000 * 0.81)
-        status = budget._check_budget("shouhu")
+        status = budget._check_budget("sentinel")
         assert status["should_degrade"] is True
         assert status["should_block"] is False
 
     def test_should_block_at_100pct(self, budget):
-        b = budget._budgets["shouhu"]
+        b = budget._budgets["sentinel"]
         b.used_today = 200_000
-        status = budget._check_budget("shouhu")
+        status = budget._check_budget("sentinel")
         assert status["should_block"] is True
 
     def test_dashboard_covers_all_agents(self, budget):
@@ -107,22 +107,22 @@ class TestBudgetWindowReset:
         assert month_key(dt(2026, 1, 31, tzinfo=tz.utc)) == "2026-01"
 
     def test_lazy_daily_reset_on_record(self, budget, monkeypatch):
-        budget.record_usage("tianshu", 100, 50)
-        b = budget._budgets["tianshu"]
+        budget.record_usage("meta-oracle", 100, 50)
+        b = budget._budgets["meta-oracle"]
         assert b.used_today == 150
         # 模拟 yesterday 的窗口键（相同格式不同值）→ 下一笔记录应清零
         monkeypatch.setattr(b, "last_reset_daily", "2026-01-01")
-        status = budget.record_usage("tianshu", 10, 5)
+        status = budget.record_usage("meta-oracle", 10, 5)
         assert b.used_today == 15
         assert status["daily"]["used"] == 15
 
     def test_lazy_weekly_and_monthly_reset(self, budget, monkeypatch):
-        budget.record_usage("tianshu", 100, 50)
-        b = budget._budgets["tianshu"]
+        budget.record_usage("meta-oracle", 100, 50)
+        b = budget._budgets["meta-oracle"]
         assert b.used_this_week == 150 and b.used_this_month == 150
         monkeypatch.setattr(b, "last_reset_weekly", "2025-W52")
         monkeypatch.setattr(b, "last_reset_monthly", "2025-12")
-        budget.record_usage("tianshu", 10, 5)
+        budget.record_usage("meta-oracle", 10, 5)
         assert b.used_this_week == 15 and b.used_this_month == 15
         # 盖上当前窗口键（YYYY-Www / YYYY-MM 格式）
         import re
@@ -131,21 +131,21 @@ class TestBudgetWindowReset:
 
     def test_cold_start_no_false_reset(self, budget):
         # last_reset_* 为空（冷启动）视为当前窗口，首笔记录后计数正常且不清理
-        status = budget.record_usage("tianshu", 100, 50)
+        status = budget.record_usage("meta-oracle", 100, 50)
         assert status["daily"]["used"] == 150
-        b = budget._budgets["tianshu"]
+        b = budget._budgets["meta-oracle"]
         assert b.last_reset_daily  # 已盖当前键
 
     def test_ensure_windows_same_day_noop(self, budget):
-        budget.record_usage("tianshu", 100, 50)
-        b = budget._budgets["tianshu"]
-        budget._ensure_windows("tianshu")  # 同日重复检查不清零
+        budget.record_usage("meta-oracle", 100, 50)
+        b = budget._budgets["meta-oracle"]
+        budget._ensure_windows("meta-oracle")  # 同日重复检查不清零
         assert b.used_today == 150
 
     def test_manual_reset_daily_stamps_key(self, budget):
-        budget.record_usage("tianshu", 100, 50)
+        budget.record_usage("meta-oracle", 100, 50)
         budget.reset_daily()
-        b = budget._budgets["tianshu"]
+        b = budget._budgets["meta-oracle"]
         assert b.used_today == 0 and b.cost_today == 0.0
         # 人工重置后惰性检测不应再次清零（键已同步）
         from governance_hub import day_key
@@ -153,10 +153,10 @@ class TestBudgetWindowReset:
         assert b.last_reset_daily == day_key(dt.now(tz.utc))
 
     def test_check_budget_lazy_reset(self, budget, monkeypatch):
-        budget.record_usage("tianshu", 100, 50)
-        b = budget._budgets["tianshu"]
+        budget.record_usage("meta-oracle", 100, 50)
+        b = budget._budgets["meta-oracle"]
         monkeypatch.setattr(b, "last_reset_daily", "2026-01-01")
-        status = budget._check_budget("tianshu")  # 只读入口也触发惰性重置
+        status = budget._check_budget("meta-oracle")  # 只读入口也触发惰性重置
         assert status["daily"]["used"] == 0
 
 
@@ -181,7 +181,7 @@ class TestSQLiteHardening:
                 conn = gov_db.connect_db()
                 conn.execute(
                     "INSERT INTO behavior_events (agent, action, details, risk, correlation_id, timestamp) VALUES (?,?,?,?,?,?)",
-                    ("tianshu", "concurrent_test", "{}", "low", f"c-{i}", "2026-01-01T00:00:00+00:00"))
+                    ("meta-oracle", "concurrent_test", "{}", "low", f"c-{i}", "2026-01-01T00:00:00+00:00"))
                 conn.commit()
                 conn.close()
             except Exception as e:
@@ -204,22 +204,22 @@ class TestSQLiteHardening:
 
 class TestCollaboration:
     def test_low_risk_no_trigger(self, collab):
-        result = collab.should_collaborate("tianshu", confidence=0.95, complexity=0.1, risk="low")
+        result = collab.should_collaborate("meta-oracle", confidence=0.95, complexity=0.1, risk="low")
         assert result["should_collaborate"] is False
 
     def test_high_risk_triggers_support(self, collab):
-        result = collab.should_collaborate("tianshu", confidence=0.9, complexity=0.2, risk="high")
+        result = collab.should_collaborate("meta-oracle", confidence=0.9, complexity=0.2, risk="high")
         assert result["should_collaborate"] is True
         supports = {t["support_agent"] for t in result["collaborators"]}
-        assert "shouhu" in supports or "wanwu" in supports
+        assert "sentinel" in supports or "thinker" in supports
 
     def test_fallback_chain_exists(self, collab):
-        chain = collab.get_fallback("tianshu")
-        assert "wanwu" in chain
+        chain = collab.get_fallback("meta-oracle")
+        assert "thinker" in chain
 
     def test_sentinel_has_no_fallback(self, collab):
         # 安全官为最终权威，无降级链
-        assert collab.get_fallback("shouhu") == []
+        assert collab.get_fallback("sentinel") == []
 
 
 class TestACS:
@@ -238,13 +238,13 @@ class TestContextGraph:
     def test_entity_relation_injection(self, gov_db):
         g = ContextGraph()
         g.add_entity("project", "yyc3-cube", {"owner": "yanyu"})
-        g.add_relation("project", "yyc3-cube", "agent", "tianshu", "managed_by")
-        result = g.inject_context("tianshu", "check yyc3-cube status")
+        g.add_relation("project", "yyc3-cube", "agent", "meta-oracle", "managed_by")
+        result = g.inject_context("meta-oracle", "check yyc3-cube status")
         assert result["count"] >= 1
         assert any(e["id"] == "yyc3-cube" for e in result["injected_entities"])
         assert g.stats()["entities"] == 1
 
     def test_short_keywords_ignored(self, gov_db):
         g = ContextGraph()
-        result = g.inject_context("tianshu", "a b ok")
+        result = g.inject_context("meta-oracle", "a b ok")
         assert result["count"] == 0

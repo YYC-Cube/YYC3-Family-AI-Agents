@@ -2,7 +2,7 @@
   "drill": "E1-3 降级矩阵演练 · 真机版（部署侧验收 ②）",
   "date": "2026-11-23",
   "environment": {
-    "agent": "yushu_wanwu (语枢·万物)",
+    "agent": "thinker (语枢·万物)",
     "model": "nemotron-3.5-super-vl",
     "backup_endpoint": "http://100.126.132.112:10086/v1 (Tailscale ECS #33)",
     "governance_hub": "http://127.0.0.1:25700（独立 scratch DB，审计全量留痕）",

@@ -2,9 +2,9 @@
 file: README.md
 description: YYC³协议栈标准化设计 — MCP工具连接协议 + A2A Agent通信协议 + Agent Card设计
 author: YanYuCloudCube Team <admin@0379.email>
-version: v1.0.0
+version: v1.1.0
 created: 2026-06-03
-updated: 2026-06-03
+updated: 2026-11-26
 status: published
 tags: [MCP],[A2A],[Agent Card],[协议栈],[标准化],[工具连接],[Agent通信]
 category: architecture
@@ -123,7 +123,7 @@ complexity: advanced
 |-------------|---------|----------|---------|--------|
 | `yyc3-db-server` | 数据库查询/写入/迁移 | 语枢万物 | Streamable HTTP | P0 |
 | `yyc3-fs-server` | 文件系统CRUD/版本管理 | 创想灵韵/格物宗师 | stdio | P0 |
-| `yyc3-knowledge-server` | 知识图谱查询/向量检索 | 语枢万物/千里伯乐 | Streamable HTTP | P0 |
+| `yyc3-knowledge-server` | 知识图谱查询/向量检索 | 语枢万物/知遇伯乐 | Streamable HTTP | P0 |
 | `yyc3-api-server` | 外部API网关/ERP/CRM连接 | 言启千行/预见先知 | Streamable HTTP | P0 |
 | `yyc3-security-server` | 安全扫描/合规检查/审计 | 智云守护 | Streamable HTTP | P1 |
 | `yyc3-analytics-server` | 数据分析/统计/可视化 | 语枢万物/预见先知 | Streamable HTTP | P1 |
@@ -302,13 +302,13 @@ AI 架构师、后端工程师
 
 ### 3.3 AI Family Agent 间 A2A 通信矩阵
 
-| 发起方 ↓ / 接收方 → | 元启天枢 | 言启千行 | 语枢万物 | 预见先知 | 千里伯乐 | 智云守护 | 格物宗师 | 创想灵韵 |
+| 发起方 ↓ / 接收方 → | 元启天枢 | 言启千行 | 语枢万物 | 预见先知 | 知遇伯乐 | 智云守护 | 格物宗师 | 创想灵韵 |
 |---------------------|---------|---------|---------|---------|---------|---------|---------|---------|
 | **元启天枢** | — | 任务分配 | 数据分析 | 趋势预测 | 推荐请求 | 安全审查 | 质量审核 | 创意请求 |
 | **言启千行** | 状态汇报 | — | 数据查询 | 预测请求 | 用户画像 | 合规检查 | 格式校验 | 内容润色 |
 | **语枢万物** | 分析报告 | 结果推送 | — | 联合建模 | 数据推荐 | 异常上报 | 数据校验 | 可视化建议 |
 | **预见先知** | 预警推送 | 趋势通知 | 特征请求 | — | 偏好预测 | 风险预警 | 基线偏离 | 趋势可视化 |
-| **千里伯乐** | 推荐报告 | 画像更新 | 行为数据 | 预测反馈 | — | 隐私检查 | 质量评估 | 个性化建议 |
+| **知遇伯乐** | 推荐报告 | 画像更新 | 行为数据 | 预测反馈 | — | 隐私检查 | 质量评估 | 个性化建议 |
 | **智云守护** | 安全报告 | 拦截通知 | 审计请求 | 风险预测 | 合规建议 | — | 安全测试 | 内容审核 |
 | **格物宗师** | 质量报告 | 规范通知 | 测试数据 | 质量预测 | 改进建议 | 漏洞报告 | — | 创意评审 |
 | **创想灵韵** | 创意方案 | 内容推送 | 灵感数据 | 创意趋势 | 风格推荐 | 合规咨询 | 质量对齐 | — |
@@ -441,17 +441,21 @@ AI 架构师、系统集成工程师
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 与项目代码库对齐
+### 4.2 与项目代码库对齐（2026-11-26 回写：本仓产线 Python 形态）
 
-| 蓝图组件 | 代码实现 | 状态 |
-|---------|---------|------|
-| MCP Client | 待创建 `src/app/lib/mcp-client.ts` | 规划中 |
-| MCP Server 注册中心 | 待创建 `src/app/lib/mcp-registry.ts` | 规划中 |
-| A2A Agent Card | 待创建 `src/app/lib/agent-card.ts` | 规划中 |
-| A2A Task 委托 | 待创建 `src/app/lib/a2a-client.ts` | 规划中 |
-| SSE 流式传输 | `src/app/lib/sse-client.ts` ✅ | 已就绪 |
-| 全链路追踪 | `src/app/lib/security-logger.ts` ✅ | 已就绪 |
-| 双存储策略 | `src/app/lib/yyc3-storage.ts` ✅ | 已就绪 |
+> **回写注记（docs/14- 契约审核）**：本节 v1.0.0 原表面向兄弟仓 Node/TS 形态（`src/app/lib/*.ts`），彼时本仓 Python 产线尚未存在；2026-11-26 依 docs/14- 审核回写本仓事实。兄弟仓侧原判保留于表后注记，不改判。
+
+| 蓝图组件 | 本仓产线实现（Python） | 状态 |
+|---------|----------------------|------|
+| MCP Client | `mcp_client.py`（initialize/ping/tools.list/tools.call，stateless，X-API-Key + SSRF 边界校验） | ✅ 已就绪（E2-1） |
+| MCP Server | `governance_hub.py` `POST /mcp`（对齐 2026-07-28 stateless 子集，8 工具，tools/call 全量入审计链） | ✅ 已就绪（E2-2 + W1 扩展） |
+| MCP Server 注册中心（8 个 yyc3-* 工具 Server） | 未建——产线取「治理能力工具化」路径；db/fs/knowledge 等外部工具 Server 接入仍未完成 | 🔴 规划中（E2-1 跨仓联调列部署侧） |
+| A2A Agent Card | `agent_server.py` `/.well-known/agent.json`（本仓路径为 `agent.json`，非本蓝图原稿的 `agent-card.json`） | ✅ 已就绪（E2-5；security/SLO 字段未实现，见 docs/14- B9） |
+| A2A Task 委托 | `POST /a2a` JSON-RPC（message.send / tasks.get 同步最小集） | ✅ 最小集（异步 task / SSE 状态流 / cancelTask 未实现，见 B9） |
+| SSE 流式传输 | `agent_server.py` `/chat/stream`（meta/delta/done/error 事件） | ✅ 已就绪（E1-1） |
+| 全链路追踪 | `telemetry.py`（OTel OTLP 导出 + `gen_ai.*` 语义属性 + correlation_id 贯穿） | ✅ 已就绪（E1-4 / P3-2） |
+
+> **兄弟仓（Node/TS）原判保留**：`sse-client.ts` / `security-logger.ts` / `yyc3-storage.ts` 已就绪；`mcp-client.ts` / `mcp-registry.ts` / `agent-card.ts` / `a2a-client.ts` 规划中——归属兄弟仓范围，本回写不改判。
 
 ### 4.3 传输层选型指南
 
@@ -492,6 +496,7 @@ AI 架构师、系统集成工程师
 | 版本 | 日期 | 变更内容 | 作者 |
 |------|------|---------|------|
 | v1.0.0 | 2026-06-03 | 初始版本，MCP+A2A双协议栈设计 | YanYuCloudCube Team |
+| v1.1.0 | 2026-11-26 | 契约审核回写（docs/14- B11）：§4.2 对齐表改为本仓产线 Python 事实（原 TS 表保留为兄弟仓注记）；本仓 A2A 发现路径 `agent.json` 与蓝图 `agent-card.json` 差异如实标注 | YanYuCloudCube Team |
 
 ---
 
