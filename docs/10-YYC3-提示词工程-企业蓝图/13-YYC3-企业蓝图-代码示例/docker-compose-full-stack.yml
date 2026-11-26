@@ -79,7 +79,7 @@ services:
     container_name: yyc3-redis
     ports:
       - "26379:6379"
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-yyc3_redis_2026}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD 未配置（fail-fast，禁止默认密码）}
     volumes:
       - redis_data:/data
     networks:
@@ -95,7 +95,7 @@ services:
     ports:
       - "30800:8800"
     volumes:
-      - ./06-协议栈/MCP:/workspace
+      - ./1306-代码示例-协议栈/MCP:/workspace
     environment:
       - MCP_TRANSPORT=http
       - MCP_PORT=8800
@@ -112,7 +112,7 @@ services:
     ports:
       - "30801:8801"
     volumes:
-      - ./06-协议栈/A2A:/workspace
+      - ./1306-代码示例-协议栈/A2A:/workspace
     environment:
       - A2A_PORT=8801
     working_dir: /workspace
@@ -131,7 +131,7 @@ services:
     ports:
       - "30802:8802"
     volumes:
-      - ./07-安全合规:/workspace
+      - ./1307-代码示例-安全合规:/workspace
     environment:
       - FILTER_LEVEL=standard
       - PORT=8802
@@ -147,7 +147,7 @@ services:
     ports:
       - "30803:8803"
     volumes:
-      - ./07-安全合规:/workspace
+      - ./1307-代码示例-安全合规:/workspace
     environment:
       - AUTH_MODE=strict
       - PORT=8803
@@ -167,7 +167,7 @@ services:
     ports:
       - "45909:9090"
     volumes:
-      - ./08-可观测性/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./1308-代码示例-可观测性/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -199,7 +199,7 @@ services:
     ports:
       - "30804:8804"
     volumes:
-      - ./08-可观测性:/workspace
+      - ./1308-代码示例-可观测性:/workspace
     environment:
       - TELEMETRY_PORT=8804
       - PROMETHEUS_URL=http://prometheus:9090
@@ -220,8 +220,8 @@ services:
       - "25600:6000"
     volumes:
       - ./04-AI-Family-Agent/元启-天枢总指挥:/workspace
-      - ./06-协议栈:/workspace/protocols
-      - ./08-可观测性:/workspace/telemetry
+      - ./1306-代码示例-协议栈:/workspace/protocols
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=yuanqi_tianshu
       - AGENT_ROLE=coordinator
@@ -251,8 +251,8 @@ services:
       - "25601:6001"
     volumes:
       - ./04-AI-Family-Agent/言启-千行导航员:/workspace
-      - ./06-协议栈:/workspace/protocols
-      - ./08-可观测性:/workspace/telemetry
+      - ./1306-代码示例-协议栈:/workspace/protocols
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=yanqi_qianhang
       - AGENT_ROLE=navigator
@@ -280,7 +280,7 @@ services:
       - "25602:6002"
     volumes:
       - ./04-AI-Family-Agent/语枢-万物思考者:/workspace
-      - ./08-可观测性:/workspace/telemetry
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=yushu_wanwu
       - AGENT_ROLE=thinker
@@ -305,7 +305,7 @@ services:
       - "25603:6003"
     volumes:
       - ./04-AI-Family-Agent/预见-先知预言家:/workspace
-      - ./08-可观测性:/workspace/telemetry
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=yujian_xianzhi
       - AGENT_ROLE=prophet
@@ -323,7 +323,7 @@ services:
       - "25604:6004"
     volumes:
       - ./04-AI-Family-Agent/千里-伯乐推荐官:/workspace
-      - ./08-可观测性:/workspace/telemetry
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=qianli_bole
       - AGENT_ROLE=recommender
@@ -341,8 +341,8 @@ services:
       - "25605:6005"
     volumes:
       - ./04-AI-Family-Agent/智云-守护安全官:/workspace
-      - ./07-安全合规:/workspace/security
-      - ./08-可观测性:/workspace/telemetry
+      - ./1307-代码示例-安全合规:/workspace/security
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=zhiyun_shouhu
       - AGENT_ROLE=security_officer
@@ -364,7 +364,7 @@ services:
       - "25606:6006"
     volumes:
       - ./04-AI-Family-Agent/格物-宗师质量官:/workspace
-      - ./08-可观测性:/workspace/telemetry
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=gewu_zongshi
       - AGENT_ROLE=quality_officer
@@ -382,7 +382,7 @@ services:
       - "25607:6007"
     volumes:
       - ./04-AI-Family-Agent/创想-灵韵创意官:/workspace
-      - ./08-可观测性:/workspace/telemetry
+      - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=chuangxiang_lingyun
       - AGENT_ROLE=creative_director
@@ -566,7 +566,7 @@ services:
     ports:
       - "25520:5020"
     volumes:
-      - ./04-能力建设智能化/标准化体系:/workspace
+      - ./1304-代码示例-能力建设智能化/标准化体系:/workspace
     environment:
       - SERVICE_TYPE=standardization
       - PORT=5020
@@ -582,7 +582,7 @@ services:
     ports:
       - "25530:5030"
     volumes:
-      - ./05-价值创造智能化/市场洞察:/workspace
+      - ./1305-代码示例-价值创造智能化/市场洞察:/workspace
     environment:
       - SERVICE_TYPE=market_intelligence
       - PORT=5030
@@ -598,7 +598,7 @@ services:
     ports:
       - "25531:5031"
     volumes:
-      - ./05-价值创造智能化/创新孵化:/workspace
+      - ./1305-代码示例-价值创造智能化/创新孵化:/workspace
     environment:
       - SERVICE_TYPE=innovation
       - PORT=5031
@@ -614,7 +614,7 @@ services:
     ports:
       - "25410:5410"
     volumes:
-      - ./00-核心基础设施/prompt-engine:/workspace
+      - ./1300-代码示例-核心基础设施/prompt-engine:/workspace
     environment:
       - SERVICE_TYPE=prompt_engine
       - PORT=5410

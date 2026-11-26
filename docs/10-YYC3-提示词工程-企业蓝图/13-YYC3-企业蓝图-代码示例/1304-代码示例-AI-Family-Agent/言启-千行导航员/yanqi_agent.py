@@ -29,7 +29,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 
 # 协议栈
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../06-协议栈"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../1306-代码示例-协议栈"))
 try:
     from A2A.a2a_client import A2AClient, A2ATask, A2AAgentRole
     from MCP.mcp_client import MCPClient, MCPTransportType
@@ -38,7 +38,7 @@ except ImportError:
     MCPClient = None
 
 # 可观测性
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../08-可观测性"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../1308-代码示例-可观测性"))
 try:
     from telemetry import Telemetry, LogLevel
 except ImportError:

@@ -19,7 +19,7 @@ import os, json, uuid, time, logging
 from typing import Dict, List, Optional, Any
 from flask import Flask, request, jsonify
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../08-可观测性"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../1308-代码示例-可观测性"))
 try:
     from telemetry import Telemetry
 except ImportError:

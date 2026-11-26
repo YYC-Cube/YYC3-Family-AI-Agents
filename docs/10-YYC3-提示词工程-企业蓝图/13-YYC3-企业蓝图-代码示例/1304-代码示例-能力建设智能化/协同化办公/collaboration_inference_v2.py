@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '00-核心基础设施', 'prompt-engine'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '1300-代码示例-核心基础设施', 'prompt-engine'))
 
 try:
     from prompt_engine import PromptEngine, PromptType, AgentRole
