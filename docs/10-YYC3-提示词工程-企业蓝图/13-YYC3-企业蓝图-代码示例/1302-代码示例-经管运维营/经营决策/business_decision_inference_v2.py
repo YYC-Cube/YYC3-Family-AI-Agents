@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '00-核心基础设施', 'prompt-engine'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '1300-代码示例-核心基础设施', 'prompt-engine'))
 
 try:
     from prompt_engine import PromptEngine, PromptType, AgentRole
@@ -76,7 +76,7 @@ class AIFamilyCoordinator:
                 "capabilities": ["时序预测", "风险评估", "情景分析"]
             },
             "qianli_bole": {
-                "name": "千里·伯乐",
+                "name": "知遇·伯乐",
                 "role": "推荐官",
                 "responsibility": "方案推荐、最佳实践、资源匹配",
                 "capabilities": ["智能推荐", "方案评估", "资源优化"]
@@ -398,7 +398,7 @@ class AIFamilyCoordinator:
         }
 
     def _recommend_solutions(self, context: BusinessContext) -> Dict:
-        """千里·伯乐 - 方案推荐"""
+        """知遇·伯乐 - 方案推荐"""
         recommendations = []
 
         financial = context.financial_data

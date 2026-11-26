@@ -56,15 +56,15 @@ class TestMcpTools:
 
     def test_tool_call_audit_search_with_agent_filter(self, gov_client):
         gov_client.post("/audit/record", json={
-            "agent": "tianshu", "action": "mcp_probe", "details": {}, "correlation_id": "mcp-t1"})
+            "agent": "meta-oracle", "action": "mcp_probe", "details": {}, "correlation_id": "mcp-t1"})
         r = _rpc(gov_client, "tools/call", params={
-            "name": "governance_audit_search", "arguments": {"agent": "tianshu", "limit": 5}})
+            "name": "governance_audit_search", "arguments": {"agent": "meta-oracle", "limit": 5}})
         trail = r.get_json()["result"]["structuredContent"]["trail"]
         assert isinstance(trail, list) and len(trail) >= 1
 
     def test_tool_call_writes_audit_trail(self, gov_client):
         gov_client.post("/audit/record", json={
-            "agent": "tianshu", "action": "seed", "details": {}, "correlation_id": "mcp-seed"})
+            "agent": "meta-oracle", "action": "seed", "details": {}, "correlation_id": "mcp-seed"})
         _rpc(gov_client, "tools/call", params={
             "name": "governance_agent_states", "arguments": {}}, req_id=42)
         trail = gov_client.get("/audit/trail?limit=50").get_json()
@@ -97,17 +97,17 @@ class TestMcpExtendedTools:
     def test_memory_semantic_store_then_recall(self, gov_client):
         r1 = _rpc(gov_client, "tools/call", params={
             "name": "memory_semantic_store",
-            "arguments": {"agent": "tianshu", "text": "我们偏好使用治理覆盖率看板"}})
+            "arguments": {"agent": "meta-oracle", "text": "我们偏好使用治理覆盖率看板"}})
         assert r1.get_json()["result"]["structuredContent"]["results"]
         r2 = _rpc(gov_client, "tools/call", params={
             "name": "memory_semantic_recall",
-            "arguments": {"agent": "tianshu", "query": "偏好 看板", "top_k": 3}})
+            "arguments": {"agent": "meta-oracle", "query": "偏好 看板", "top_k": 3}})
         memories = r2.get_json()["result"]["structuredContent"]["memories"]
         assert memories and "治理覆盖率看板" in memories[0]["fact"]
 
     def test_memory_semantic_store_requires_text(self, gov_client):
         body = _rpc(gov_client, "tools/call", params={
-            "name": "memory_semantic_store", "arguments": {"agent": "tianshu"}}).get_json()
+            "name": "memory_semantic_store", "arguments": {"agent": "meta-oracle"}}).get_json()
         assert body["error"]["code"] == -32602 and "text" in body["error"]["message"]
 
     def test_guardrails_inspect_blocks_injection(self, gov_client):

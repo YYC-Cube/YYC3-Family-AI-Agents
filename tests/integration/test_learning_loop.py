@@ -33,15 +33,15 @@ class TestUsageInsights:
         now = learning_loop._now()
         for prompt, comp in ((10, 5), (20, 8)):
             conn.execute("INSERT INTO token_usage(agent, prompt_tokens, completion_tokens, total_tokens, latency_ms, model, timestamp) VALUES (?,?,?,?,?,?,?)",
-                         ("tianshu", prompt, comp, prompt + comp, 120.0, "Qwen/3.6", now))
+                         ("meta-oracle", prompt, comp, prompt + comp, 120.0, "Qwen/3.6", now))
         conn.execute("INSERT INTO token_usage(agent, prompt_tokens, completion_tokens, total_tokens, latency_ms, model, timestamp) VALUES (?,?,?,?,?,?,?)",
-                     ("lingyun", 7, 3, 10, 80.0, "Qwen/3.6", now))
+                     ("creative", 7, 3, 10, 80.0, "Qwen/3.6", now))
         conn.commit()
         insights = learning_loop.usage_insights(conn, hours=24)
         by_agent = {a["agent"]: a for a in insights["by_agent"]}
-        assert by_agent["tianshu"]["calls"] == 2
-        assert by_agent["tianshu"]["prompt_tokens"] == 30
-        assert by_agent["lingyun"]["calls"] == 1
+        assert by_agent["meta-oracle"]["calls"] == 2
+        assert by_agent["meta-oracle"]["prompt_tokens"] == 30
+        assert by_agent["creative"]["calls"] == 1
         assert insights["by_model"][0]["model"] == "Qwen/3.6"
 
 

@@ -13,8 +13,8 @@ services:
       - "25601:6001"
     volumes:
       - .:/workspace
-      - ../../06-协议栈:/workspace/protocols
-      - ../../08-可观测性:/workspace/telemetry
+      - ../../1306-代码示例-协议栈:/workspace/protocols
+      - ../../1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=yanqi_qianhang
       - AGENT_ROLE=navigator

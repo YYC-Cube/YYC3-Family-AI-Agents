@@ -27,7 +27,7 @@ from flask import Flask, request, jsonify
 
 # 协议栈
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../06-协议栈"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../1306-代码示例-协议栈"))
 
 try:
     from A2A.a2a_client import A2AClient, A2ATask, A2AAgentRole
@@ -37,7 +37,7 @@ except ImportError:
     MCPClient = None
 
 # 可观测性
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../08-可观测性"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../1308-代码示例-可观测性"))
 try:
     from telemetry import Telemetry, LogLevel
 except ImportError:
@@ -182,7 +182,7 @@ class YuanQiTianShuAgent:
             "决策": {"primary": "经营决策", "agent": "语枢·万物", "confidence": 0.92},
             "分析": {"primary": "数据分析", "agent": "语枢·万物", "confidence": 0.90},
             "预测": {"primary": "趋势预测", "agent": "预见·先知", "confidence": 0.88},
-            "推荐": {"primary": "智能推荐", "agent": "千里·伯乐", "confidence": 0.85},
+            "推荐": {"primary": "智能推荐", "agent": "知遇·伯乐", "confidence": 0.85},
             "创意": {"primary": "内容创作", "agent": "创想·灵韵", "confidence": 0.87},
             "安全": {"primary": "安全审计", "agent": "智云·守护", "confidence": 0.95},
             "质量": {"primary": "质量审查", "agent": "格物·宗师", "confidence": 0.93},
@@ -283,7 +283,7 @@ class YuanQiTianShuAgent:
             "言启·千行": {"endpoint": "http://localhost:6001"},
             "语枢·万物": {"endpoint": "http://localhost:6002"},
             "预见·先知": {"endpoint": "http://localhost:6003"},
-            "千里·伯乐": {"endpoint": "http://localhost:6004"},
+            "知遇·伯乐": {"endpoint": "http://localhost:6004"},
             "智云·守护": {"endpoint": "http://localhost:6005"},
             "格物·宗师": {"endpoint": "http://localhost:6006"},
             "创想·灵韵": {"endpoint": "http://localhost:6007"},

@@ -2,9 +2,9 @@
 file: README.md
 description: YYC³安全合规与伦理治理 — 零信任安全 + 内容安全三级过滤 + 提示词注入防护 + 合规审计
 author: YanYuCloudCube Team <admin@0379.email>
-version: v1.0.0
+version: v1.1.0
 created: 2026-06-03
-updated: 2026-06-03
+updated: 2026-11-26
 status: published
 tags: [安全合规],[伦理治理],[零信任],[内容安全],[提示词注入],[合规审计]
 category: security
@@ -526,18 +526,20 @@ interface AuditLogEntry {
 
 ---
 
-## 七、与项目代码库对齐
+## 七、与项目代码库对齐（2026-11-26 回写：本仓产线 Python 形态）
 
-| 安全组件 | 代码实现 | 状态 |
-|---------|---------|------|
-| 结构化安全日志 | `src/app/lib/security-logger.ts` ✅ | 已就绪 |
-| correlationId 追踪 | `security-logger.ts` generateCorrelationId() ✅ | 已就绪 |
-| 日志脱敏 | `security-logger.ts` sanitize() ✅ | 已就绪 |
-| 内容安全过滤 | 待创建 `src/app/lib/content-filter.ts` | 规划中 |
-| 提示词注入检测 | 待创建 `src/app/lib/injection-detector.ts` | 规划中 |
-| 零信任认证 | 待创建 `src/app/lib/zero-trust-auth.ts` | 规划中 |
-| 合规审计 | 待创建 `src/app/lib/compliance-auditor.ts` | 规划中 |
-| 安全事件响应 | 待创建 `src/app/lib/security-incident.ts` | 规划中 |
+> **回写注记（docs/14- 契约审核）**：v1.0.0 原表面向兄弟仓 Node/TS 形态，2026-11-26 依 docs/14- 审核回写本仓事实；兄弟仓原判保留于表后注记。蓝图 §4.1 八类攻击分类学与 §三 三级过滤体系为本仓注入检测扩展（docs/14- B5）的规格来源。
+
+| 安全组件 | 本仓产线实现（Python） | 状态 |
+|---------|----------------------|------|
+| 结构化安全日志/审计 | 治理中枢审计链（SQLite 追加写，correlation_id 贯穿）+ guardrail_block/degrade/redact 事件闭环 | ✅ 已就绪（链式哈希防篡改未见，见 docs/14- §8.2④） |
+| 提示词注入检测 | `guardrails.py` 13 条规则 MVP（直接注入/越狱/指令覆盖/SSRF/密钥探测等；high→422 block、medium→degrade） | ✅ MVP（§4.1 的间接/编码/多轮/上下文劫持注入未覆盖——docs/14- B5） |
+| 零信任认证 | `agent_server.py` / `governance_hub.py` `before_request` X-API-Key 恒时比较（写操作强制；未配置 Key 本地开放） | ✅ MVP（JWT/MFA/设备指纹/JIT 未实现） |
+| 内容安全三级过滤 | 第一级输入注入检测 + 第三级输出脱敏 4 类（凭据形态）；敏感词库（AC 自动机）/意图分类/偏见检测/内容安全 API 未建 | 🟡 部分（第二级由 SYSTEM.md 约束承担） |
+| 合规审计 | `/audit/record` + `/audit/trail` + correlation_id 端到端 + Token 预算窗口 | ✅ 已就绪 |
+| 安全事件响应 | Kill Switch 一键冻结 + 全量审计留痕 | ✅ 最小集（§六 分级响应 SOP 未自动化） |
+
+> **兄弟仓（Node/TS）原判保留**：security-logger 已就绪；content-filter / injection-detector / zero-trust-auth / compliance-auditor / security-incident 规划中——归属兄弟仓，本回写不改判。
 
 ---
 
@@ -568,6 +570,7 @@ interface AuditLogEntry {
 | 版本 | 日期 | 变更内容 | 作者 |
 |------|------|---------|------|
 | v1.0.0 | 2026-06-03 | 初始版本，四层安全防护体系设计 | YanYuCloudCube Team |
+| v1.1.0 | 2026-11-26 | 契约审核回写（docs/14- B11）：§七 对齐表改为本仓产线 Python 事实（注入检测 13 规则 MVP / 零信任 X-API-Key MVP / 三级过滤部分如实标注）；§4.1 八类攻击分类学标注为 B5 规格来源；原 TS 表保留为兄弟仓注记 | YanYuCloudCube Team |
 
 ---
 

@@ -27,9 +27,9 @@ ALLOWED_HOSTS = {"100.126.132.112"}  # 用户配置的推理节点（Tailscale �
 AGENTS_DIR = REPO / "agents"
 
 AGENT_DIRS = {
-    "tianshu": "yuanqi-tianshu", "qianxing": "yanqi-qianhang", "wanwu": "yushu-wanwu",
-    "xianzhi": "yujian-xianzhi", "bole": "zhiyu-bole", "shouhu": "zhiyun-shouhu",
-    "zongshi": "gewu-zongshi", "lingyun": "chuangxiang-lingyun",
+    "meta-oracle": "meta-oracle", "navigator": "navigator", "thinker": "thinker",
+    "prophet": "prophet", "bolero": "bolero", "sentinel": "sentinel",
+    "master": "master", "creative": "creative",
 }
 
 

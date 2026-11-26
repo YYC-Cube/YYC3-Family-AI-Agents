@@ -43,7 +43,7 @@ class TestWindowSwitchData:
 
     def test_weekly_monthly_pct_present(self, gov_client):
         budgets = gov_client.get("/budget/dashboard").get_json()
-        sample = budgets["bole"]
+        sample = budgets["bolero"]
         for win in ("daily", "weekly", "monthly"):
             assert win in sample, f"缺窗口 {win}"
             assert {"used", "limit", "pct", "exceeded"} <= set(sample[win].keys())

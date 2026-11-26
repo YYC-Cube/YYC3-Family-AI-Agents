@@ -49,7 +49,7 @@ class A2AAgentRole(Enum):
     NAVIGATOR = "navigator"            # 导航员（言启千行）
     THINKER = "thinker"                # 思考者（语枢万物）
     PROPHET = "prophet"                # 预言家（预见先知）
-    RECOMMENDER = "recommender"        # 推荐官（千里伯乐）
+    RECOMMENDER = "recommender"        # 推荐官（知遇伯乐）
     SECURITY_OFFICER = "security"      # 安全官（智云守护）
     QUALITY_OFFICER = "quality"        # 质量官（格物宗师）
     CREATOR = "creator"                # 创意官（创想灵韵）
@@ -405,7 +405,7 @@ YYC3_AGENT_CARDS = {
         "slo": {"latency": {"p50": "1s", "p95": "3s", "p99": "8s"}, "availability": "99.9%"},
     },
     "recommender": {
-        "name": "千里·伯乐",
+        "name": "知遇·伯乐",
         "description": "YYC³ AI Family 推荐官 — 个性化推荐与用户画像",
         "url": "https://yyc3.ai/agents/recommender",
         "version": "2.1.0",
@@ -462,7 +462,7 @@ A2A_COMMUNICATION_MATRIX = {
     ("元启·天枢", "言启·千行"): {"action": "assign_task", "endpoint": "/tasks"},
     ("元启·天枢", "语枢·万物"): {"action": "request_analysis", "endpoint": "/tasks"},
     ("元启·天枢", "预见·先知"): {"action": "request_forecast", "endpoint": "/tasks"},
-    ("元启·天枢", "千里·伯乐"): {"action": "request_recommendation", "endpoint": "/tasks"},
+    ("元启·天枢", "知遇·伯乐"): {"action": "request_recommendation", "endpoint": "/tasks"},
     ("元启·天枢", "智云·守护"): {"action": "request_audit", "endpoint": "/tasks"},
     ("元启·天枢", "格物·宗师"): {"action": "request_review", "endpoint": "/tasks"},
     ("元启·天枢", "创想·灵韵"): {"action": "request_creative", "endpoint": "/tasks"},

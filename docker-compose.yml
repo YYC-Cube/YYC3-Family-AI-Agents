@@ -4,7 +4,7 @@
 #
 # 8个Agent服务端口规划 (遵循5位结构 25XXY):
 #   元启·天枢 25600  言启·千行 25601  语枢·万物 25602
-#   预见·先知 25603  千里·伯乐 25604  智云·守护 25605
+#   预见·先知 25603  知遇·伯乐 25604  智云·守护 25605
 #   格物·宗师 25606  创想·灵韵 25607
 #
 # 推理后端: 本地 vLLM (Qwen3.6-27B-FP8, Port 8000)
@@ -90,19 +90,19 @@ services:
   # ==========================================================================
   # 元启·天枢 (总指挥) — 全局编排与战略决策 | 端口 25600
   # ==========================================================================
-  yuanqi-tianshu:
+  meta-oracle:
     image: python:3.12-slim
-    container_name: agent-yuanqi-tianshu
-    hostname: yuanqi-tianshu
+    container_name: agent-meta-oracle
+    hostname: meta-oracle
     ports:
       - "25600:6000"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/yuanqi-tianshu:/workspace
+      - ./agents/meta-oracle:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment: &agent-env-base
-      AGENT_NAME: yuanqi_tianshu
+      AGENT_NAME: meta-oracle
       AGENT_ROLE: coordinator
       AGENT_LABEL: 元启天枢
       AGENT_PHONE: 0379-0206
@@ -124,7 +124,7 @@ services:
     command: >-
       sh -c "pip install --quiet flask requests openai &&
              cp /prompts/main-system.md /workspace/SYSTEM.md &&
-             python agent_server.py --port 6000 --role tianshu"
+             python agent_server.py --port 6000 --role meta-oracle"
     networks:
       - yyc3-agent-network
     restart: unless-stopped
@@ -149,20 +149,20 @@ services:
   # ==========================================================================
   # 言启·千行 (导航员) — 意图识别与任务路由 | 端口 25601
   # ==========================================================================
-  yanqi-qianhang:
+  navigator:
     image: python:3.12-slim
-    container_name: agent-yanqi-qianhang
-    hostname: yanqi-qianhang
+    container_name: agent-navigator
+    hostname: navigator
     ports:
       - "25601:6001"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/yanqi-qianhang:/workspace
+      - ./agents/navigator:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment:
       <<: *agent-env-base
-      AGENT_NAME: yanqi_qianhang
+      AGENT_NAME: navigator
       AGENT_ROLE: navigator
       AGENT_LABEL: 言启千行
       AGENT_PHONE: "0379-0106"
@@ -256,20 +256,20 @@ services:
   # ==========================================================================
   # 语枢·万物 (思考者) — 数据分析与统计建模 | 端口 25602
   # ==========================================================================
-  yushu-wanwu:
+  thinker:
     image: python:3.12-slim
-    container_name: agent-yushu-wanwu
-    hostname: yushu-wanwu
+    container_name: agent-thinker
+    hostname: thinker
     ports:
       - "25602:6002"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/yushu-wanwu:/workspace
+      - ./agents/thinker:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment:
       <<: *agent-env-base
-      AGENT_NAME: yushu_wanwu
+      AGENT_NAME: thinker
       AGENT_ROLE: thinker
       AGENT_LABEL: 语枢万物
       AGENT_PHONE: "0379-0107"
@@ -304,20 +304,20 @@ services:
   # ==========================================================================
   # 预见·先知 (预言家) — 趋势预测与风险预警 | 端口 25603
   # ==========================================================================
-  yujian-xianzhi:
+  prophet:
     image: python:3.12-slim
-    container_name: agent-yujian-xianzhi
-    hostname: yujian-xianzhi
+    container_name: agent-prophet
+    hostname: prophet
     ports:
       - "25603:6003"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/yujian-xianzhi:/workspace
+      - ./agents/prophet:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment:
       <<: *agent-env-base
-      AGENT_NAME: yujian_xianzhi
+      AGENT_NAME: prophet
       AGENT_ROLE: prophet
       AGENT_LABEL: 预见先知
       AGENT_PHONE: "0379-0108"
@@ -350,31 +350,31 @@ services:
           memory: 4G
 
   # ==========================================================================
-  # 千里·伯乐 (推荐官) — 个性化推荐与用户画像 | 端口 25604
+  # 知遇·伯乐 (推荐官) — 个性化推荐与用户画像 | 端口 25604
   # ==========================================================================
-  zhiyu-bole:
+  bolero:
     image: python:3.12-slim
-    container_name: agent-zhiyu-bole
-    hostname: zhiyu-bole
+    container_name: agent-bolero
+    hostname: bolero
     ports:
       - "25604:6004"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/zhiyu-bole:/workspace
+      - ./agents/bolero:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment:
       <<: *agent-env-base
-      AGENT_NAME: zhiyu_bole
+      AGENT_NAME: bolero
       AGENT_ROLE: recommender
-      AGENT_LABEL: 千里伯乐
+      AGENT_LABEL: 知遇伯乐
       AGENT_PHONE: "0379-0109"
       PORT: "6004"
-      SYSTEM_PROMPT_PATH: /prompts/bole-system.md
+      SYSTEM_PROMPT_PATH: /prompts/bolero-system.md
     working_dir: /workspace
     command: >-
       sh -c "pip install --quiet flask requests openai scikit-learn &&
-             cp /prompts/bole-system.md /workspace/SYSTEM.md &&
+             cp /prompts/bolero-system.md /workspace/SYSTEM.md &&
              python agent_server.py --port 6004 --role recommender"
     networks:
       - yyc3-agent-network
@@ -400,20 +400,20 @@ services:
   # ==========================================================================
   # 智云·守护 (安全官) — 安全审计与行为监控 | 端口 25605
   # ==========================================================================
-  zhiyun-shouhu:
+  sentinel:
     image: python:3.12-slim
-    container_name: agent-zhiyun-shouhu
-    hostname: zhiyun-shouhu
+    container_name: agent-sentinel
+    hostname: sentinel
     ports:
       - "25605:6005"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/zhiyun-shouhu:/workspace
+      - ./agents/sentinel:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment:
       <<: *agent-env-base
-      AGENT_NAME: zhiyun_shouhu
+      AGENT_NAME: sentinel
       AGENT_ROLE: security_officer
       AGENT_LABEL: 智云守护
       AGENT_PHONE: "0379-0207"
@@ -448,20 +448,20 @@ services:
   # ==========================================================================
   # 格物·宗师 (质量官) — 代码审查与质量保障 | 端口 25606
   # ==========================================================================
-  gewu-zongshi:
+  master:
     image: python:3.12-slim
-    container_name: agent-gewu-zongshi
-    hostname: gewu-zongshi
+    container_name: agent-master
+    hostname: master
     ports:
       - "25606:6006"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/gewu-zongshi:/workspace
+      - ./agents/master:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment:
       <<: *agent-env-base
-      AGENT_NAME: gewu_zongshi
+      AGENT_NAME: master
       AGENT_ROLE: quality_officer
       AGENT_LABEL: 格物宗师
       AGENT_PHONE: "0379-0208"
@@ -496,20 +496,20 @@ services:
   # ==========================================================================
   # 创想·灵韵 (创意官) — 内容创作与创新孵化 | 端口 25607
   # ==========================================================================
-  chuangxiang-lingyun:
+  creative:
     image: python:3.12-slim
-    container_name: agent-chuangxiang-lingyun
-    hostname: chuangxiang-lingyun
+    container_name: agent-creative
+    hostname: creative
     ports:
       - "25607:6007"
     volumes:
       - yyc3-shared-prompts:/prompts:ro
       - yyc3-shared-data:/data
-      - ./agents/chuangxiang-lingyun:/workspace
+      - ./agents/creative:/workspace
       - ./agent_server.py:/workspace/agent_server.py:ro
     environment:
       <<: *agent-env-base
-      AGENT_NAME: chuangxiang_lingyun
+      AGENT_NAME: creative
       AGENT_ROLE: creative_director
       AGENT_LABEL: 创想灵韵
       AGENT_PHONE: "0379-0209"

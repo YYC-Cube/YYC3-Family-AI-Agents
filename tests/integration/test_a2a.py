@@ -29,7 +29,7 @@ def _isolated_cache():
 
 @pytest.fixture()
 def agent_client(monkeypatch):
-    monkeypatch.setattr(agent_server, "AGENT_NAME", "yuanqi_tianshu")
+    monkeypatch.setattr(agent_server, "AGENT_NAME", "meta-oracle")
     monkeypatch.setattr(agent_server, "GOVERNANCE_ENDPOINT", "http://localhost:29998")
     return agent_server.app.test_client()
 

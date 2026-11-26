@@ -36,11 +36,11 @@ def target_db(tmp_path):
 
 class TestGrants:
     def test_agent_explicit_grant_prunes_columns(self, layer):
-        grant = layer._grant_for("bole", "users")
+        grant = layer._grant_for("bolero", "users")
         assert grant["columns"] == ["user_id", "city"]
 
     def test_unlisted_agent_inherits_full(self, layer):
-        grant = layer._grant_for("tianshu", "users")
+        grant = layer._grant_for("meta-oracle", "users")
         assert set(grant["columns"]) == {"user_id", "name", "city", "created_at"}
 
 
@@ -48,7 +48,7 @@ class TestDetailQuery:
     def test_full_columns_for_unlisted_agent(self, layer, target_db):
         conn = sqlite3.connect(target_db)
         try:
-            result = layer.detail_query(conn, "tianshu", {"table": "users", "limit": 10})
+            result = layer.detail_query(conn, "meta-oracle", {"table": "users", "limit": 10})
         finally:
             conn.close()
         assert result["row_count"] == 3
@@ -57,7 +57,7 @@ class TestDetailQuery:
     def test_column_pruning_for_explicit_grant(self, layer, target_db):
         conn = sqlite3.connect(target_db)
         try:
-            result = layer.detail_query(conn, "bole", {"table": "users", "limit": 10})
+            result = layer.detail_query(conn, "bolero", {"table": "users", "limit": 10})
         finally:
             conn.close()
         assert result["row_count"] == 3
@@ -67,7 +67,7 @@ class TestDetailQuery:
         conn = sqlite3.connect(target_db)
         try:
             with pytest.raises(SemanticGuardError) as ei:
-                layer.detail_query(conn, "bole", {"table": "users",
+                layer.detail_query(conn, "bolero", {"table": "users",
                                                   "columns": ["user_id", "name"]})
         finally:
             conn.close()
@@ -77,7 +77,7 @@ class TestDetailQuery:
         conn = sqlite3.connect(target_db)
         try:
             with pytest.raises(SemanticGuardError) as ei:
-                layer.detail_query(conn, "bole", {"table": "users",
+                layer.detail_query(conn, "bolero", {"table": "users",
                                                   "filters": {"name": "张三"}})
         finally:
             conn.close()
@@ -86,7 +86,7 @@ class TestDetailQuery:
     def test_filter_applied_in_memory(self, layer, target_db):
         conn = sqlite3.connect(target_db)
         try:
-            result = layer.detail_query(conn, "tianshu", {
+            result = layer.detail_query(conn, "meta-oracle", {
                 "table": "users", "filters": {"city": "上海"}, "limit": 10})
         finally:
             conn.close()
@@ -98,7 +98,7 @@ class TestDetailQuery:
         结果集与内存过滤语义等价"""
         conn = sqlite3.connect(target_db)
         try:
-            result = layer.detail_query(conn, "tianshu", {
+            result = layer.detail_query(conn, "meta-oracle", {
                 "table": "users", "filters": {"city": "上海"}, "limit": 10})
         finally:
             conn.close()
@@ -109,7 +109,7 @@ class TestDetailQuery:
     def test_predicate_pushdown_events_column(self, layer, target_db):
         conn = sqlite3.connect(target_db)
         try:
-            result = layer.detail_query(conn, "tianshu", {
+            result = layer.detail_query(conn, "meta-oracle", {
                 "table": "events", "filters": {"event_type": "purchase"}, "limit": 100})
         finally:
             conn.close()
@@ -120,7 +120,7 @@ class TestDetailQuery:
         """多列组合超出下推 MVP 面 → 回退内存过滤（语义不变，pushed=False）"""
         conn = sqlite3.connect(target_db)
         try:
-            result = layer.detail_query(conn, "tianshu", {
+            result = layer.detail_query(conn, "meta-oracle", {
                 "table": "users", "filters": {"city": "上海", "name": "张三"}, "limit": 10})
         finally:
             conn.close()
@@ -128,13 +128,13 @@ class TestDetailQuery:
         assert result["row_count"] == 1
 
     def test_pushdown_respects_column_grant(self, layer, target_db):
-        """下推与行列权限联动：bole 授权列裁剪下仍正确下推；未授权过滤列前置拦截"""
+        """下推与行列权限联动：bolero 授权列裁剪下仍正确下推；未授权过滤列前置拦截"""
         conn = sqlite3.connect(target_db)
         try:
-            result = layer.detail_query(conn, "bole", {
+            result = layer.detail_query(conn, "bolero", {
                 "table": "users", "columns": ["user_id", "city"], "filters": {"city": "北京"}})
             with pytest.raises(SemanticGuardError) as ei:
-                layer.detail_query(conn, "bole", {
+                layer.detail_query(conn, "bolero", {
                     "table": "users", "columns": ["user_id", "city"], "filters": {"name": "x"}})
         finally:
             conn.close()
@@ -146,7 +146,7 @@ class TestDetailQuery:
         conn = sqlite3.connect(target_db)
         try:
             with pytest.raises(SemanticGuardError) as ei:
-                layer.detail_query(conn, "tianshu", {"table": "secret_table"})
+                layer.detail_query(conn, "meta-oracle", {"table": "secret_table"})
         finally:
             conn.close()
         assert ei.value.code == "TABLE_NOT_ALLOWED"
@@ -155,7 +155,7 @@ class TestDetailQuery:
         conn = sqlite3.connect(target_db)
         try:
             with pytest.raises(SemanticGuardError) as ei:
-                layer.detail_query(conn, "tianshu", {"table": "users", "limit": 2})
+                layer.detail_query(conn, "meta-oracle", {"table": "users", "limit": 2})
         finally:
             conn.close()
         assert ei.value.code == "ROW_LIMIT_EXCEEDED"
@@ -169,7 +169,7 @@ class TestDualRoute:
         conn = sqlite3.connect(target_db)
         try:
             metric_result = layer.execute_metric(conn, metric)
-            detail = layer.detail_query(conn, "tianshu", {
+            detail = layer.detail_query(conn, "meta-oracle", {
                 "table": "users", "filters": {"city": "上海"}, "limit": 10})
         finally:
             conn.close()

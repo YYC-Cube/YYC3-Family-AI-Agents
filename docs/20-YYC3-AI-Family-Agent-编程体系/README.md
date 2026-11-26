@@ -30,7 +30,7 @@
     ├── 01-AI-FAmily-Agent-言启·千行.md
     ├── 02-AI-FAmily-Agent-语枢·万物.md
     ├── 03-AI-FAmily-Agent-预见·先知.md
-    ├── 04-AI-FAmily-Agent-千里·伯乐.md
+    ├── 04-AI-FAmily-Agent-知遇·伯乐.md
     ├── 05-AI-FAmily-Agent-元启·天枢.md
     ├── 06-AI-FAmily-Agent-智云·守护.md
     ├── 07-AI-FAmily-Agent-格物·宗师.md
