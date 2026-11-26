@@ -13,16 +13,16 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 AGENTS_DIR = REPO_ROOT / "agents"
 
-# 8 位家人注册表：目录名 → (短名, 中文名号, 家族角色, 端口, 热线)
+# 8 位家人注册表（2026-11-26 全局命名统一）：目录名 = 英文 id = 短名
 FAMILY = {
-    "yuanqi-tianshu": ("tianshu", "元启·天枢", "总指挥", "25600", "0379-0206"),
-    "yanqi-qianhang": ("qianxing", "言启·千行", "导航员", "25601", "0379-0106"),
-    "yushu-wanwu": ("wanwu", "语枢·万物", "思考者", "25602", "0379-0107"),
-    "yujian-xianzhi": ("xianzhi", "预见·先知", "预言家", "25603", "0379-0108"),
-    "zhiyu-bole": ("bole", "千里·伯乐", "推荐官", "25604", "0379-0109"),
-    "zhiyun-shouhu": ("shouhu", "智云·守护", "安全官", "25605", "0379-0207"),
-    "gewu-zongshi": ("zongshi", "格物·宗师", "质量官", "25606", "0379-0208"),
-    "chuangxiang-lingyun": ("lingyun", "创想·灵韵", "创意官", "25607", "0379-0209"),
+    "meta-oracle": ("meta-oracle", "元启·天枢", "总指挥", "25600", "0379-0206"),
+    "navigator": ("navigator", "言启·千行", "导航员", "25601", "0379-0106"),
+    "thinker": ("thinker", "语枢·万物", "思考者", "25602", "0379-0107"),
+    "prophet": ("prophet", "预见·先知", "预言家", "25603", "0379-0108"),
+    "bolero": ("bolero", "知遇·伯乐", "推荐官", "25604", "0379-0109"),
+    "sentinel": ("sentinel", "智云·守护", "安全官", "25605", "0379-0207"),
+    "master": ("master", "格物·宗师", "质量官", "25606", "0379-0208"),
+    "creative": ("creative", "创想·灵韵", "创意官", "25607", "0379-0209"),
 }
 
 
@@ -83,11 +83,11 @@ class TestPersonaIntegrity:
     """人设完整性抽检：历史旧称禁入 + 家族精神在场 + SOUL 结构完整"""
 
     def test_no_legacy_name_in_prompts(self):
-        # 生产提示词层严禁历史旧称「知遇·伯乐/知遇伯乐」（千里·伯乐 已归一）
+        # 2026-11-26 全局命名统一：历史本地名「千里·伯乐/千里伯乐」禁入（知遇·伯乐 已随全局注册表归一）
         for dirname in FAMILY:
             for f in ("IDENTITY.md", "SOUL.md", "SYSTEM.md"):
                 text = (AGENTS_DIR / dirname / f).read_text(encoding="utf-8")
-                assert "知遇·伯乐" not in text and "知遇伯乐" not in text, f"{dirname}/{f} 含历史旧称"
+                assert "千里·伯乐" not in text and "千里伯乐" not in text, f"{dirname}/{f} 含历史旧称"
 
     def test_soul_has_five_dimension_duties(self, family_member):
         assert "五维管理职能" in family_member["soul"], "SOUL.md 缺五维管理职能章节"

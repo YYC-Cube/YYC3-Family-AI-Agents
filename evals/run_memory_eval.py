@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import memory_semantic  # noqa: E402
 
-AGENTS = ["tianshu", "qianxing", "wanwu", "xianzhi", "bole", "shouhu", "zongshi", "lingyun"]
+AGENTS = ["meta-oracle", "navigator", "thinker", "prophet", "bolero", "sentinel", "master", "creative"]
 
 
 def _build_cases():

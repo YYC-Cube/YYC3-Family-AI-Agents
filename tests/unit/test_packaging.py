@@ -43,12 +43,12 @@ def test_cli_audit_reads_governance_db(tmp_path, capsys):
     db = tmp_path / "governance.db"
     conn = sqlite3.connect(str(db))
     conn.execute("CREATE TABLE behavior_events (id INTEGER PRIMARY KEY, agent TEXT, action TEXT, details TEXT, correlation_id TEXT, timestamp TEXT)")
-    conn.execute("INSERT INTO behavior_events (agent, action, details, correlation_id, timestamp) VALUES ('tianshu', 'mcp_tool_call', '{}', 'c1', '2026-11-24T00:00:00')")
+    conn.execute("INSERT INTO behavior_events (agent, action, details, correlation_id, timestamp) VALUES ('meta-oracle', 'mcp_tool_call', '{}', 'c1', '2026-11-24T00:00:00')")
     conn.commit()
     conn.close()
     assert cli.main(["audit", "--db", str(db), "--limit", "10"]) == 0
     events = json.loads(capsys.readouterr().out)
-    assert events[0]["agent"] == "tianshu"
+    assert events[0]["agent"] == "meta-oracle"
 
 
 def test_cli_audit_missing_db_fails_cleanly(tmp_path):

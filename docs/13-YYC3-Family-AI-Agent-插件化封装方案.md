@@ -45,13 +45,13 @@ Three packaging tracks: **A. MCP Server** (protocol-first) · **B. Claude Code P
 |---|---|---|
 | MCP Server | 暴露工具/资源/提示词（streamable HTTP / stdio） | governance_hub `/mcp` 端点（已实现） |
 | MCP Registry | 中央注册表发现服务 | 预留（E2-1 后续） |
-| Claude Code Plugin | `.claude/` 目录捆绑 skills/commands/hooks/MCP | **E3-2 封装目标** |
+| Claude Code Plugin | `.claude/` 目录捆绑 skills/commands/hooks/MCP | **✅ 已落地（W2/路径 B，2026-11-26）** |
 
 ### 1.3 本仓独有差异化资产
 
 | 资产 | 生态稀缺度 | 封装价值 |
 |---|---|---|
-| 审计链（FNV-1a 链式哈希，防篡改） | **极稀缺**——框架普遍无审计 | 核心卖点 |
+| 审计链（全程上报 + correlation_id 贯穿，SQLite 追加写） | **稀缺**——框架普遍无审计 | 核心卖点（2026-11-26 审核勘误：原表述「FNV-1a 链式哈希防篡改」与本仓代码不符，链式哈希属兄弟仓 kernel 资产待验证，见 docs/14- §8.2④） |
 | Token 预算窗口（日/周/月惰性重置） | 稀缺 | 核心卖点 |
 | Kill Switch（一键冻结） | 稀缺 | 核心卖点 |
 | 护栏管线（注入检测 + 输出脱敏） | 有（NeMo Guardrails 等） | 差异化：零依赖 + 审计闭环 |
@@ -97,9 +97,9 @@ result = mcp_client.tools_call("governance_budget_overview")
 .claude-plugin/
 ├── plugin.json          ← Plugin 元数据（name/version/skills/commands）
 ├── skills/
-│   ├── tianshu.md       ← 元启·天枢 Skill（决策框架+治理约束）
-│   ├── qianhang.md      ← 言启·千行 Skill（需求转译+路由）
-│   ├── wanwu.md         ← 语枢·万物 Skill（经营分析+边界红线）
+│   ├── meta-oracle.md       ← 元启·天枢 Skill（决策框架+治理约束）
+│   ├── navigator.md      ← 言启·千行 Skill（需求转译+路由）
+│   ├── thinker.md         ← 语枢·万物 Skill（经营分析+边界红线）
 │   └── ...
 ├── commands/
 │   ├── audit.md         ← /audit 命令（查审计链）
@@ -152,7 +152,7 @@ result = guard.inspect_input("用户问题")
 | 零依赖 | ✓ hub 侧已零依赖 | ✓ Claude Code 原生 | ✓ 零强制依赖 |
 | 审计闭环 | ✓ 全量入审计链 | ✓ hook 事件入审计 | ✓ 调用方可选审计 |
 | 部署 | hub 已在运行（25700） | `.claude-plugin/` 目录复制 | pip install yyc3-family |
-| 生产状态 | **已实现**（/mcp 端点在线） | 待封装 | 待提取核心模块 |
+| 生产状态 | **已实现**（/mcp 端点在线） | ✅ 已落地（2026-11-26，.claude-plugin/ 五位一体） | ✅ 骨架已落地（3.1.0） |
 
 **推荐**：三路径**并行推进**——A 是已实现的线上服务（立即有用），B 面向 Claude Code 生态（增量最大），C 面向 Python 开发者（复用最广）。
 
@@ -177,9 +177,9 @@ result = guard.inspect_input("用户问题")
 
 **MVP 文件**：`governance_hub.py` 扩展 MCP_TOOLS 清单 + `_mcp_tool_call` 派发。
 
-### Step 2：Claude Code Plugin 封装（`.claude-plugin/` 目录）
+### Step 2：Claude Code Plugin 封装（`.claude-plugin/` 目录）——✅ 已落地（2026-11-26）
 
-**MVP 文件**：`.claude-plugin/plugin.json` + `skills/tianshu.md` + `commands/audit.md`
+**已落地文件**（五位一体，对齐全局注册表 8 英文 id）：`plugin.json` 3.1.0 + `skills/`×8 **目录式技能**（开源 Agent Skills 标准形态：`SKILL.md` + `references/persona.md` 渐进披露；每成员含 4 个版本化专属技能清单——对齐全局家族清单 SSOT；座右铭/五维职能与 agents/ SOUL 跨文件对齐由契约测试强制）+ `agents/`×8（ZCode subagent frontmatter 定义——补齐四件套 Subagent 缺口）+ `commands/`（audit/budget/freeze，高危二次确认）+ `hooks/guardrails_hook.py`（PreToolUse 注入检测，与产线同一规则引擎）+ `.mcp.json`（治理中枢 8 工具）；契约测试 `tests/unit/test_plugin_suite.py` 9 例随 CI
 
 plugin.json 结构（对齐 Claude Code Plugin spec）：
 ```json
@@ -187,7 +187,7 @@ plugin.json 结构（对齐 Claude Code Plugin spec）：
   "name": "yyc3-family-ai",
   "version": "3.1.0",
   "description": "YYC³ FAmily-AI · 1+8 拟人化协同智能体系统",
-  "skills": ["skills/tianshu.md", "skills/qianhang.md", "..."],
+  "skills": ["skills/meta-oracle.md", "skills/navigator.md", "..."],
   "commands": ["commands/audit.md", "commands/budget.md"],
   "mcpServers": {
     "yyc3-governance": {
@@ -266,7 +266,7 @@ yyc3-mdl = "yyc3_family.cli:mdl_validate"
 | 周 | 交付 |
 |---|---|
 | W1 | 路径 A：MCP server 工具面扩展（8 个工具）**✅ 2026-11-24 落地**（PR #58：tools/list 8 工具 + 每工具契约测试 20 passed；guardrails/semantic/durable 复用 hub 同构函数全链入审计）· 路径 C：pip 包骨架 **✅ 2026-11-24 落地**（`pyproject.toml` + `cli.py`：yyc3-family-ai 3.1.0 零依赖 flat py-modules 打包 5 模块，wheel 真机构建验证 METADATA/entry_points 三入口；yyc3-chat/audit/mdl 可用；`yyc3_family` src/ 命名空间迁移与 PyPI 发布列后续——避免动根模块导入面） |
-| W2 | 路径 B：Claude Code Plugin 封装（.claude-plugin/）+ npm 发布 |
+| W2 | 路径 B：Claude Code Plugin 封装（.claude-plugin/）**✅ 2026-11-26 落地**（skills/agents/commands/hooks/.mcp.json 五位一体 + 契约测试 7 例）· npm 发布列后续 |
 | W3 | 路径 C：pip 包 PyPI 发布 + Docker 镜像 + 文档 |
 | W4 | 集成测试 + 部署侧验收（PyPI 安装即用验证 / Claude Code 安装验证 / Docker 拉起验证） |
 

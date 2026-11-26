@@ -164,7 +164,7 @@ class ZeroTrustGateway:
                 PermissionCategory.VALUE: {PermissionAction.READ},
                 PermissionCategory.HEALING: {PermissionAction.READ, PermissionAction.WRITE},
             },
-            "千里·伯乐": {
+            "知遇·伯乐": {
                 PermissionCategory.RESOURCE: {PermissionAction.READ, PermissionAction.WRITE},
                 PermissionCategory.CAPABILITY: {PermissionAction.READ},
                 PermissionCategory.VALUE: {PermissionAction.READ, PermissionAction.WRITE},
@@ -207,7 +207,7 @@ class ZeroTrustGateway:
             "言启·千行": "navigator",
             "语枢·万物": "thinker",
             "预见·先知": "prophet",
-            "千里·伯乐": "recommender",
+            "知遇·伯乐": "recommender",
             "智云·守护": "sentinel",
             "格物·宗师": "master",
             "创想·灵韵": "muse",
