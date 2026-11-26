@@ -51,6 +51,12 @@ class TestPromptsEndpoints:
     def test_unknown_agent_404(self, gov_client):
         assert gov_client.get("/prompts/nonexistent").status_code == 404
 
+    def test_path_traversal_rejected(self, gov_client):
+        # 2026-11-26 审核固化（docs/14- §8.9）：filename 白名单 + safe_join 双重防护的探针契约
+        for evil in ("../../etc/passwd", "..\\..\\x", "a/../../b"):
+            r = gov_client.get(f"/prompts/bolero/{evil}")
+            assert r.status_code == 404, f"{evil} 未被拒绝"
+
 
 class TestTelemetryModule:
     """P2-3 telemetry 门面契约（降级模式，OTel 未安装）"""
