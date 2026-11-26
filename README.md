@@ -19,7 +19,7 @@ _万象归元于云枢 · 深栈智启新纪元_
 ### 构建与质量 · Build & Quality
 
 [![CI](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml/badge.svg)](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-261%20passed%20%2B%208%20skipped-2ea043?style=for-the-badge)
+![Tests](https://img.shields.io/badge/tests-323%20passed%20%2B%208%20skipped-2ea043?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Regression Gate](https://img.shields.io/badge/main%E5%88%86%E6%94%AF%E4%BF%9D%E6%8A%A4-CI%20%E5%9B%9B%E6%A3%80%E6%9F%A5%E5%BF%85%E7%BB%BF-0969da?style=for-the-badge)
@@ -87,7 +87,7 @@ _万象归元于云枢 · 深栈智启新纪元_
 | 🛡️ **统一治理** | 行为审计、Kill Switch 熔断、Token 预算、成本追踪、协同触发、上下文图谱 |
 | 📡 **流式对话** | `POST /chat/stream` SSE 逐 token（meta/delta/done/error 事件，治理上报同构） |
 | ⚡ **持久化执行** | 步骤级 checkpoint + correlation_id 断点恢复（失败重入不重复推理、预算零计费） |
-| 🧩 **协议互通** | MCP server（2026-07-28 stateless 子集，治理工具三件）+ MCP client + A2A Agent Card / tasks |
+| 🧩 **协议互通** | MCP server（2026-07-28 stateless 子集，治理工具八件）+ MCP client + A2A Agent Card / tasks |
 | 🛡️ **护栏管线** | 输入注入检测分级处置（block/degrade）+ 输出脱敏，全量入审计链 |
 | 🧬 **分层记忆** | Semantic 语义事实（抽取→去重合并→置信度衰减）+ Chroma 向量记忆，增删改入审计链 |
 | 📊 **评估基线** | golden set 24 例（规则断言离线可跑）+ LLM-judge 钩子，CI 结构门禁 |
@@ -232,7 +232,7 @@ flowchart LR
 | **Embedding** | `:8100` | 向量化服务，模型 `Qwen3-Embedding-8B` |
 | **Reranker** | `:8101` | 重排服务，模型 `Qwen3-Reranker-8B` |
 | **向量记忆** | `:8102` | ChromaDB 持久化记忆服务 |
-| **OpenShell 安全沙箱** | `:8080` | Agent 工具执行安全隔离 |
+| **OpenShell 安全沙箱** | `:8080` | Agent 工具执行安全隔离（规划中——产线暂无调用点，见 docs/14- P0-3） |
 
 ---
 
@@ -384,7 +384,7 @@ yyc3-family-ai-agents/
 | 协议 | MCP（2026-07-28 stateless 子集，server + client）· A2A（Agent Card / message.send）· SSE 流式 |
 | 韧性 | 步骤级 checkpoint 断点恢复 · 语义缓存 · vLLM 主备 failover · 语义缓存 TTL |
 | 部署 | Docker Compose v3 · systemd · DGX Spark N2 |
-| 安全 | OpenShell 安全沙箱 · 治理中枢 Kill Switch · ACS 策略 · 护栏管线（注入检测/输出脱敏）· pip-audit + SBOM 周扫 |
+| 安全 | 护栏管线（注入检测/输出脱敏）· 治理中枢 Kill Switch · ACS 策略 · 零信任 X-API-Key · OpenShell 沙箱（规划）· pip-audit + SBOM 周扫 |
 
 ---
 
