@@ -389,14 +389,14 @@ services:
     depends_on:
       - telemetry
 
-  # 千里·伯乐 (推荐官) - 个性化推荐与用户画像
+  # 知遇·伯乐 (推荐官) - 个性化推荐与用户画像
   qianli_bole:
     image: python:3.12-slim
     container_name: agent-qianli-bole
     ports:
       - "25604:6004"
     volumes:
-      - ./04-AI-Family-Agent/千里-伯乐推荐官:/workspace
+      - ./04-AI-Family-Agent/知遇-伯乐推荐官:/workspace
       - ./1308-代码示例-可观测性:/workspace/telemetry
     environment:
       - AGENT_NAME=qianli_bole

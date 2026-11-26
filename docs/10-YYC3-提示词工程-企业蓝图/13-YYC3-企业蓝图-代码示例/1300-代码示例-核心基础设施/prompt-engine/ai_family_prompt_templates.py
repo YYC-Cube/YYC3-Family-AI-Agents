@@ -28,7 +28,7 @@ class AgentRole(Enum):
     YANQI_QIANHANG = "言启·千行"
     YUSHU_WANWU = "语枢·万物"
     YUJIAN_XIANZHI = "预见·先知"
-    QIANLI_BOLE = "千里·伯乐"
+    QIANLI_BOLE = "知遇·伯乐"
     ZHIYUN_SHOUHU = "智云·守护"
     GEWU_ZONGSHI = "格物·宗师"
     CHUANGXIANG_LINGYUN = "创想·灵韵"
@@ -242,7 +242,7 @@ class AIFamilyPromptTemplateLibrary:
         self.templates[template.template_id] = template
 
     def _register_qianli_bole_templates(self):
-        """千里·伯乐 - 推荐官 - 个性化推荐与匹配"""
+        """知遇·伯乐 - 推荐官 - 个性化推荐与匹配"""
         
         template = AgentPromptTemplate(
             template_id="ZY-001",

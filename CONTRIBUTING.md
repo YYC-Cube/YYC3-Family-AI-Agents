@@ -78,7 +78,7 @@ docs/
 
 - type：`feat` / `fix` / `docs` / `refactor` / `chore` / `test` / `deploy`
 - scope：`agents` / `hub` / `server` / `docs` / `deploy` / `examples`
-- 示例：`docs(12/13): P0 一致性修复 — 命名归一千里·伯乐 + README 索引校正`
+- 示例：`docs(12/13): P0 一致性修复 — 命名归一知遇·伯乐 + README 索引校正`
 
 ### 版本与标签
 
@@ -131,7 +131,7 @@ docs/
 - 所有 md 文档遵循 YYC³ 品牌标头（人从众曌众从人 / 家训 / 使命）与标尾签名
 - YAML Front Matter 必填：`file` / `description` / `version` / `created` / `status`
 - 引用代码位置使用可点击链接：`[文件](file:///绝对路径#L123-L145)` 或仓库相对路径
-- 术语与《家人命名注册表》一致（如「千里·伯乐」，禁用历史旧称「知遇·伯乐」）
+- 术语与《家人命名注册表》一致（如「知遇·伯乐」，禁用历史旧称「知遇·伯乐」）
 - 敏感信息使用占位符：`${ENV_VAR}` 或 `[REDACTED]`
 
 ---

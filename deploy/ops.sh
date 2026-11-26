@@ -13,7 +13,7 @@ case "$CMD" in
         for svc in yyc3-governance yyc3-embedding yyc3-reranker yyc3-memory; do
             printf "%-20s %-10s\n" "$svc" "$(systemctl is-active $svc 2>/dev/null)"
         done
-        for a in tianshu qianxing wanwu xianzhi bole shouhu zongshi lingyun; do
+        for a in meta-oracle navigator thinker prophet bolero sentinel master creative; do
             printf "%-20s %-10s\n" "yyc3-agent@$a" "$(systemctl is-active yyc3-agent@$a 2>/dev/null)"
         done
         echo ""
@@ -47,7 +47,7 @@ except:
         sudo systemctl start yyc3-reranker
         sleep 20
         echo "  启动 8 Agent..."
-        for a in tianshu qianxing wanwu xianzhi bole shouhu zongshi lingyun; do
+        for a in meta-oracle navigator thinker prophet bolero sentinel master creative; do
             sudo systemctl start yyc3-agent@$a
         done
         sleep 3
@@ -56,7 +56,7 @@ except:
 
     stop)
         echo "停止 YYC3 全链路..."
-        for a in tianshu qianxing wanwu xianzhi bole shouhu zongshi lingyun; do
+        for a in meta-oracle navigator thinker prophet bolero sentinel master creative; do
             sudo systemctl stop yyc3-agent@$a 2>/dev/null
         done
         sudo systemctl stop yyc3-memory yyc3-reranker yyc3-embedding yyc3-governance 2>/dev/null
@@ -106,7 +106,7 @@ except:
         ;;
 
     unfreeze)
-        AGENT="${2:-tianshu}"
+        AGENT="${2:-meta-oracle}"
         echo "解冻 Agent: $AGENT"
         curl -s -X POST http://127.0.0.1:25700/unfreeze \
             -H 'Content-Type: application/json' \

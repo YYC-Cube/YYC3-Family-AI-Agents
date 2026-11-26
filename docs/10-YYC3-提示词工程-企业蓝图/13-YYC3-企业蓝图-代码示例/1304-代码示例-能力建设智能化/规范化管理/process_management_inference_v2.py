@@ -70,7 +70,7 @@ class ProcessOptimizationAIFamilyCoordinator:
     - 言启·千行: 流程导航与执行引导
     - 语枢·万物: 流程数据分析与瓶颈识别
     - 预见·先知: 流程风险预测与预警
-    - 千里·伯乐: 最佳实践推荐与对标
+    - 知遇·伯乐: 最佳实践推荐与对标
     - 智云·守护: 合规性检查与风险控制
     - 格物·宗师: 质量审核与标准控制
     - 创想·灵韵: 流程创新设计建议
@@ -326,7 +326,7 @@ class ProcessManagementIntelligenceV2:
                     "expected_impact": "+10%",
                     "effort": "低",
                     "timeline": "1个月",
-                    "agents_involved": ["千里·伯乐", "元启·天枢"]
+                    "agents_involved": ["知遇·伯乐", "元启·天枢"]
                 }
             ],
             "total_expected_improvement": f"{target_eff - current_eff:.1f}%",

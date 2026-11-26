@@ -918,7 +918,7 @@ class GrowthIntelligenceV2:
 | `yanqi_qianhang` | 言启·千行 | 导航员 | 流程引导、任务分解 |
 | `yushu_wanwu` | 语枢·万物 | 思考者 | 深度分析、洞察生成 |
 | `yujian_xianzhi` | 预见·先知 | 预言家 | 趋势预测、风险预警 |
-| `zhiyu_bole` | 千里·伯乐 | 推荐官 | 人才识别、资源匹配 |
+| `zhiyu_bole` | 知遇·伯乐 | 推荐官 | 人才识别、资源匹配 |
 | `zhiyun_shouhu` | 智云·守护 | 安全官 | 合规审查、风险控制 |
 | `gewu_zongshi` | 格物·宗师 | 质量官 | 质量保证、标准审核 |
 | `chuangxiang_lingyun` | 创想·灵韵 | 创意官 | 创新激发、方案生成 |

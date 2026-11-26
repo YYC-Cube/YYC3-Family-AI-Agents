@@ -11,6 +11,8 @@
 
 ### Added
 
+- **全局命名统一（英文 id + 正名回位）**：8 位家人标识符全量更名对齐家族全局注册表——`agents/` 目录、compose 服务/容器/hostname、systemd 实例（顺带消除千行 `qianxing`/`qianhang` 双写不一致）、hub `AGENT_ALIAS_MAP`/`DEFAULT_BUDGETS`/`COLLABORATION_RULES`/`FALLBACK_CHAIN`/ACS、tests/evals/golden/mdl、deploy 脚本统一为 `meta-oracle / navigator / thinker / prophet / bolero / sentinel / master / creative`（端口 25600-25607 不变）；hub 别名表重构为 canonical 英文 id + 中文全名/短名 + legacy 拼音三层（迁移兼容，`normalize_agent` 契约测试同步更新）；**「知遇·伯乐」随全局注册表回正为正名**（CI 命名守卫方向反转：千里·伯乐 判旧称禁入；蓝图族显示名同步 33 文件 + 原型示例目录/引用同步）；UAT 旧称断言翻转。pytest 323 passed + 8 skipped 全绿
+
 - **多Agent契约审核评估报告**：`docs/14-YYC3-Family-AI-Agent-多Agent契约审核评估报告.md`（v1.1.0）——基于角色契约（2026-11-26 生效版）多Agent条款的两轮全面审核。**一审**：四件套盘点（Skills 缺失/Plugin 仅计划/MCP 已落地 8 工具/Subagent 建议制协同）、契约九锚点代码取证（已实现 2 · 部分 6 · 完全缺失 1——规划/不可达目标评测）、契约四层 × 仓库九层映射、大数据多Agent生态对标（MCP 2026-07-28 外部核实仍为最新正式版）；P0×3 / P1×7 / P2×5 问题明细与 B1–B10 补全建议批次。**二审（v1.1.0 增补 §8）**：docs/10- 提示词工程蓝图全量深读（44 md + 61 代码文件）——确认「蓝图设计层/原型层/产线层」三层资产断层（对齐表未回写、Phase 勾选双向漂移、FNV-1a 审计链卖点失真待验证归属）、61 原型脚本为零 LLM 平行教学宇宙（27 文件死引用/6 死网关）、提示词工程实质含量仅 5 模板、1200 §八-B 模板人格错位与提示词诱导执行幻觉风险、B5/B8 修订为蓝图资产迁移+适配并新增 B11–B13（蓝图回写/死引用清理/提示词资产可落地通道）；一审修订表 + P1-8/P2-6 增补；文档地图同步登记（86 篇）
 
 - **文档架构规范化**：`docs/` 统一为编号分区（`10-` 提示词工程 / `20-` 技术维度 / `30-` 管理维度 / `90-` 归档）—— 目录名统一 `YYC3-Family-AI-Agent` 正式名；编号冲突修复（`1211-工程实现参考手册` → `1214`，与既有 1211 方案文档区分）；会话工作目录迁入 `90-归档-20260914-会话工作目录/`（只读历史）；`docs/README.md` 重写为唯一导航入口并新增文档规范（目录编号/文件命名/front matter/链接/归档/维护）；归档文档绝对本机路径与外链归一为仓库相对路径；**移除 `.github/README.md`**——GitHub 仓库首页 README 渲染优先级为 `.github/README.md` → `README.md` → `docs/README.md`，该文件会遮蔽根 README，删除后根 README 为唯一项目首页

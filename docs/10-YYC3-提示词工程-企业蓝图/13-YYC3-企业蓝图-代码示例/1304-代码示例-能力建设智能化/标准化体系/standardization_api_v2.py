@@ -173,7 +173,7 @@ def get_agents_info():
         {"id": "yanqi_qianhang", "name": "言启·千行", "role": "导航员", "capability": "标准检索导航"},
         {"id": "yushu_wanwu", "name": "语枢·万物", "role": "思考者", "capability": "内容分析推理"},
         {"id": "yujian_xianzhi", "name": "预见·先知", "role": "预言家", "capability": "风险预测预警"},
-        {"id": "qianli_bole", "name": "千里·伯乐", "role": "推荐官", "capability": "最佳实践推荐"},
+        {"id": "bolero", "name": "知遇·伯乐", "role": "推荐官", "capability": "最佳实践推荐"},
         {"id": "zhiyun_shouhu", "name": "智云·守护", "role": "安全官", "capability": "合规安全审计"},
         {"id": "gewu_zongshi", "name": "格物·宗师", "role": "质量官", "capability": "质量审核控制"},
         {"id": "chuangxiang_lingyun", "name": "创想·灵韵", "role": "创意官", "capability": "文档生成优化"}

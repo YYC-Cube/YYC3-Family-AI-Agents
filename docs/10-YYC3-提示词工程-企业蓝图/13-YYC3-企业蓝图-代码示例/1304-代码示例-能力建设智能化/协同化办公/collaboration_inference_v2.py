@@ -63,7 +63,7 @@ class CollaborationAIFamilyCoordinator:
     - 言启·千行: 流程导航与任务引导
     - 语枢·万物: 团队效能数据分析
     - 预见·先知: 项目风险预测
-    - 千里·伯乐: 人才匹配推荐
+    - 知遇·伯乐: 人才匹配推荐
     - 智云·守护: 信息安全与权限管理
     - 格物·宗师: 知识质量控制
     - 创想·灵韵: 协作创新建议
@@ -314,7 +314,7 @@ class CollaborationIntelligenceV2:
                     "initiative": "任务智能分配",
                     "description": "基于技能匹配和工作负载的任务自动分配",
                     "expected_impact": "效率提升25%",
-                    "agents_involved": ["千里·伯乐", "言启·千行"]
+                    "agents_involved": ["知遇·伯乐", "言启·千行"]
                 },
                 {
                     "initiative": "知识共享促进",

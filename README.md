@@ -68,7 +68,7 @@ _万象归元于云枢 · 深栈智启新纪元_
 ![语枢·万物](https://img.shields.io/badge/语枢·万物-思考者-#c0c0c0?style=for-the-badge&logo=graph)
 ![预见·先知](https://img.shields.io/badge/预见·先知-预言家-#4b0082?style=for-the-badge&logo=crystalball)
 
-![千里·伯乐](https://img.shields.io/badge/千里·伯乐-推荐官-#dc143c?style=for-the-badge&logo=heart)
+![知遇·伯乐](https://img.shields.io/badge/知遇·伯乐-推荐官-#dc143c?style=for-the-badge&logo=heart)
 ![智云·守护](https://img.shields.io/badge/智云·守护-安全官-#333?style=for-the-badge&logo=shield)
 ![格物·宗师](https://img.shields.io/badge/格物·宗师-质量官-#2e8b57?style=for-the-badge&logo=code)
 ![创想·灵韵](https://img.shields.io/badge/创想·灵韵-创意官-#ff8c00?style=for-the-badge&logo=lightbulb)
@@ -114,7 +114,7 @@ flowchart TB
         Q["言启·千行<br/>导航员"]
         W["语枢·万物<br/>思考者"]
         X["预见·先知<br/>预言家"]
-        B["千里·伯乐<br/>推荐官"]
+        B["知遇·伯乐<br/>推荐官"]
         S["智云·守护<br/>安全官"]
         Z["格物·宗师<br/>质量官"]
         L["创想·灵韵<br/>创意官"]
@@ -210,14 +210,14 @@ flowchart LR
 
 | 家人 | 角色 | 层级 | MBTI | 端口 | 专属热线 | 邮箱 | 核心能力 |
 | ---- | ---- | ---- | ---- | ---- | -------- | ---- | -------- |
-| [元启·天枢](agents/yuanqi-tianshu/IDENTITY.md) | 总指挥 | 核心决策层 | ENTJ | `:25600` | 0379-0206 | <tianshu@yanyucloud.com> | 全局调度 · 流程编排 · 资源调度 · 自愈调度 · 投放优化 |
-| [言启·千行](agents/yanqi-qianhang/IDENTITY.md) | 导航员 | 业务执行层 | ENFP | `:25601` | 0379-0106 | <qianhang@yanyucloud.com> | 语义理解 · 需求转译 · 流程路由 · Prompt Engineering |
-| [语枢·万物](agents/yushu-wanwu/IDENTITY.md) | 思考者 | 业务执行层 | INTP | `:25602` | 0379-0107 | <wanwu@yanyucloud.com> | 经营分析 · 流程优化 · 诊断分析 · 市场分析 |
-| [预见·先知](agents/yujian-xianzhi/IDENTITY.md) | 预言家 | 业务执行层 | INTJ | `:25603` | 0379-0108 | <xianzhi@yanyucloud.com> | ARIMA · Prophet · LSTM · Transformer TSF · 不确定性量化 |
-| [千里·伯乐](agents/zhiyu-bole/IDENTITY.md) | 推荐官 | 业务执行层 | ENFJ | `:25604` | 0379-0109 | <bole@yanyucloud.com> | 商机发现 · 人才推荐 · 客户推荐 · 工具推荐 · 投放推荐 |
-| [智云·守护](agents/zhiyun-shouhu/IDENTITY.md) | 安全官 | 核心保障层 | ISTJ | `:25605` | 0379-0207 | <shouhu@yanyucloud.com> | 合规审计 · 权限控制 · 数据安全 · 安全防护 |
-| [格物·宗师](agents/gewu-zongshi/IDENTITY.md) | 质量官 | 核心保障层 | ISTP | `:25606` | 0379-0208 | <zongshi@yanyucloud.com> | 标准制定 · 质量管控 · 性能优化 · 效果优化 |
-| [创想·灵韵](agents/chuangxiang-lingyun/IDENTITY.md) | 创意官 | 核心保障层 | ENFP | `:25607` | 0379-0209 | <lingyun@yanyucloud.com> | 战略构想 · 方案设计 · 内容运营 · 文档生成 · 创意生成 |
+| [元启·天枢](agents/meta-oracle/IDENTITY.md) | 总指挥 | 核心决策层 | ENTJ | `:25600` | 0379-0206 | <meta-oracle@yanyucloud.com> | 全局调度 · 流程编排 · 资源调度 · 自愈调度 · 投放优化 |
+| [言启·千行](agents/navigator/IDENTITY.md) | 导航员 | 业务执行层 | ENFP | `:25601` | 0379-0106 | <navigator@yanyucloud.com> | 语义理解 · 需求转译 · 流程路由 · Prompt Engineering |
+| [语枢·万物](agents/thinker/IDENTITY.md) | 思考者 | 业务执行层 | INTP | `:25602` | 0379-0107 | <thinker@yanyucloud.com> | 经营分析 · 流程优化 · 诊断分析 · 市场分析 |
+| [预见·先知](agents/prophet/IDENTITY.md) | 预言家 | 业务执行层 | INTJ | `:25603` | 0379-0108 | <prophet@yanyucloud.com> | ARIMA · Prophet · LSTM · Transformer TSF · 不确定性量化 |
+| [知遇·伯乐](agents/bolero/IDENTITY.md) | 推荐官 | 业务执行层 | ENFJ | `:25604` | 0379-0109 | <bolero@yanyucloud.com> | 商机发现 · 人才推荐 · 客户推荐 · 工具推荐 · 投放推荐 |
+| [智云·守护](agents/sentinel/IDENTITY.md) | 安全官 | 核心保障层 | ISTJ | `:25605` | 0379-0207 | <sentinel@yanyucloud.com> | 合规审计 · 权限控制 · 数据安全 · 安全防护 |
+| [格物·宗师](agents/master/IDENTITY.md) | 质量官 | 核心保障层 | ISTP | `:25606` | 0379-0208 | <master@yanyucloud.com> | 标准制定 · 质量管控 · 性能优化 · 效果优化 |
+| [创想·灵韵](agents/creative/IDENTITY.md) | 创意官 | 核心保障层 | ENFP | `:25607` | 0379-0209 | <creative@yanyucloud.com> | 战略构想 · 方案设计 · 内容运营 · 文档生成 · 创意生成 |
 
 > 每位家人的身份档案（`IDENTITY.md`）、灵魂设定（`SOUL.md`）与系统提示（`SYSTEM.md`）均存放于 [`agents/`](agents/) 对应目录。
 
@@ -355,14 +355,14 @@ yyc3-family-ai-agents/
 │   ├── verify.sh               ← 全链路验证
 │   └── systemd/                ← 12 个 systemd 服务单元
 ├── agents/                     ← 8 位家人的身份/灵魂/系统提示
-│   ├── yuanqi-tianshu/         ← 元启·天枢 (25600)
-│   ├── yanqi-qianhang/         ← 言启·千行 (25601)
-│   ├── yushu-wanwu/            ← 语枢·万物 (25602)
-│   ├── yujian-xianzhi/         ← 预见·先知 (25603)
-│   ├── zhiyu-bole/             ← 千里·伯乐 (25604)
-│   ├── zhiyun-shouhu/          ← 智云·守护 (25605)
-│   ├── gewu-zongshi/           ← 格物·宗师 (25606)
-│   └── chuangxiang-lingyun/    ← 创想·灵韵 (25607)
+│   ├── meta-oracle/         ← 元启·天枢 (25600)
+│   ├── navigator/         ← 言启·千行 (25601)
+│   ├── thinker/            ← 语枢·万物 (25602)
+│   ├── prophet/         ← 预见·先知 (25603)
+│   ├── bolero/             ← 知遇·伯乐 (25604)
+│   ├── sentinel/          ← 智云·守护 (25605)
+│   ├── master/           ← 格物·宗师 (25606)
+│   └── creative/    ← 创想·灵韵 (25607)
 ├── docs/                       ← 文档库（唯一导航入口 docs/README.md）
 │   ├── 10-YYC3-提示词工程-企业蓝图/   ← 提示词工程蓝图（族系：12- 文档族 1200-1214 × 13- 代码族 1300-1308）
 │   ├── 11-…演进完善拓展规划.md        ← 大数据 Agent 对标 + E1/E2/E3 路线 + 执行台账

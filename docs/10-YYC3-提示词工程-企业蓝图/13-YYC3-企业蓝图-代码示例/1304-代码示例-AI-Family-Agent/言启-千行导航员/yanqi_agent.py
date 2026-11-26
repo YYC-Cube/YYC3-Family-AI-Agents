@@ -95,7 +95,7 @@ class YanQiQianHangAgent:
             "slo": {"availability": 0.995, "latency_p99": 15000},
             "fallback": "语枢·万物",
         },
-        "千里·伯乐": {
+        "知遇·伯乐": {
             "endpoint": "http://localhost:6004",
             "capabilities": ["个性化推荐", "用户画像", "资源匹配", "协同过滤"],
             "slo": {"availability": 0.995, "latency_p99": 5000},
@@ -494,7 +494,7 @@ class YanQiQianHangAgent:
             "数据分析": "语枢·万物",
             "内容创作": "创想·灵韵",
             "预测规划": "预见·先知",
-            "推荐系统": "千里·伯乐",
+            "推荐系统": "知遇·伯乐",
             "资源调度": "元启·天枢",
             "安全审计": "智云·守护",
             "质量管控": "格物·宗师",
