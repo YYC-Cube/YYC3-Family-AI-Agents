@@ -11,6 +11,7 @@
 
 ### Added
 
+- **插件件套 W2 路径 B 落地（.claude-plugin/ 五位一体）**：`plugin.json` 3.1.0 + **Skills ×8**（英文 id 人格入口，含五维价值矩阵主责映射与权威源指针）+ **Agents ×8**（ZCode subagent frontmatter 定义——补齐四件套 Subagent 缺口）+ **Commands ×3**（audit/budget/freeze，高危二次确认）+ **Hooks**（`guardrails_hook.py` PreToolUse 注入检测，与产线 `/chat` 同一规则引擎，block 决策输出）+ **`.mcp.json`**（治理中枢 8 工具，密钥走 `${YYC3_MCP_KEY}` 环境变量）；契约测试 `tests/unit/test_plugin_suite.py` 7 例随 CI（清单有效性/frontmatter/与 agents/ 目录对齐/MCP 指向/禁硬编码密钥）；MCP 件套此前已落地（README 工具面滞后已随 #63 修正）——**四件套状态：Skills ✅ / Plugin ✅ / MCP ✅ / Subagent ✅**（真实跨代理派发执行属 B3 另批）
 - **五维价值矩阵对齐审核（docs/14- §8.9 v1.2.0）**：以正典矩阵（管理职能①→资源管理②→能力建设③→价值创造④→自愈链路⑤）核验 docs/10- 五模块——内部维度声明与五字域覆盖 5/5 全对齐，唯一错位为 1202/1203/1204 目录编号序；**不采用重排**（编号治理规范「不复用不重排」+ 引用刚收口），采用「维度序↔模块号」映射表落分区 README；伪代码语法修复 3 处（120405 百分号字面量/120102 变量截断/120201 self 越界）；Mimosa prompts_overview finding 复核闭环（实有白名单+safe_join 双重防护，判启发式保守标记，新增 traversal 探针契约测试固化）
 
 - **全局命名统一（英文 id + 正名回位）**：8 位家人标识符全量更名对齐家族全局注册表——`agents/` 目录、compose 服务/容器/hostname、systemd 实例（顺带消除千行 `qianxing`/`qianhang` 双写不一致）、hub `AGENT_ALIAS_MAP`/`DEFAULT_BUDGETS`/`COLLABORATION_RULES`/`FALLBACK_CHAIN`/ACS、tests/evals/golden/mdl、deploy 脚本统一为 `meta-oracle / navigator / thinker / prophet / bolero / sentinel / master / creative`（端口 25600-25607 不变）；hub 别名表重构为 canonical 英文 id + 中文全名/短名 + legacy 拼音三层（迁移兼容，`normalize_agent` 契约测试同步更新）；**「知遇·伯乐」随全局注册表回正为正名**（CI 命名守卫方向反转：千里·伯乐 判旧称禁入；蓝图族显示名同步 33 文件 + 原型示例目录/引用同步）；UAT 旧称断言翻转。pytest 323 passed + 8 skipped 全绿

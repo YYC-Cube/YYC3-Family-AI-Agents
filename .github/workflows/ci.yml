@@ -18,6 +18,7 @@ jobs:
       - name: py_compile 生产运行时
         run: |
           python3 -m py_compile agent_server.py governance_hub.py
+          python3 -m py_compile .claude-plugin/hooks/guardrails_hook.py
       - name: py_compile 文档代码族
         run: |
           find docs/10-YYC3-提示词工程-企业蓝图/13-YYC3-企业蓝图-代码示例 -name "*.py" -not -path "*__pycache__*" -print0 | xargs -0 -r -n1 python3 -m py_compile
