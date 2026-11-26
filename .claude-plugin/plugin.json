@@ -4,14 +4,14 @@
   "description": "YYC³ FAmily-AI · 1+8 拟人化协同智能体系统——Skills（8 人格）+ Agents（8 Subagent 定义）+ Commands（审计/预算/熔断）+ Hooks（注入检测）+ MCP（治理中枢 8 工具）五位一体插件",
   "author": "YanYuCloudCube Team <admin@0379.email>",
   "skills": [
-    "skills/meta-oracle.md",
-    "skills/navigator.md",
-    "skills/thinker.md",
-    "skills/prophet.md",
-    "skills/bolero.md",
-    "skills/sentinel.md",
-    "skills/master.md",
-    "skills/creative.md"
+    "skills/meta-oracle/SKILL.md",
+    "skills/navigator/SKILL.md",
+    "skills/thinker/SKILL.md",
+    "skills/prophet/SKILL.md",
+    "skills/bolero/SKILL.md",
+    "skills/sentinel/SKILL.md",
+    "skills/master/SKILL.md",
+    "skills/creative/SKILL.md"
   ],
   "agents": [
     "agents/meta-oracle.md",

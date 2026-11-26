@@ -11,6 +11,8 @@
 
 ### Added
 
+- **技能库全量对齐（Skills v3 · 目录式重构）**：对齐三重基准——开源 Agent Skills 标准（anthropics/skills 形态，已捐赠 Agentic AI Foundation：文件夹式 SKILL.md + 渐进披露）、全局家族清单模式（每成员 4 个版本化专属技能 `<id>.<skill>` v1.0.0，命名对齐部署侧 MCP 工具面；委托矩阵入协作协议）、agents/ 运行时人格（references/persona.md 全量派生 SOUL：座右铭/五维职能全表/行为约束/协同家族/家族誓言）；平铺 8 文件 → `skills/<id>/{SKILL.md, references/persona.md}` ×8 + 库索引（对齐矩阵）；**对齐门禁**：契约测试新增座右铭逐字对齐 SOUL 跨文件断言 + 专属技能恰 4 个断言 + 目录式结构断言（9 例）；人格单一事实源不变（agents/ 三件套），技能库为派生视图。pytest **342 passed + 8 skipped** 全绿
+
 - **架构完善批（B3 编排真实化 + B4 不可达目标评测，评测先行内嵌）**：`agent_server` 新增 `POST /delegate` 跨家人真实委托——目标白名单（`YYC3_FAMILY_ENDPOINTS` env，英文 id，无用户可控 URL 拼接）+ 深度上限 ≤2（`YYC3_DELEGATE_DEPTH_MAX`）+ 自委托拒绝 + 任务过产线护栏（block→422）+ 返回过输出脱敏 + `delegate_dispatch/delegate_result` 双审计事件与 correlation_id 贯穿（预算按链各自记账）；golden 增 `unreachable_goal` 类目 4 例（虚报委派/虚报路由成功/编造精确数字/虚报批量完成断言，契约锚点③）+ `meta-oracle SYSTEM.md` v3.2 编排协议（任务卡 JSON + 诚实红线：未经 /delegate 严禁声称已委派/已完成）——直接封堵提示词诱导执行幻觉风险；**技能库 v2**：Skills ×8 升级为完整技能（决策框架/输出契约/协作协议/评测锚点）；Agent Card 契约回迁（capabilities.delegation + security + slo，源自 1207/1208/1214）。契约测试 test_delegation.py 9 例（werkzeug stub 真实 HTTP 出站）。pytest **340 passed + 8 skipped** 全绿
 
 - **插件件套 W2 路径 B 落地（.claude-plugin/ 五位一体）**：`plugin.json` 3.1.0 + **Skills ×8**（英文 id 人格入口，含五维价值矩阵主责映射与权威源指针）+ **Agents ×8**（ZCode subagent frontmatter 定义——补齐四件套 Subagent 缺口）+ **Commands ×3**（audit/budget/freeze，高危二次确认）+ **Hooks**（`guardrails_hook.py` PreToolUse 注入检测，与产线 `/chat` 同一规则引擎，block 决策输出）+ **`.mcp.json`**（治理中枢 8 工具，密钥走 `${YYC3_MCP_KEY}` 环境变量）；契约测试 `tests/unit/test_plugin_suite.py` 7 例随 CI（清单有效性/frontmatter/与 agents/ 目录对齐/MCP 指向/禁硬编码密钥）；MCP 件套此前已落地（README 工具面滞后已随 #63 修正）——**四件套状态：Skills ✅ / Plugin ✅ / MCP ✅ / Subagent ✅**（真实跨代理派发执行属 B3 另批）

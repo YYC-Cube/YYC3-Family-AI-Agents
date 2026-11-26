@@ -2,7 +2,7 @@
 file: "14-YYC3-Family-AI-Agent-多Agent契约审核评估报告.md"
 description: "基于角色契约（2026-11-26 生效版）多Agent条款的全面多维审核：四件套盘点、契约九锚点代码取证、四层×九层映射、大数据多Agent生态对标，产出 P0/P1/P2 问题明细与 B1-B10 补全建议批次"
 author: "YanYuCloudCube Team <admin@0379.email>"
-version: "v1.3.0"
+version: "v1.4.0"
 created: "2026-11-26"
 updated: "2026-11-26"
 status: "review"
@@ -384,6 +384,18 @@ complexity: advanced
 **验证**：pytest **340 passed + 8 skipped**（新增委托契约 9 例：成功回环/深度拒绝/未知目标/自委托/护栏拦截/冻结拒绝/不可达 502/输出脱敏/缺参 400——目标家人以 werkzeug 随机端口 stub 真实 HTTP 承载）；命名/端口守卫 PASS。
 
 **剩余（后续批）**：B5 间接注入（1307 正则迁移 + 检视面扩展）、B6 工具调用评测层、B7/B8/B10、B9 跨网 A2A；委托链熔断深度/无进展检测可在 B5 后按运行数据调优。
+
+### 8.11 技能库全量对齐（2026-11-26 第五批 · 开源标准 × 全局清单 × agents/ 三重对齐）
+
+**依据**：用户指令「基于文档规划，使用技能调取同类型开源 Skills 库，进行设计全量对齐 agents 的技能库」。三重基准调取：① 官方 skill-creator（开源技能设计规范：文件夹式 SKILL.md + frontmatter 推式触发 + **渐进披露三层** + `.agents/skills/` 标准位）；② 全局家族库样本 `yyc3-meta-oracle`（**每成员 4 个版本化专属技能** + 委托矩阵 + family-manifest SSOT 派生视图纪律）；③ 外部对标 anthropics/skills 开放标准（已捐赠 Agentic AI Foundation）。
+
+**对齐交付（Skills v3，目录式重构）**：
+1. 结构对齐开源标准：平铺 8 文件 → `skills/<id>/SKILL.md` + `references/persona.md`（渐进披露：入口精要 / 人格深表按需读取）+ 库索引 `skills/README.md`（对齐矩阵：id×名号×端口×专属技能×golden 锚点）；
+2. 对齐全局家族清单：每成员声明 **4 个版本化专属技能**（`<id>.<skill>` v1.0.0，命名与部署侧 MCP 工具面逐一对应，如 `meta-oracle.task-decomposition` / `thinker.root-cause` / `sentinel.incident-response`）；委托矩阵入协作协议（来自/去向 × 动作）；
+3. 对齐 agents/ 运行时人格：`references/persona.md` 全量派生 SOUL（座右铭/推理类型/**五维管理职能全表**/行为约束全量/协同家族/家族誓言），SKILL.md 推式 description + 权威源指针；
+4. **对齐门禁**：契约测试新增「座右铭逐字对齐 SOUL」跨文件断言 + 「专属技能恰 4 个」断言 + 目录式/渐进披露结构断言（9 例）。
+
+**验证**：pytest **342 passed + 8 skipped** 全绿。人格单一事实源不变（agents/ 三件套），本库为派生视图纪律与全局一致。
 
 ---
 

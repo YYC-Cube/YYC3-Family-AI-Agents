@@ -179,7 +179,7 @@ result = guard.inspect_input("用户问题")
 
 ### Step 2：Claude Code Plugin 封装（`.claude-plugin/` 目录）——✅ 已落地（2026-11-26）
 
-**已落地文件**（五位一体，对齐全局注册表 8 英文 id）：`plugin.json` 3.1.0 + `skills/`×8（人格入口，含五维价值矩阵主责映射与权威源指针）+ `agents/`×8（ZCode subagent frontmatter 定义——补齐四件套 Subagent 缺口）+ `commands/`（audit/budget/freeze，高危二次确认）+ `hooks/guardrails_hook.py`（PreToolUse 注入检测，与产线同一规则引擎）+ `.mcp.json`（治理中枢 8 工具）；契约测试 `tests/unit/test_plugin_suite.py` 7 例随 CI
+**已落地文件**（五位一体，对齐全局注册表 8 英文 id）：`plugin.json` 3.1.0 + `skills/`×8 **目录式技能**（开源 Agent Skills 标准形态：`SKILL.md` + `references/persona.md` 渐进披露；每成员含 4 个版本化专属技能清单——对齐全局家族清单 SSOT；座右铭/五维职能与 agents/ SOUL 跨文件对齐由契约测试强制）+ `agents/`×8（ZCode subagent frontmatter 定义——补齐四件套 Subagent 缺口）+ `commands/`（audit/budget/freeze，高危二次确认）+ `hooks/guardrails_hook.py`（PreToolUse 注入检测，与产线同一规则引擎）+ `.mcp.json`（治理中枢 8 工具）；契约测试 `tests/unit/test_plugin_suite.py` 9 例随 CI
 
 plugin.json 结构（对齐 Claude Code Plugin spec）：
 ```json
