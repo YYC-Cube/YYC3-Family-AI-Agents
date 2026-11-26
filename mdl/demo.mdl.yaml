@@ -14,7 +14,7 @@ permissions:
     users: [user_id, name, city, created_at]
     events: [event_id, user_id, event_type, created_at]
   agents:
-    bole:
+    bolero:
       users:
         columns: [user_id, city]
 tables:

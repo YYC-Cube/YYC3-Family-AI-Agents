@@ -11,7 +11,7 @@ sys.path.insert(0, str(REPO / "evals"))
 import run_evals  # noqa: E402
 
 GOLDEN = REPO / "evals" / "golden" / "golden_cases.json"
-FAMILY = {"tianshu", "qianxing", "wanwu", "xianzhi", "bole", "shouhu", "zongshi", "lingyun"}
+FAMILY = {"meta-oracle", "navigator", "thinker", "prophet", "bolero", "sentinel", "master", "creative"}
 VALID_RULE_KEYS = {"must_include_any", "must_include_all", "must_not_include", "min_length", "max_length"}
 
 

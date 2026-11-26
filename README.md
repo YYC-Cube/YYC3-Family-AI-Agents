@@ -19,7 +19,7 @@ _万象归元于云枢 · 深栈智启新纪元_
 ### 构建与质量 · Build & Quality
 
 [![CI](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml/badge.svg)](https://github.com/YYC-Cube/YYC3-Family-AI-Agents/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-261%20passed%20%2B%208%20skipped-2ea043?style=for-the-badge)
+![Tests](https://img.shields.io/badge/tests-323%20passed%20%2B%208%20skipped-2ea043?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![Regression Gate](https://img.shields.io/badge/main%E5%88%86%E6%94%AF%E4%BF%9D%E6%8A%A4-CI%20%E5%9B%9B%E6%A3%80%E6%9F%A5%E5%BF%85%E7%BB%BF-0969da?style=for-the-badge)
@@ -68,7 +68,7 @@ _万象归元于云枢 · 深栈智启新纪元_
 ![语枢·万物](https://img.shields.io/badge/语枢·万物-思考者-#c0c0c0?style=for-the-badge&logo=graph)
 ![预见·先知](https://img.shields.io/badge/预见·先知-预言家-#4b0082?style=for-the-badge&logo=crystalball)
 
-![千里·伯乐](https://img.shields.io/badge/千里·伯乐-推荐官-#dc143c?style=for-the-badge&logo=heart)
+![知遇·伯乐](https://img.shields.io/badge/知遇·伯乐-推荐官-#dc143c?style=for-the-badge&logo=heart)
 ![智云·守护](https://img.shields.io/badge/智云·守护-安全官-#333?style=for-the-badge&logo=shield)
 ![格物·宗师](https://img.shields.io/badge/格物·宗师-质量官-#2e8b57?style=for-the-badge&logo=code)
 ![创想·灵韵](https://img.shields.io/badge/创想·灵韵-创意官-#ff8c00?style=for-the-badge&logo=lightbulb)
@@ -87,7 +87,7 @@ _万象归元于云枢 · 深栈智启新纪元_
 | 🛡️ **统一治理** | 行为审计、Kill Switch 熔断、Token 预算、成本追踪、协同触发、上下文图谱 |
 | 📡 **流式对话** | `POST /chat/stream` SSE 逐 token（meta/delta/done/error 事件，治理上报同构） |
 | ⚡ **持久化执行** | 步骤级 checkpoint + correlation_id 断点恢复（失败重入不重复推理、预算零计费） |
-| 🧩 **协议互通** | MCP server（2026-07-28 stateless 子集，治理工具三件）+ MCP client + A2A Agent Card / tasks |
+| 🧩 **协议互通** | MCP server（2026-07-28 stateless 子集，治理工具八件）+ MCP client + A2A Agent Card / tasks |
 | 🛡️ **护栏管线** | 输入注入检测分级处置（block/degrade）+ 输出脱敏，全量入审计链 |
 | 🧬 **分层记忆** | Semantic 语义事实（抽取→去重合并→置信度衰减）+ Chroma 向量记忆，增删改入审计链 |
 | 📊 **评估基线** | golden set 24 例（规则断言离线可跑）+ LLM-judge 钩子，CI 结构门禁 |
@@ -114,7 +114,7 @@ flowchart TB
         Q["言启·千行<br/>导航员"]
         W["语枢·万物<br/>思考者"]
         X["预见·先知<br/>预言家"]
-        B["千里·伯乐<br/>推荐官"]
+        B["知遇·伯乐<br/>推荐官"]
         S["智云·守护<br/>安全官"]
         Z["格物·宗师<br/>质量官"]
         L["创想·灵韵<br/>创意官"]
@@ -210,14 +210,14 @@ flowchart LR
 
 | 家人 | 角色 | 层级 | MBTI | 端口 | 专属热线 | 邮箱 | 核心能力 |
 | ---- | ---- | ---- | ---- | ---- | -------- | ---- | -------- |
-| [元启·天枢](agents/yuanqi-tianshu/IDENTITY.md) | 总指挥 | 核心决策层 | ENTJ | `:25600` | 0379-0206 | <tianshu@yanyucloud.com> | 全局调度 · 流程编排 · 资源调度 · 自愈调度 · 投放优化 |
-| [言启·千行](agents/yanqi-qianhang/IDENTITY.md) | 导航员 | 业务执行层 | ENFP | `:25601` | 0379-0106 | <qianhang@yanyucloud.com> | 语义理解 · 需求转译 · 流程路由 · Prompt Engineering |
-| [语枢·万物](agents/yushu-wanwu/IDENTITY.md) | 思考者 | 业务执行层 | INTP | `:25602` | 0379-0107 | <wanwu@yanyucloud.com> | 经营分析 · 流程优化 · 诊断分析 · 市场分析 |
-| [预见·先知](agents/yujian-xianzhi/IDENTITY.md) | 预言家 | 业务执行层 | INTJ | `:25603` | 0379-0108 | <xianzhi@yanyucloud.com> | ARIMA · Prophet · LSTM · Transformer TSF · 不确定性量化 |
-| [千里·伯乐](agents/zhiyu-bole/IDENTITY.md) | 推荐官 | 业务执行层 | ENFJ | `:25604` | 0379-0109 | <bole@yanyucloud.com> | 商机发现 · 人才推荐 · 客户推荐 · 工具推荐 · 投放推荐 |
-| [智云·守护](agents/zhiyun-shouhu/IDENTITY.md) | 安全官 | 核心保障层 | ISTJ | `:25605` | 0379-0207 | <shouhu@yanyucloud.com> | 合规审计 · 权限控制 · 数据安全 · 安全防护 |
-| [格物·宗师](agents/gewu-zongshi/IDENTITY.md) | 质量官 | 核心保障层 | ISTP | `:25606` | 0379-0208 | <zongshi@yanyucloud.com> | 标准制定 · 质量管控 · 性能优化 · 效果优化 |
-| [创想·灵韵](agents/chuangxiang-lingyun/IDENTITY.md) | 创意官 | 核心保障层 | ENFP | `:25607` | 0379-0209 | <lingyun@yanyucloud.com> | 战略构想 · 方案设计 · 内容运营 · 文档生成 · 创意生成 |
+| [元启·天枢](agents/meta-oracle/IDENTITY.md) | 总指挥 | 核心决策层 | ENTJ | `:25600` | 0379-0206 | <meta-oracle@yanyucloud.com> | 全局调度 · 流程编排 · 资源调度 · 自愈调度 · 投放优化 |
+| [言启·千行](agents/navigator/IDENTITY.md) | 导航员 | 业务执行层 | ENFP | `:25601` | 0379-0106 | <navigator@yanyucloud.com> | 语义理解 · 需求转译 · 流程路由 · Prompt Engineering |
+| [语枢·万物](agents/thinker/IDENTITY.md) | 思考者 | 业务执行层 | INTP | `:25602` | 0379-0107 | <thinker@yanyucloud.com> | 经营分析 · 流程优化 · 诊断分析 · 市场分析 |
+| [预见·先知](agents/prophet/IDENTITY.md) | 预言家 | 业务执行层 | INTJ | `:25603` | 0379-0108 | <prophet@yanyucloud.com> | ARIMA · Prophet · LSTM · Transformer TSF · 不确定性量化 |
+| [知遇·伯乐](agents/bolero/IDENTITY.md) | 推荐官 | 业务执行层 | ENFJ | `:25604` | 0379-0109 | <bolero@yanyucloud.com> | 商机发现 · 人才推荐 · 客户推荐 · 工具推荐 · 投放推荐 |
+| [智云·守护](agents/sentinel/IDENTITY.md) | 安全官 | 核心保障层 | ISTJ | `:25605` | 0379-0207 | <sentinel@yanyucloud.com> | 合规审计 · 权限控制 · 数据安全 · 安全防护 |
+| [格物·宗师](agents/master/IDENTITY.md) | 质量官 | 核心保障层 | ISTP | `:25606` | 0379-0208 | <master@yanyucloud.com> | 标准制定 · 质量管控 · 性能优化 · 效果优化 |
+| [创想·灵韵](agents/creative/IDENTITY.md) | 创意官 | 核心保障层 | ENFP | `:25607` | 0379-0209 | <creative@yanyucloud.com> | 战略构想 · 方案设计 · 内容运营 · 文档生成 · 创意生成 |
 
 > 每位家人的身份档案（`IDENTITY.md`）、灵魂设定（`SOUL.md`）与系统提示（`SYSTEM.md`）均存放于 [`agents/`](agents/) 对应目录。
 
@@ -232,7 +232,7 @@ flowchart LR
 | **Embedding** | `:8100` | 向量化服务，模型 `Qwen3-Embedding-8B` |
 | **Reranker** | `:8101` | 重排服务，模型 `Qwen3-Reranker-8B` |
 | **向量记忆** | `:8102` | ChromaDB 持久化记忆服务 |
-| **OpenShell 安全沙箱** | `:8080` | Agent 工具执行安全隔离 |
+| **OpenShell 安全沙箱** | `:8080` | Agent 工具执行安全隔离（规划中——产线暂无调用点，见 docs/14- P0-3） |
 
 ---
 
@@ -355,14 +355,14 @@ yyc3-family-ai-agents/
 │   ├── verify.sh               ← 全链路验证
 │   └── systemd/                ← 12 个 systemd 服务单元
 ├── agents/                     ← 8 位家人的身份/灵魂/系统提示
-│   ├── yuanqi-tianshu/         ← 元启·天枢 (25600)
-│   ├── yanqi-qianhang/         ← 言启·千行 (25601)
-│   ├── yushu-wanwu/            ← 语枢·万物 (25602)
-│   ├── yujian-xianzhi/         ← 预见·先知 (25603)
-│   ├── zhiyu-bole/             ← 千里·伯乐 (25604)
-│   ├── zhiyun-shouhu/          ← 智云·守护 (25605)
-│   ├── gewu-zongshi/           ← 格物·宗师 (25606)
-│   └── chuangxiang-lingyun/    ← 创想·灵韵 (25607)
+│   ├── meta-oracle/         ← 元启·天枢 (25600)
+│   ├── navigator/         ← 言启·千行 (25601)
+│   ├── thinker/            ← 语枢·万物 (25602)
+│   ├── prophet/         ← 预见·先知 (25603)
+│   ├── bolero/             ← 知遇·伯乐 (25604)
+│   ├── sentinel/          ← 智云·守护 (25605)
+│   ├── master/           ← 格物·宗师 (25606)
+│   └── creative/    ← 创想·灵韵 (25607)
 ├── docs/                       ← 文档库（唯一导航入口 docs/README.md）
 │   ├── 10-YYC3-提示词工程-企业蓝图/   ← 提示词工程蓝图（族系：12- 文档族 1200-1214 × 13- 代码族 1300-1308）
 │   ├── 11-…演进完善拓展规划.md        ← 大数据 Agent 对标 + E1/E2/E3 路线 + 执行台账
@@ -384,7 +384,7 @@ yyc3-family-ai-agents/
 | 协议 | MCP（2026-07-28 stateless 子集，server + client）· A2A（Agent Card / message.send）· SSE 流式 |
 | 韧性 | 步骤级 checkpoint 断点恢复 · 语义缓存 · vLLM 主备 failover · 语义缓存 TTL |
 | 部署 | Docker Compose v3 · systemd · DGX Spark N2 |
-| 安全 | OpenShell 安全沙箱 · 治理中枢 Kill Switch · ACS 策略 · 护栏管线（注入检测/输出脱敏）· pip-audit + SBOM 周扫 |
+| 安全 | 护栏管线（注入检测/输出脱敏）· 治理中枢 Kill Switch · ACS 策略 · 零信任 X-API-Key · OpenShell 沙箱（规划）· pip-audit + SBOM 周扫 |
 
 ---
 

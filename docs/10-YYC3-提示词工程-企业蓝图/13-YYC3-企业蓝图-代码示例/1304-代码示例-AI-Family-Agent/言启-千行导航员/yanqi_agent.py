@@ -29,7 +29,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 
 # 协议栈
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../06-协议栈"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../1306-代码示例-协议栈"))
 try:
     from A2A.a2a_client import A2AClient, A2ATask, A2AAgentRole
     from MCP.mcp_client import MCPClient, MCPTransportType
@@ -38,7 +38,7 @@ except ImportError:
     MCPClient = None
 
 # 可观测性
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../08-可观测性"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../1308-代码示例-可观测性"))
 try:
     from telemetry import Telemetry, LogLevel
 except ImportError:
@@ -95,7 +95,7 @@ class YanQiQianHangAgent:
             "slo": {"availability": 0.995, "latency_p99": 15000},
             "fallback": "语枢·万物",
         },
-        "千里·伯乐": {
+        "知遇·伯乐": {
             "endpoint": "http://localhost:6004",
             "capabilities": ["个性化推荐", "用户画像", "资源匹配", "协同过滤"],
             "slo": {"availability": 0.995, "latency_p99": 5000},
@@ -494,7 +494,7 @@ class YanQiQianHangAgent:
             "数据分析": "语枢·万物",
             "内容创作": "创想·灵韵",
             "预测规划": "预见·先知",
-            "推荐系统": "千里·伯乐",
+            "推荐系统": "知遇·伯乐",
             "资源调度": "元启·天枢",
             "安全审计": "智云·守护",
             "质量管控": "格物·宗师",

@@ -51,7 +51,7 @@ Three packaging tracks: **A. MCP Server** (protocol-first) · **B. Claude Code P
 
 | 资产 | 生态稀缺度 | 封装价值 |
 |---|---|---|
-| 审计链（FNV-1a 链式哈希，防篡改） | **极稀缺**——框架普遍无审计 | 核心卖点 |
+| 审计链（全程上报 + correlation_id 贯穿，SQLite 追加写） | **稀缺**——框架普遍无审计 | 核心卖点（2026-11-26 审核勘误：原表述「FNV-1a 链式哈希防篡改」与本仓代码不符，链式哈希属兄弟仓 kernel 资产待验证，见 docs/14- §8.2④） |
 | Token 预算窗口（日/周/月惰性重置） | 稀缺 | 核心卖点 |
 | Kill Switch（一键冻结） | 稀缺 | 核心卖点 |
 | 护栏管线（注入检测 + 输出脱敏） | 有（NeMo Guardrails 等） | 差异化：零依赖 + 审计闭环 |
@@ -97,9 +97,9 @@ result = mcp_client.tools_call("governance_budget_overview")
 .claude-plugin/
 ├── plugin.json          ← Plugin 元数据（name/version/skills/commands）
 ├── skills/
-│   ├── tianshu.md       ← 元启·天枢 Skill（决策框架+治理约束）
-│   ├── qianhang.md      ← 言启·千行 Skill（需求转译+路由）
-│   ├── wanwu.md         ← 语枢·万物 Skill（经营分析+边界红线）
+│   ├── meta-oracle.md       ← 元启·天枢 Skill（决策框架+治理约束）
+│   ├── navigator.md      ← 言启·千行 Skill（需求转译+路由）
+│   ├── thinker.md         ← 语枢·万物 Skill（经营分析+边界红线）
 │   └── ...
 ├── commands/
 │   ├── audit.md         ← /audit 命令（查审计链）
@@ -179,7 +179,7 @@ result = guard.inspect_input("用户问题")
 
 ### Step 2：Claude Code Plugin 封装（`.claude-plugin/` 目录）
 
-**MVP 文件**：`.claude-plugin/plugin.json` + `skills/tianshu.md` + `commands/audit.md`
+**MVP 文件**：`.claude-plugin/plugin.json` + `skills/meta-oracle.md` + `commands/audit.md`
 
 plugin.json 结构（对齐 Claude Code Plugin spec）：
 ```json
@@ -187,7 +187,7 @@ plugin.json 结构（对齐 Claude Code Plugin spec）：
   "name": "yyc3-family-ai",
   "version": "3.1.0",
   "description": "YYC³ FAmily-AI · 1+8 拟人化协同智能体系统",
-  "skills": ["skills/tianshu.md", "skills/qianhang.md", "..."],
+  "skills": ["skills/meta-oracle.md", "skills/navigator.md", "..."],
   "commands": ["commands/audit.md", "commands/budget.md"],
   "mcpServers": {
     "yyc3-governance": {

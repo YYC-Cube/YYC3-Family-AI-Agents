@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '00-核心基础设施', 'prompt-engine'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '1300-代码示例-核心基础设施', 'prompt-engine'))
 
 try:
     from prompt_engine import PromptEngine, PromptType, AgentRole
@@ -71,7 +71,7 @@ class GrowthAIFamilyCoordinator:
     - 言启·千行: 发展路径导航与职业引导
     - 语枢·万物: 人才数据分析与发展诊断
     - 预见·先知: 组织能力预测与未来需求
-    - 千里·伯乐: 人才识别推荐与机会匹配
+    - 知遇·伯乐: 人才识别推荐与机会匹配
     - 智云·守护: 变革风险管控与文化守护
     - 格物·宗师: 领导力素质模型与评估
     - 创想·灵韵: 组织文化创新与活力激发

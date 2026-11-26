@@ -184,7 +184,7 @@ def nl_to_spec(question: str):
     return spec
 
 
-def route_semantic(layer, conn, case, agent="wanwu"):
+def route_semantic(layer, conn, case, agent="thinker"):
     q = case["question"]
     try:
         if case["kind"] in ("metric", "oos", "adv"):

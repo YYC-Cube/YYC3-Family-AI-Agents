@@ -118,7 +118,6 @@ def load_module_from_file(file_path: str):
     
     # 添加必要的依赖路径
     sys.path.insert(0, os.path.dirname(file_path))
-    sys.path.insert(0, os.path.join(BASE_DIR, '00-核心基础设施', 'prompt-engine'))
     
     try:
         spec.loader.exec_module(module)

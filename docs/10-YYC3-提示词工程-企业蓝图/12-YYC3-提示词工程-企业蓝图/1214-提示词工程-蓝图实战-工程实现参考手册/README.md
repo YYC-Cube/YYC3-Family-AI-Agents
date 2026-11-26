@@ -59,7 +59,7 @@ src/app/
 │   ├── navigator/              # 🔲 言启千行
 │   ├── thinker/                # 🔲 语枢万物
 │   ├── prophet/                # 🔲 预见先知
-│   ├── recommender/            # 🔲 千里伯乐
+│   ├── recommender/            # 🔲 知遇伯乐
 │   ├── sentinel/               # 🔲 智云守护
 │   ├── master/                 # 🔲 格物宗师
 │   └── muse/                   # 🔲 创想灵韵

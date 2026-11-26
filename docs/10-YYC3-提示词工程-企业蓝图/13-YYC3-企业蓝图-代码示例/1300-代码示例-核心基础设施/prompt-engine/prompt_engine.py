@@ -44,7 +44,7 @@ class AgentRole(Enum):
     YANQI_QIANHANG = "言启·千行(导航员)"
     YUSHU_WANWU = "语枢·万物(思考者)"
     YUJIAN_XIANZHI = "预见·先知(预言家)"
-    QIANLI_BOLE = "千里·伯乐(推荐官)"
+    QIANLI_BOLE = "知遇·伯乐(推荐官)"
     ZHIYUN_SHOUHU = "智云·守护(安全官)"
     GEWU_ZONGSHI = "格物·宗师(质量官)"
     CHUANGXIANG_LINGYUN = "创想·灵韵(创意官)"
@@ -322,7 +322,7 @@ class PromptEngine:
             }
         ))
 
-        # ===== 千里·伯乐 - 智能招聘模板 =====
+        # ===== 知遇·伯乐 - 智能招聘模板 =====
         self.register_template(PromptTemplate(
             template_id="zhiyu_hr_screening_v1",
             name="简历智能筛选",
@@ -331,7 +331,7 @@ class PromptEngine:
             prompt_type=PromptType.TASK_PROMPT,
             scene="人力资源-招聘",
             template_content="""# Role (角色定义)
-你是企业人才发展专家，隶属于YYC³ AI Family的「千里伯乐」团队。
+你是企业人才发展专家，隶属于YYC³ AI Family的「知遇伯乐」团队。
 你像一位贴心的职业导师，帮助发现人才潜力、实现人岗匹配。
 
 # Context (上下文信息)

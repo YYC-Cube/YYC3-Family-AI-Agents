@@ -67,6 +67,13 @@ jobs:
       - name: 检查文档无旧编号死链（010300/010305）
         run: |
           ! grep -rn "010300-FAmily\|010305-FAmily" docs --include="*.md"
-      - name: 检查命名归一（无历史旧称「知遇·伯乐」/「知遇伯乐」；蓝图镜像与会话归档为只读历史来源，不在此列）
+      - name: 检查命名归一（2026-11-26 全局命名统一：正名「知遇·伯乐」，历史本地名「知遇·伯乐/知遇伯乐」禁入；审核报告为历史证据豁免，90- 归档不在此列）
         run: |
-          ! grep -rn "知遇·伯乐\|知遇伯乐" docs examples agents README.md --include="*.md" --include="*.py" --include="*.yml" --include="*.yaml" --exclude-dir="30-YYC3-Family-AI-Agent-企业蓝图" --exclude-dir="20-YYC3-AI-Family-Agent-编程体系" --exclude-dir="90-归档-20260914-会话工作目录"
+          ! grep -rn "知遇·伯乐\|知遇伯乐" docs agents README.md --include="*.md" --include="*.py" --include="*.yml" --include="*.yaml" --exclude-dir="90-归档-20260914-会话工作目录" --exclude="14-YYC3-Family-AI-Agent-多Agent契约审核评估报告.md"
+      - name: 检查代码族无旧编号族名死引用（1300 族更名残留防护，2026-11-26 B2）
+        run: |
+          ! grep -rn "00-核心基础设施\|04-能力建设智能化\|05-价值创造智能化\|06-协议栈\|07-安全合规\|08-可观测性" "docs/10-YYC3-提示词工程-企业蓝图/13-YYC3-企业蓝图-代码示例" --include="*.py" --include="*.sh" --include="*.yml" --include="*.yaml"
+      - name: 检查治理中枢端口代码事实（25700，防 ARCHITECTURE/README 漂移复发，2026-11-26 B2）
+        run: |
+          grep -q "25700" ARCHITECTURE.md README.md
+          ! grep -n ":9100" ARCHITECTURE.md README.md

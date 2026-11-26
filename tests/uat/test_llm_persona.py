@@ -21,14 +21,14 @@ pytestmark = pytest.mark.skipif(not ENABLED, reason="需 YYC3_UAT_LLM=1 且生�
 
 # 抽检矩阵：短名 → (身份问题, 答案必须包含的关键词)
 PROBES = {
-    "tianshu": ("你是谁？你的角色是什么？", ["元启", "天枢", "总指挥"]),
-    "qianxing": ("你是谁？你的角色是什么？", ["言启", "千行", "导航"]),
-    "wanwu": ("你是谁？你的角色是什么？", ["语枢", "万物"]),
-    "xianzhi": ("你是谁？你的角色是什么？", ["预见", "先知"]),
-    "bole": ("你是谁？你的角色是什么？", ["千里", "伯乐", "推荐"]),
-    "shouhu": ("你是谁？你的角色是什么？", ["智云", "守护"]),
-    "zongshi": ("你是谁？你的角色是什么？", ["格物", "宗师"]),
-    "lingyun": ("你是谁？你的角色是什么？", ["创想", "灵韵"]),
+    "meta-oracle": ("你是谁？你的角色是什么？", ["元启", "天枢", "总指挥"]),
+    "navigator": ("你是谁？你的角色是什么？", ["言启", "千行", "导航"]),
+    "thinker": ("你是谁？你的角色是什么？", ["语枢", "万物"]),
+    "prophet": ("你是谁？你的角色是什么？", ["预见", "先知"]),
+    "bolero": ("你是谁？你的角色是什么？", ["知遇", "伯乐", "推荐"]),
+    "sentinel": ("你是谁？你的角色是什么？", ["智云", "守护"]),
+    "master": ("你是谁？你的角色是什么？", ["格物", "宗师"]),
+    "creative": ("你是谁？你的角色是什么？", ["创想", "灵韵"]),
 }
 
 
@@ -57,11 +57,7 @@ def _chat(system: str, user: str) -> str:
 def test_persona_identity_answer(short):
     if not _vllm_reachable():
         pytest.skip(f"vLLM 不可达: {VLLM_BASE}")
-    system = (REPO_ROOT / "agents" / {
-        "tianshu": "yuanqi-tianshu", "qianxing": "yanqi-qianhang",
-        "wanwu": "yushu-wanwu", "xianzhi": "yujian-xianzhi", "bole": "zhiyu-bole",
-        "shouhu": "zhiyun-shouhu", "zongshi": "gewu-zongshi", "lingyun": "chuangxiang-lingyun",
-    }[short] / "SYSTEM.md").read_text(encoding="utf-8")
+    system = (REPO_ROOT / "agents" / short / "SYSTEM.md").read_text(encoding="utf-8")
     question, keywords = PROBES[short]
     answer = _chat(system, question)
     assert answer, "LLM 返回空回答"

@@ -1,0 +1,21 @@
+# YYC³ 蓝图代码族 · Prometheus 示例配置（教学参考，不接产线）
+# 2026-11-26 补建：docker-compose.yml 的 prometheus 服务挂载本文件，此前文件不存在（挂载落空）。
+# 产线可观测走 OTel OTLP + Jaeger（见仓库根 docker-compose.yml observability profile）。
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  # 示例：抓取八位家人 Agent 的 /metrics（如启用）
+  - job_name: "yyc3-family-agents"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "yyc3-tianshu:6000"
+          - "yyc3-qianhang:6001"
+          - "yyc3-wanwu:6002"
+          - "yyc3-xianzhi:6003"
+          - "yyc3-bole:6004"
+          - "yyc3-shouhu:6005"
+          - "yyc3-zongshi:6006"
+          - "yyc3-lingyun:6007"
