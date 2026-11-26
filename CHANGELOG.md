@@ -11,6 +11,8 @@
 
 ### Added
 
+- **多Agent契约审核评估报告**：`docs/14-YYC3-Family-AI-Agent-多Agent契约审核评估报告.md`（v1.1.0）——基于角色契约（2026-11-26 生效版）多Agent条款的两轮全面审核。**一审**：四件套盘点（Skills 缺失/Plugin 仅计划/MCP 已落地 8 工具/Subagent 建议制协同）、契约九锚点代码取证（已实现 2 · 部分 6 · 完全缺失 1——规划/不可达目标评测）、契约四层 × 仓库九层映射、大数据多Agent生态对标（MCP 2026-07-28 外部核实仍为最新正式版）；P0×3 / P1×7 / P2×5 问题明细与 B1–B10 补全建议批次。**二审（v1.1.0 增补 §8）**：docs/10- 提示词工程蓝图全量深读（44 md + 61 代码文件）——确认「蓝图设计层/原型层/产线层」三层资产断层（对齐表未回写、Phase 勾选双向漂移、FNV-1a 审计链卖点失真待验证归属）、61 原型脚本为零 LLM 平行教学宇宙（27 文件死引用/6 死网关）、提示词工程实质含量仅 5 模板、1200 §八-B 模板人格错位与提示词诱导执行幻觉风险、B5/B8 修订为蓝图资产迁移+适配并新增 B11–B13（蓝图回写/死引用清理/提示词资产可落地通道）；一审修订表 + P1-8/P2-6 增补；文档地图同步登记（86 篇）
+
 - **文档架构规范化**：`docs/` 统一为编号分区（`10-` 提示词工程 / `20-` 技术维度 / `30-` 管理维度 / `90-` 归档）—— 目录名统一 `YYC3-Family-AI-Agent` 正式名；编号冲突修复（`1211-工程实现参考手册` → `1214`，与既有 1211 方案文档区分）；会话工作目录迁入 `90-归档-20260914-会话工作目录/`（只读历史）；`docs/README.md` 重写为唯一导航入口并新增文档规范（目录编号/文件命名/front matter/链接/归档/维护）；归档文档绝对本机路径与外链归一为仓库相对路径；**移除 `.github/README.md`**——GitHub 仓库首页 README 渲染优先级为 `.github/README.md` → `README.md` → `docs/README.md`，该文件会遮蔽根 README，删除后根 README 为唯一项目首页
 - **E1-1 SSE 流式对话**：`POST /chat/stream` 以 `text/event-stream` 逐 delta 转发 vLLM 流（`stream_options.include_usage` 获取真实用量）——`meta/delta/done/error` 四类事件、`X-Correlation-ID` 响应头；frozen 检查/审计/预算/协同/telemetry 上报与 `/chat` 完全同构，客户端断连经生成器 `finally` 兜底 `partial` 上报（审计链不因流式而缺口）；生成器不触请求上下文（规避 werkzeug 3.1 `request_ctx` 弹栈错乱）；契约测试 6 例（`tests/integration/test_streaming.py`）
 - **E1-5 供应链自动化**：`security.yml`——每周一 pip-audit 审计运行时与测试依赖（高危即红）+ anchore/sbom-action 产出 SPDX JSON SBOM 附件；`dependabot.yml`——pip 与 github-actions 双生态周更
