@@ -26,7 +26,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 
 sys_path = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(sys_path, "../../08-可观测性"))
+sys.path.insert(0, os.path.join(sys_path, "../../1308-代码示例-可观测性"))
 try:
     from telemetry import Telemetry
 except ImportError:

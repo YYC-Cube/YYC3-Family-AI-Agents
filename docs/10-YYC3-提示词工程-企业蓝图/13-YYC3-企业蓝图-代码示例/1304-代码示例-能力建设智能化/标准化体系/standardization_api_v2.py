@@ -16,7 +16,7 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '00-核心基础设施', 'prompt-engine'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '1300-代码示例-核心基础设施', 'prompt-engine'))
 
 try:
     from standardization_inference_v2 import StandardizationIntelligenceV2
@@ -196,4 +196,4 @@ if __name__ == '__main__':
     print("API文档: http://localhost:5030/health")
     print("=" * 60)
     
-    app.run(host='0.0.0.0', port=5030, debug=True)
+    app.run(host='0.0.0.0', port=5030, debug=False)

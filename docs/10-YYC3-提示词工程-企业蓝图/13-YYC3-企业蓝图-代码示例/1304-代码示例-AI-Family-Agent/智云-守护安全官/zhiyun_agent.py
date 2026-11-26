@@ -20,8 +20,8 @@ import os, sys, json, uuid, time, logging
 from typing import Dict, List, Optional, Any
 from flask import Flask, request, jsonify
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../07-安全合规"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../08-可观测性"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../1307-代码示例-安全合规"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../1308-代码示例-可观测性"))
 try:
     from content_filter import ContentFilter, FilterLevel, InjectionDetector
     from zero_trust_gateway import ZeroTrustGateway
